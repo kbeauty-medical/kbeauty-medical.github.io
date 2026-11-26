@@ -7,6 +7,10 @@
 <meta name="theme-color" content="#F7F5F0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="format-detection" content="telephone=no" />
+<!-- 카톡·인앱 브라우저에 예전 화면이 남지 않도록 캐시 힌트 (2026-11-26 v2) -->
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
 <!--
   애드윤(ADDYOON) 패드용 고객 시술 동의서 & 영수증 — 단일 HTML 파일
   ─────────────────────────────────────────────────────────────
@@ -129,14 +133,22 @@
 
   /* menu cards */
   .menu-grid{display:block;}
-  .menu-group + .menu-group{margin-top:13px;}
-  .mg-label{font-size:10.5px;letter-spacing:.22em;color:var(--faint);margin-bottom:8px;}
+  .menu-group + .menu-group{margin-top:20px;}
+  .mg-label{
+    display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;letter-spacing:.02em;
+    color:var(--ink);margin-bottom:9px;pointer-events:none;user-select:none;-webkit-user-select:none;
+  }
+  .mg-label::after{content:"";flex:1;height:1px;background:var(--line);}
+  .mg-label .mg-count{font-size:10.5px;font-weight:500;letter-spacing:.08em;color:var(--faint);}
   .mg-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
   .menu{
     position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-radius:2px;
     padding:15px 15px 13px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;
-    transition:border-color .15s,background .15s,box-shadow .15s;
+    transition:border-color .12s,background .12s,box-shadow .12s,transform .08s,color .12s;
+    cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none;
   }
+  .menu:active{transform:scale(.975);}
   .menu .m-name{font-size:16.5px;font-weight:600;letter-spacing:-0.02em;padding-right:22px;}
   .menu .m-prices{display:flex;flex-direction:column;gap:1px;}
   .menu .m-price{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums;}
@@ -146,11 +158,16 @@
     position:absolute;top:12px;right:12px;width:20px;height:20px;border:1px solid var(--line);border-radius:50%;
     display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;background:#fff;transition:.15s;
   }
-  .menu[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;box-shadow:inset 0 0 0 1px var(--ink);}
-  .menu[aria-pressed="true"] .m-check{background:var(--ink);border-color:var(--ink);color:var(--paper);}
-  .menu[aria-pressed="true"] .m-price{color:var(--ink);}
+  .menu[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);box-shadow:0 10px 22px rgba(36,35,33,.22);}
+  .menu[aria-pressed="true"] .m-name{color:#fff;}
+  .menu[aria-pressed="true"] .m-check{background:#fff;border-color:#fff;color:var(--ink);font-weight:700;}
+  .menu[aria-pressed="true"] .m-price,
+  .menu-grid.cash-on .menu[aria-pressed="true"] .m-price{color:#EFEBE3;}
+  .menu[aria-pressed="true"] .m-cash{color:#B9B4AA;}
+  .menu[aria-pressed="true"] .m-tag{color:#B9B4AA;}
   .menu-grid.cash-on .menu .m-price{color:var(--faint);}
   .menu-grid.cash-on .menu .m-cash{color:var(--ink);font-weight:600;font-size:13px;}
+  .menu-grid.cash-on .menu[aria-pressed="true"] .m-cash{color:#fff;font-size:13.5px;}
   .menu[aria-pressed="true"] .m-edit{display:flex;}
   .menu .m-edit{display:none;align-items:center;gap:6px;margin-top:2px;}
   .m-edit input{
@@ -165,6 +182,27 @@
   .add-custom:active{background:#F4F1EA;}
   .menu-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--faint);}
   .menu-status .dot{width:5px;height:5px;border-radius:50%;background:var(--sand);}
+
+  /* 선택된 시술 목록 (카드 바로 아래 즉시 반영) */
+  .sel-list{display:none;margin-top:14px;border:1px solid var(--ink);background:#FBF9F5;padding:13px 15px;}
+  .sel-list.is-on{display:block;animation:selIn .18s ease-out;}
+  @keyframes selIn{from{opacity:.35;transform:translateY(-3px);}to{opacity:1;transform:none;}}
+  .sel-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .sel-head .sel-cap{font-size:11.5px;letter-spacing:.12em;color:var(--faint);}
+  .sel-head .sel-sum{font-size:15px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .sel-chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .sel-chip{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ink);background:var(--ink);
+    color:#fff;border-radius:999px;padding:7px 7px 7px 13px;font-size:13.5px;letter-spacing:-0.01em;
+  }
+  .sel-chip b{font-weight:600;}
+  .sel-chip .amt{color:#B9B4AA;font-variant-numeric:tabular-nums;font-size:12.5px;}
+  .sel-chip .x{
+    width:22px;height:22px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#F2EFE9;
+    font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .sel-chip .x:active{background:rgba(255,255,255,.32);}
 
   /* blocks */
   .sub-block{margin-top:clamp(22px,3vw,32px);padding-top:clamp(20px,2.6vw,28px);border-top:1px solid var(--line-soft);}
@@ -332,6 +370,8 @@
   .sticky-total strong{font-family:var(--font-serif);font-size:clamp(20px,3vw,26px);font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
   .sticky-total em{font-style:normal;font-size:11.5px;color:var(--muted);margin-left:8px;letter-spacing:0;}
   .stickybar .btn{margin-left:auto;}
+  .sticky-total strong.is-bump{animation:bump .42s ease-out;}
+  @keyframes bump{0%{transform:scale(1);}28%{transform:scale(1.14);color:#7A5B2E;}100%{transform:scale(1);}}
 
   /* modal */
   .modal{
@@ -536,6 +576,7 @@
       </div>
 
       <div class="menu-grid" id="menuGrid"></div>
+      <div class="sel-list" id="selList" aria-live="polite"></div>
       <div class="menu-status" id="menuStatus"></div>
       <div id="customList"></div>
       <button type="button" class="add-custom" id="btnAddCustom">＋ 직접 추가 / 커스텀 금액</button>
@@ -1049,17 +1090,18 @@
       groupEl.className = 'menu-group';
       const labelEl = document.createElement('div');
       labelEl.className = 'mg-label';
-      labelEl.textContent = g;
+      labelEl.innerHTML = '<span>' + escapeHtml(g) + '</span><span class="mg-count">' + buckets.get(g).length + '개</span>';
       const row = document.createElement('div');
       row.className = 'mg-row';
       groupEl.appendChild(labelEl);
       groupEl.appendChild(row);
 
       buckets.get(g).forEach(item => {
-        const b = document.createElement('button');
-        b.type = 'button';
+        const b = document.createElement('div');
         b.className = 'menu';
         b.dataset.name = item.name;
+        b.setAttribute('role', 'button');
+        b.setAttribute('tabindex', '0');
         b.setAttribute('aria-pressed', state.selected.has(item.name) ? 'true' : 'false');
         const cashLine = cashApplies(item) ? '<span class="m-cash">현금 ' + won(item.cashPrice) + '원</span>' : '';
         const note = noteText(item.note);
@@ -1076,6 +1118,12 @@
         b.addEventListener('click', e => {
           if (e.target.closest('.m-edit')) return;
           toggleMenu(item.name);
+        });
+        b.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleMenu(item.name);
+          }
         });
         if (item.editable) {
           const inp = $('input', b);
@@ -1109,6 +1157,43 @@
     const el = menuEls.get(name);
     if (el) el.setAttribute('aria-pressed', state.selected.has(name) ? 'true' : 'false');
     updateTotals();
+    bumpSticky();
+  }
+
+  /* 선택된 시술 목록 · 하단 합계 즉시 반영 */
+  function bumpSticky() {
+    const el = $('#stickyTotal');
+    if (!el) return;
+    el.classList.remove('is-bump');
+    void el.offsetWidth;
+    el.classList.add('is-bump');
+  }
+
+  function renderSelList() {
+    const box = $('#selList');
+    if (!box) return;
+    const chosen = state.menu.filter(m => state.selected.has(m.name));
+    // 메뉴에 없는(목록에서 빠진) 선택도 보이도록 보정
+    Array.from(state.selected).forEach(n => { if (!menuItem(n)) chosen.push({ name: n, price: 0, cashPrice: null, editable: true }); });
+    if (!chosen.length) {
+      box.classList.remove('is-on');
+      box.innerHTML = '';
+      return;
+    }
+    box.classList.add('is-on');
+    const sum = chosen.reduce((s, it) => s + appliedPrice(it), 0);
+    box.innerHTML =
+      '<div class="sel-head"><span class="sel-cap">선택한 시술 ' + chosen.length + '개</span>' +
+      '<span class="sel-sum">' + wonText(sum) + '</span></div>' +
+      '<div class="sel-chips">' +
+      chosen.map(it =>
+        '<span class="sel-chip"><b>' + escapeHtml(it.name) + '</b>' +
+        '<span class="amt">' + wonText(appliedPrice(it)) + '</span>' +
+        '<button type="button" class="x" data-remove="' + escapeHtml(it.name) + '" aria-label="' + escapeHtml(it.name) + ' 선택 취소">✕</button></span>'
+      ).join('') + '</div>';
+    $$('#selList .x').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); toggleMenu(btn.dataset.remove); });
+    });
   }
 
   /* ───────── 커스텀 항목 ───────── */
@@ -1459,7 +1544,11 @@
     $('#sumDiscount').textContent = '-' + wonText(c.disc);
     $('#sumTotal').innerHTML = won(c.total) + '<small>원</small>';
     $('#stickyTotal').textContent = wonText(c.total);
-    $('#stickyHint').textContent = c.cashDiscount > 0 || c.disc > 0 ? '할인 -' + wonText(c.cashDiscount + c.disc) : '';
+    const hintParts = [];
+    if (c.lines.length) hintParts.push('시술 ' + c.lines.length + '개');
+    if (c.cashDiscount > 0 || c.disc > 0) hintParts.push('할인 -' + wonText(c.cashDiscount + c.disc));
+    $('#stickyHint').textContent = hintParts.join(' · ');
+    renderSelList();
 
     // 현장 할인 힌트
     const hint = $('#kioskHint');
@@ -2148,8 +2237,29 @@
     if (d.memo) $('#memo').value = d.memo;
   }
 
+  /* ───────── 저장소 정리(구버전 키·깨진 값) ───────── */
+  const LEGACY_KEYS = ['addyoon_menu_v1', 'addyoon_menus', 'addyoon_state_v0', 'addyoon_consent_draft', 'addyoon_menu_cache', 'addyoon_draft', 'addyoon_selected'];
+  function migrateStorage() {
+    try {
+      // 예전 버전에서 쓰던 키는 안전하게 제거 (없으면 그만)
+      LEGACY_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+      // JSON으로 읽는 키만 골라 깨진 값이면 버린다 (기본값으로 북구)
+      [STORE.config, STORE.menuCache, STORE.draft, STORE.issued, STORE.pending].forEach(key => {
+        const raw = localStorage.getItem(key);
+        if (raw == null) return;
+        try { JSON.parse(raw); } catch (e) { try { localStorage.removeItem(key); } catch (e2) {} }
+      });
+      // 메뉴 캐시가 너무 오래됐거나 형태가 다르면 버림 (이전 캐시가 새 카드와 어긍나는 경우 방지)
+      const cache = loadJSON(STORE.menuCache, null);
+      if (cache && (!Array.isArray(cache.menus) || !cache.menus.length || !cache.savedAt || (Date.now() - cache.savedAt) > 1000 * 60 * 60 * 24 * 30)) {
+        try { localStorage.removeItem(STORE.menuCache); } catch (e) {}
+      }
+    } catch (e) {}
+  }
+
   /* ───────── 시작 ───────── */
   function boot() {
+    migrateStorage();
     try {
       const b = localStorage.getItem(STORE.lastBranch);
       if (b === '강남점' || b === '배곧점') state.branch = b;
