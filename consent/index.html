@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>애드윤 · 고객 시술 동의서 &amp; 영수증</title>
+<meta name="theme-color" content="#F7F5F0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="format-detection" content="telephone=no" />
+<!--
+  애드윤(ADDYOON) 패드용 고객 시술 동의서 & 영수증 — 단일 HTML 파일
+  ─────────────────────────────────────────────────────────────
+  · 이 파일 하나만 아이패드/태블릿 브라우저에서 열면 바로 사용할 수 있습니다. (서버·설치 불필요)
+  · 구글 시트 자동 저장 + 고객 이메일 영수증은 `애드윤-동의서-AppsScript.gs`를
+    스프레드시트에 붙여넣고 웹 앱으로 배포한 뒤, 우측 상단 `연동 설정 ⚙️`에 주소(/exec)를 넣으면 작동합니다.
+  · 메뉴·가격은 `시술메뉴설정` 탭(시술명 | 정가 | 현금할인가 | 비고)에서 읽어옵니다.
+    시트를 고친 뒤 ⚙️ 연동 설정의 `시트 동기화 ↻`를 누르면 코드 수정 없이 패드에 바로 반영됩니다.
+  · 시술 관련 문구(리터치 무료 횟수·6개월 기간, 예약 변경 기준)는 매장 정책에 맞게
+    CONSENT 영역의 문장을 수정해 사용하세요.
+-->
+<style>
+  :root{
+    --paper:#F7F5F0;
+    --paper-2:#FBF9F5;
+    --sand:#DAD4CC;
+    --ink:#242321;
+    --muted:#6E6A63;
+    --faint:#9A948B;
+    --line:rgba(36,35,33,0.16);
+    --line-soft:rgba(36,35,33,0.08);
+    --rust:#6E3B2C;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+    --font-serif:ui-serif,"AppleMyungjo","Nanum Myeongjo","Times New Roman",serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-sans);font-size:17px;line-height:1.6;letter-spacing:-0.01em;
+    padding-bottom:calc(104px + env(safe-area-inset-bottom));
+  }
+  h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-0.02em;}
+  p{margin:0;}
+  button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink);}
+  ::placeholder{color:var(--faint);opacity:1;}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 clamp(16px,3.2vw,40px);}
+  .wrap > main{padding-top:clamp(18px,2.4vw,26px);}
+
+  /* ───────── top bar ───────── */
+  .topbar{
+    position:sticky;top:0;z-index:30;background:rgba(247,245,240,.94);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;}
+  .brand{display:flex;align-items:baseline;gap:10px;min-width:0;}
+  .brand-mark{font-family:var(--font-serif);font-size:16px;letter-spacing:.30em;font-weight:600;white-space:nowrap;}
+  .brand-dot{font-size:11px;color:var(--faint);}
+  .brand-sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;}  .topbar-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;
+    border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap;background:var(--paper-2);
+  }
+  .badge i{width:6px;height:6px;border-radius:50%;background:var(--faint);display:block;}
+  .badge.is-on{color:var(--ink);border-color:rgba(36,35,33,.34);}
+  .badge.is-on i{background:var(--ink);}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    padding:15px 26px;border-radius:2px;font-size:16px;font-weight:600;
+    letter-spacing:.01em;touch-action:manipulation;transition:opacity .15s,transform .1s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.45;}
+  .btn--ghost{background:transparent;color:var(--ink);border-color:var(--line);font-weight:500;padding:10px 14px;font-size:13.5px;}
+  .btn--ghost:hover{border-color:rgba(36,35,33,.4);}
+  .btn--sm{padding:10px 13px;font-size:13px;}
+  .btn--topbar{background:transparent;color:var(--muted);border-color:var(--line);padding:8px 12px;font-size:12.5px;font-weight:500;}
+  .btn--topbar:hover{border-color:rgba(36,35,33,.4);color:var(--ink);}
+  .btn--wide{width:100%;padding:20px;font-size:18px;}
+  .sync-btn.is-busy{opacity:.6;pointer-events:none;}
+
+  /* ───────── hero ───────── */
+  .hero{padding:clamp(32px,4.6vw,58px) 0 clamp(20px,3vw,32px);}
+  .hero .eyebrow{font-size:12px;letter-spacing:.26em;color:var(--faint);text-transform:uppercase;}
+  .hero h1{font-family:var(--font-serif);font-weight:600;font-size:clamp(27px,4.2vw,42px);line-height:1.28;margin-top:14px;letter-spacing:-0.03em;}
+  .hero p{margin-top:14px;color:var(--muted);font-size:15.5px;max-width:660px;}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:22px;font-size:13px;color:var(--muted);}
+  .hero-meta span{display:inline-flex;align-items:center;gap:7px;}
+  .hero-meta b{font-weight:600;color:var(--ink);}
+  .hero-meta .meta-dot{width:4px;height:4px;border-radius:50%;background:var(--sand);}
+
+  /* ───────── cards ───────── */
+  .card{background:var(--paper-2);border:1px solid var(--line);padding:clamp(20px,2.8vw,34px);margin-bottom:16px;}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:clamp(16px,2vw,22px);}
+  .sec-num{font-family:var(--font-serif);font-size:13px;letter-spacing:.18em;color:var(--muted);padding-top:6px;flex-shrink:0;}
+  .sec-head h2{font-family:var(--font-serif);font-size:clamp(21px,2.6vw,26px);letter-spacing:-0.02em;}
+  .sec-desc{margin-top:6px;font-size:14px;color:var(--muted);}
+  .sec-tag{margin-left:auto;font-size:11px;letter-spacing:.14em;color:var(--faint);border:1px solid var(--line);border-radius:999px;padding:5px 10px;white-space:nowrap;}
+
+  /* ───────── form ───────── */
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 22px;}
+  .field{display:flex;flex-direction:column;gap:9px;min-width:0;}
+  .field--full{grid-column:1 / -1;}
+  .label{font-size:13px;letter-spacing:.02em;color:var(--muted);display:flex;align-items:center;gap:7px;}
+  .req{color:var(--ink);font-size:12px;border:1px solid var(--line);border-radius:2px;padding:0 5px;line-height:1.5;}
+  .opt{color:var(--faint);font-size:12px;}
+  .input{
+    width:100%;min-height:58px;padding:16px;background:#fff;border:1px solid var(--line);
+    border-radius:2px;transition:border-color .15s,box-shadow .15s;appearance:none;
+  }
+  .input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(36,35,33,.06);}
+  .input.is-bad{border-color:#A2402F;background:#FDF6F4;}
+  textarea.input{min-height:104px;resize:vertical;line-height:1.65;}
+  .hint{font-size:12.5px;color:var(--faint);line-height:1.5;}
+  .field-err{font-size:12.5px;color:#A2402F;display:none;}
+  .field.is-bad .field-err{display:block;}
+
+  .seg{display:inline-flex;align-self:flex-start;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:#fff;}
+  .seg button{border:0;background:transparent;padding:9px 16px;font-size:14px;color:var(--muted);min-width:82px;transition:background .15s,color .15s;}
+  .seg button + button{border-left:1px solid var(--line);}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    border:1px solid var(--line);background:#fff;border-radius:999px;padding:12px 18px;
+    font-size:14.5px;color:var(--muted);transition:.15s;touch-action:manipulation;
+  }
+  .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500;}
+
+  /* menu cards */
+  .menu-grid{display:block;}
+  .menu-group + .menu-group{margin-top:13px;}
+  .mg-label{font-size:10.5px;letter-spacing:.22em;color:var(--faint);margin-bottom:8px;}
+  .mg-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+  .menu{
+    position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:15px 15px 13px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;
+    transition:border-color .15s,background .15s,box-shadow .15s;
+  }
+  .menu .m-name{font-size:16.5px;font-weight:600;letter-spacing:-0.02em;padding-right:22px;}
+  .menu .m-prices{display:flex;flex-direction:column;gap:1px;}
+  .menu .m-price{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .menu .m-cash{font-size:12.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
+  .menu .m-tag{font-size:11.5px;color:var(--faint);}
+  .menu .m-check{
+    position:absolute;top:12px;right:12px;width:20px;height:20px;border:1px solid var(--line);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;background:#fff;transition:.15s;
+  }
+  .menu[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;box-shadow:inset 0 0 0 1px var(--ink);}
+  .menu[aria-pressed="true"] .m-check{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .menu[aria-pressed="true"] .m-price{color:var(--ink);}
+  .menu-grid.cash-on .menu .m-price{color:var(--faint);}
+  .menu-grid.cash-on .menu .m-cash{color:var(--ink);font-weight:600;font-size:13px;}
+  .menu[aria-pressed="true"] .m-edit{display:flex;}
+  .menu .m-edit{display:none;align-items:center;gap:6px;margin-top:2px;}
+  .m-edit input{
+    width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:2px;background:#fff;
+    font-size:15px;text-align:right;font-variant-numeric:tabular-nums;
+  }
+  .m-edit span{font-size:13px;color:var(--muted);}
+  .custom-item{display:grid;grid-template-columns:1fr 148px 44px;gap:8px;align-items:center;margin-top:10px;}
+  .custom-item input{padding:14px;border:1px solid var(--line);border-radius:2px;background:#fff;min-width:0;}
+  .custom-item button{width:44px;height:52px;border:1px solid var(--line);background:#fff;border-radius:2px;color:var(--muted);font-size:18px;}
+  .add-custom{margin-top:12px;border:1px dashed rgba(36,35,33,.3);background:transparent;color:var(--muted);padding:14px 18px;border-radius:2px;font-size:14.5px;width:100%;text-align:left;}
+  .add-custom:active{background:#F4F1EA;}
+  .menu-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--faint);}
+  .menu-status .dot{width:5px;height:5px;border-radius:50%;background:var(--sand);}
+
+  /* blocks */
+  .sub-block{margin-top:clamp(22px,3vw,32px);padding-top:clamp(20px,2.6vw,28px);border-top:1px solid var(--line-soft);}
+  .sub-title{font-size:13px;letter-spacing:.14em;color:var(--faint);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sub-title .tag-inline{font-size:11px;letter-spacing:.02em;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);}
+
+  /* discount */
+  .disc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px;}
+  .disc{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;
+    background:#fff;border:1px solid var(--line);border-radius:2px;padding:16px;
+  }
+  .disc .d-label{font-size:15px;}
+  .disc .d-sub{font-size:12.5px;color:var(--faint);}
+  .disc .d-amount{font-size:12.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .disc[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;box-shadow:inset 0 0 0 1px var(--ink);}
+  .disc[aria-pressed="true"] .d-amount{color:var(--ink);}
+
+  .kiosk{
+    margin-top:14px;border:1px solid var(--line);background:#fff;padding:clamp(14px,2.2vw,20px);
+  }
+  .kiosk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .kiosk-head strong{font-size:14px;font-weight:600;}
+  .kiosk-head span{font-size:11.5px;color:var(--faint);letter-spacing:.06em;}
+  .kiosk-input{display:none;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .kiosk-input.is-open{display:flex;}
+  .kiosk-input input{
+    flex:1;min-width:120px;padding:15px;border:1px solid var(--line);border-radius:2px;background:#FBF9F5;
+    text-align:right;font-size:19px;font-variant-numeric:tabular-nums;font-weight:600;
+  }
+  .kiosk-input .unit{font-size:15px;color:var(--muted);}
+  .kiosk-hint{font-size:12.5px;color:var(--muted);margin-top:9px;line-height:1.5;display:none;}
+  .kiosk-hint.is-on{display:block;}
+  .manual-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .manual-grid .chip{padding:11px 3px;font-size:13px;border-radius:2px;text-align:center;display:inline-flex;justify-content:center;white-space:nowrap;}
+  .sync-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+
+  /* payment + cash toggle */
+  .pay-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .toggle{
+    display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;
+    border-radius:999px;padding:10px 16px 10px 12px;font-size:13.5px;color:var(--muted);
+  }
+  .toggle .switch{
+    width:34px;height:19px;border-radius:999px;background:#DAD4CC;position:relative;transition:background .18s;flex-shrink:0;
+  }
+  .toggle .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;
+    transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.18);
+  }
+  .toggle[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);}
+  .toggle[aria-pressed="true"] .switch{background:var(--ink);}
+  .toggle[aria-pressed="true"] .switch::after{transform:translateX(15px);}
+
+  /* summary */
+  .summary{margin-top:clamp(22px,3vw,32px);border:1px solid var(--ink);background:#F4F1EA;}
+  .summary-lines{padding:18px clamp(16px,2.6vw,26px);display:grid;gap:7px;border-bottom:1px solid var(--line);}
+  .summary-lines > div{display:flex;align-items:baseline;justify-content:space-between;gap:14px;font-size:14px;color:var(--muted);}
+  .summary-lines b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;font-size:15px;}
+  .summary-lines > div[hidden]{display:none;}
+  .summary-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px clamp(16px,2.6vw,26px) 20px;}
+  .summary-total .t-label{font-size:14px;letter-spacing:.04em;color:var(--muted);}
+  .summary-total .t-value{
+    font-family:var(--font-serif);font-size:clamp(28px,4.4vw,38px);font-weight:600;letter-spacing:-0.02em;
+    font-variant-numeric:tabular-nums;line-height:1.1;
+  }
+  .summary-total .t-value small{font-family:var(--font-sans);font-size:16px;font-weight:500;margin-left:3px;letter-spacing:0;}
+
+  /* health / consent */
+  .health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:9px;}
+  .check-row{
+    display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;background:#fff;
+    border:1px solid var(--line);border-radius:2px;padding:15px 16px;font-size:15px;line-height:1.45;transition:.15s;
+  }
+  .check-row .box{
+    flex-shrink:0;width:22px;height:22px;border:1px solid rgba(36,35,33,.35);border-radius:2px;
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;background:#fff;margin-top:1px;
+  }
+  .check-row[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;}
+  .check-row[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .check-row--none{grid-column:1 / -1;}
+  .health-note{
+    display:none;margin-top:12px;padding:14px 16px;border-left:2px solid var(--rust);background:#FBF3EF;
+    font-size:13.5px;color:#5C3327;line-height:1.6;
+  }
+  .health-note.is-on{display:block;}
+
+  .consent-box{margin-top:clamp(22px,3vw,30px);border:1px solid var(--line);background:#fff;}
+  .consent-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px clamp(16px,2.4vw,24px);border-bottom:1px solid var(--line-soft);}
+  .consent-head h3{font-family:var(--font-serif);font-size:17px;letter-spacing:-0.01em;}
+  .consent-head span{font-size:12px;color:var(--faint);}
+  .consent-body{padding:clamp(16px,2.4vw,24px);display:grid;gap:16px;}
+  .c-item{display:flex;gap:12px;font-size:14.5px;line-height:1.7;color:#3A3833;}
+  .c-item .c-num{font-family:var(--font-serif);font-size:12px;color:var(--faint);padding-top:3px;flex-shrink:0;}
+  .c-item b{font-weight:600;color:var(--ink);}
+  .consent-more{border-top:1px solid var(--line-soft);}
+  .consent-more summary{list-style:none;padding:15px clamp(16px,2.4vw,24px);font-size:13.5px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+  .consent-more summary::-webkit-details-marker{display:none;}
+  .consent-more summary::after{content:"＋";color:var(--faint);}
+  .consent-more[open] summary::after{content:"−";}
+  .consent-more .more-body{padding:0 clamp(16px,2.4vw,24px) 20px;font-size:14px;color:#3A3833;line-height:1.75;display:grid;gap:10px;}
+
+  .agree-list{margin-top:18px;display:grid;gap:9px;}
+  .agree{
+    display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:#fff;
+    border:1px solid var(--line);border-radius:2px;padding:17px 18px;font-size:15.5px;
+  }
+  .agree .box{
+    flex-shrink:0;width:24px;height:24px;border:1px solid rgba(36,35,33,.35);border-radius:2px;
+    display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent;background:#fff;
+  }
+  .agree[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;font-weight:500;}
+  .agree[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .agree .must{font-size:12px;color:var(--faint);border:1px solid var(--line);padding:1px 6px;border-radius:2px;font-weight:400;}
+
+  /* signature */
+  .sig-block{margin-top:clamp(22px,3vw,30px);}
+  .sig-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .sig-head h3{font-size:14px;letter-spacing:.02em;color:var(--muted);font-weight:500;}
+  .sig-clear{border:0;background:transparent;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:6px;}
+  .sig-pad{position:relative;background:#fff;border:1px solid var(--line);height:clamp(190px,26vw,240px);touch-action:none;overflow:hidden;border-radius:2px;}
+  .sig-pad canvas{display:block;width:100%;height:100%;touch-action:none;}
+  .sig-pad .sig-guide{position:absolute;inset:16px;border-bottom:1px dashed rgba(36,35,33,.18);pointer-events:none;}
+  .sig-pad .sig-placeholder{
+    position:absolute;left:0;right:0;bottom:26px;text-align:center;color:var(--faint);font-size:13.5px;
+    pointer-events:none;transition:opacity .2s;
+  }
+  .sig-pad.has-ink .sig-placeholder{opacity:0;}
+  .sig-pad.is-bad{border-color:#A2402F;}
+  .sig-meta{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:12px;color:var(--faint);}
+
+  /* review */
+  .review{border:1px solid var(--line);background:#fff;}
+  .review-row{display:flex;justify-content:space-between;gap:16px;padding:11px clamp(14px,2.4vw,22px);font-size:14.5px;border-bottom:1px solid var(--line-soft);}
+  .review-row:last-child{border-bottom:0;}
+  .review-row dt{color:var(--muted);font-size:14px;flex-shrink:0;margin:0;}
+  .review-row dd{margin:0;text-align:right;font-weight:500;word-break:keep-all;}
+  .req-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px 14px;margin-top:15px;}
+  .req-item{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--faint);}
+  .req-item .dot{width:15px;height:15px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;}
+  .req-item.is-done{color:var(--ink);}
+  .req-item.is-done .dot{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .submit-row{margin-top:22px;display:grid;gap:10px;}
+  .submit-note{font-size:12.5px;color:var(--faint);text-align:center;line-height:1.6;}
+  .send-state{font-size:13px;color:var(--muted);text-align:center;display:none;}
+  .send-state.is-on{display:block;}
+  .link-btn{
+    justify-self:center;border:0;background:transparent;color:var(--muted);font-size:12.5px;
+    text-decoration:underline;text-underline-offset:3px;padding:6px 10px;
+  }
+  .link-btn.is-armed{color:#A2402F;}
+
+  .foot{padding:26px 0 10px;color:var(--faint);font-size:12px;line-height:1.7;}
+  .foot b{color:var(--muted);font-weight:500;}
+
+  /* sticky bar */
+  .stickybar{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(251,249,245,.96);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+    padding:12px clamp(14px,3vw,34px) calc(12px + env(safe-area-inset-bottom));
+  }
+  .stickybar .inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:16px;}
+  .sticky-total{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .sticky-total span{font-size:11.5px;letter-spacing:.08em;color:var(--faint);}
+  .sticky-total strong{font-family:var(--font-serif);font-size:clamp(20px,3vw,26px);font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
+  .sticky-total em{font-style:normal;font-size:11.5px;color:var(--muted);margin-left:8px;letter-spacing:0;}
+  .stickybar .btn{margin-left:auto;}
+
+  /* modal */
+  .modal{
+    position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;
+    background:rgba(36,35,33,.42);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  }
+  .modal[hidden]{display:none;}
+  .modal-sheet{
+    position:relative;width:100%;max-width:560px;max-height:calc(100vh - 32px);overflow:auto;
+    background:var(--paper-2);border:1px solid var(--line);box-shadow:0 24px 80px rgba(36,35,33,.22);
+    -webkit-overflow-scrolling:touch;
+  }
+  .modal--receipt .modal-sheet{max-width:600px;padding:clamp(16px,3vw,26px);}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:clamp(20px,3vw,28px) clamp(20px,3vw,28px) 0;}
+  .modal-head h2{font-family:var(--font-serif);font-size:21px;}
+  .modal-head p{font-size:13px;color:var(--muted);margin-top:5px;}
+  .modal-close{border:1px solid var(--line);background:transparent;border-radius:50%;width:36px;height:36px;font-size:16px;color:var(--muted);flex-shrink:0;}
+  .modal-body{padding:clamp(18px,3vw,26px) clamp(20px,3vw,28px) clamp(22px,3vw,28px);display:grid;gap:16px;}
+  .steps{display:grid;gap:9px;counter-reset:s;}
+  .step{display:flex;gap:10px;font-size:13.5px;line-height:1.6;color:#3A3833;}
+  .step::before{
+    counter-increment:s;content:counter(s);flex-shrink:0;width:19px;height:19px;border-radius:50%;
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);margin-top:2px;
+  }
+  .note-box{border-left:2px solid var(--sand);background:#F4F1EA;padding:13px 15px;font-size:13px;color:#4A4740;line-height:1.65;}
+  .inline-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:#EFEBE3;padding:2px 5px;border-radius:2px;word-break:break-all;}
+  .status-line{font-size:13px;line-height:1.6;padding:11px 13px;border:1px solid var(--line);background:#fff;display:none;}
+  .status-line.is-on{display:block;}
+  .status-line.is-ok{border-color:rgba(36,35,33,.4);background:#F2F0E8;}
+  .status-line.is-bad{border-color:#A2402F;color:#7A2F22;background:#FDF6F4;}
+
+  /* receipt */
+  .receipt{background:#fff;border:1px solid var(--line);padding:clamp(20px,3.4vw,34px);color:var(--ink);}
+  .r-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .r-brand{font-family:var(--font-serif);font-size:13px;letter-spacing:.30em;font-weight:600;}
+  .r-kind{font-size:10px;letter-spacing:.24em;color:var(--faint);}
+  .r-title{font-family:var(--font-serif);font-size:clamp(22px,3.4vw,27px);margin-top:14px;letter-spacing:-0.02em;}
+  .r-addr{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5;}
+  .r-rule{border-top:1px dashed rgba(36,35,33,.28);margin:16px 0;}
+  .r-meta{display:grid;gap:7px;margin:0;}
+  .r-meta > div{display:flex;justify-content:space-between;gap:14px;font-size:13px;}
+  .r-meta dt{color:var(--muted);margin:0;}
+  .r-meta dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;}
+  .r-items{display:grid;gap:3px;}
+  .r-item{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.55;}
+  .r-item .n{color:#3A3833;}
+  .r-item .n small{color:var(--faint);font-size:11px;margin-left:5px;}
+  .r-item .p{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .r-sum{display:grid;gap:5px;margin-top:16px;font-size:13.5px;}
+  .r-sum > div{display:flex;justify-content:space-between;gap:14px;color:var(--muted);}
+  .r-sum b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums;}
+  .r-total{margin-top:14px;padding-top:14px;border-top:1px solid var(--ink);display:flex;align-items:flex-end;justify-content:space-between;gap:14px;}
+  .r-total span{font-size:13px;letter-spacing:.04em;}
+  .r-total strong{font-family:var(--font-serif);font-size:clamp(27px,4.6vw,34px);letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.1;}
+  .r-total strong small{font-family:var(--font-sans);font-size:14px;margin-left:2px;font-weight:500;}
+  .r-pay{display:flex;justify-content:space-between;gap:14px;margin-top:14px;font-size:13px;color:var(--muted);}
+  .r-sign{margin-top:18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;}
+  .r-sign .lbl{font-size:11.5px;color:var(--muted);}
+  .r-sign img{height:56px;max-width:190px;object-fit:contain;object-position:right bottom;}
+  .r-sign .empty{font-size:12px;color:var(--faint);border-bottom:1px solid var(--line);padding:0 30px 4px;}
+  .r-foot{margin-top:18px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:10.5px;color:var(--faint);line-height:1.65;}
+  .r-stamp{margin-top:14px;text-align:right;font-family:var(--font-serif);font-size:12px;letter-spacing:.12em;color:var(--muted);}
+
+  .receipt-actions{display:grid;gap:9px;margin-top:16px;}
+  .receipt-actions .row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .receipt-actions button{
+    border:1px solid var(--line);background:#fff;padding:15px 12px;font-size:14px;border-radius:2px;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .receipt-actions button:active{background:#F4F1EA;}
+  .receipt-actions .primary{grid-column:1 / -1;background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600;font-size:15.5px;padding:18px;}
+  #pngPreviewBox{display:none;margin-top:12px;border:1px dashed var(--line);padding:10px;background:#FBF9F5;}
+  #pngPreviewBox.is-on{display:block;}
+  #pngPreviewBox img{display:block;width:100%;height:auto;border:1px solid var(--line);}
+  #pngPreviewBox p{font-size:11.5px;color:var(--muted);margin-top:8px;text-align:center;}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translate(-50%,12px);
+    background:var(--ink);color:var(--paper);padding:13px 20px;border-radius:2px;font-size:14px;
+    max-width:min(90vw,440px);text-align:center;line-height:1.5;z-index:200;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  }
+  .toast.is-on{opacity:1;transform:translate(-50%,0);}
+
+  @media (max-width:720px){
+    body{font-size:16px;}
+    .grid{grid-template-columns:1fr;}
+    .btn--ghost{padding:9px 11px;font-size:12.5px;}
+    .mg-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .menu{min-height:92px;padding:14px;}
+    .summary-total{flex-direction:column;align-items:flex-start;gap:4px;}
+    .sticky-total strong{font-size:21px;}
+    .stickybar .btn{padding:14px 18px;font-size:15px;}
+    .health-grid{grid-template-columns:1fr;}
+    .disc-grid{grid-template-columns:1fr;}
+    .custom-item{grid-template-columns:1fr 112px 44px;}
+    .seg{width:100%;}
+    .seg button{flex:1;min-width:0;padding:14px 10px;}
+    .receipt-actions .row{grid-template-columns:1fr;}
+    .r-sign img{height:48px;}
+    .req-list{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:600px){
+    .badge{display:none;}
+    .sec-tag{display:none;}
+    .topbar .wrap{min-height:56px;gap:6px;}
+    .brand-mark{font-size:15px;letter-spacing:.22em;}
+    .sec-head{gap:12px;}
+  }
+  @media (min-width:1024px) and (orientation:landscape){
+    .mg-row{grid-template-columns:repeat(3,minmax(0,1fr));}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+
+  @page{size:A5;margin:10mm;}
+  @media print{
+    body{background:#fff;padding:0;font-size:12px;}
+    body > *:not(#receiptModal){display:none !important;}
+    #receiptModal{position:static;display:block !important;background:#fff;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none;}
+    #receiptModal .modal-sheet{max-width:none;max-height:none;box-shadow:none;border:0;padding:0;overflow:visible;background:#fff;}
+    .no-print{display:none !important;}
+    .receipt{border:0;padding:0;}
+    .r-title{font-size:22px;}
+    .r-total strong{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="brand-mark">ADDYOON</span>
+      <span class="brand-dot">·</span>
+      <span class="brand-sub">고객 시술 동의서</span>
+    </div>
+    <button type="button" class="btn btn--topbar" id="btnSettings"><span class="btn-label">연동 설정</span> ⚙️</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <main>
+    <!-- 01 -->
+    <section class="card" id="sec1">
+      <div class="sec-head">
+        <div class="sec-num">01</div>
+        <h2>고객 정보</h2>
+      </div>
+
+      <div class="grid">
+        <div class="field field--full">
+          <span class="label">지점</span>
+          <div class="seg" id="branchSeg" role="group" aria-label="지점 선택">
+            <button type="button" data-branch="배곧점" aria-pressed="true">배곧점</button>
+            <button type="button" data-branch="강남점" aria-pressed="false">강남점</button>
+          </div>
+        </div>
+
+        <div class="field" id="fName">
+          <label class="label" for="name">성함</label>
+          <input class="input" id="name" type="text" autocomplete="name" placeholder="예) 김지수" enterkeyhint="next" />
+          <span class="field-err">성함을 입력해 주세요.</span>
+        </div>
+
+        <div class="field" id="fPhone">
+          <label class="label" for="phone">연락처</label>
+          <input class="input" id="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" enterkeyhint="next" />
+          <span class="field-err">연락처를 정확히 입력해 주세요.</span>
+        </div>
+
+        <div class="field field--full" id="fEmail">
+          <label class="label" for="email">이메일</label>
+          <input class="input" id="email" type="email" inputmode="email" autocomplete="email" placeholder="example@email.com" enterkeyhint="next" />
+          <span class="field-err">이메일 형식을 확인해 주세요.</span>
+        </div>
+
+        <div class="field">
+          <label class="label" for="birth">생년월일</label>
+          <input class="input" id="birth" type="date" />
+        </div>
+
+        <div class="field">
+          <span class="label">방문경로</span>
+          <div class="chips" id="sourceChips">
+            <button type="button" class="chip" data-source="네이버 예약" aria-pressed="false">네이버 예약</button>
+            <button type="button" class="chip" data-source="인스타그램" aria-pressed="false">인스타그램</button>
+            <button type="button" class="chip" data-source="샤오홍슈" aria-pressed="false">샤오홍슈</button>
+            <button type="button" class="chip" data-source="지인 소개" aria-pressed="false">지인 소개</button>
+            <button type="button" class="chip" data-source="기타" aria-pressed="false">기타</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="card" id="sec2">
+      <div class="sec-head">
+        <div class="sec-num">02</div>
+        <h2>시술 타입 &amp; 금액</h2>
+      </div>
+
+      <div class="menu-grid" id="menuGrid"></div>
+      <div class="menu-status" id="menuStatus"></div>
+      <div id="customList"></div>
+      <button type="button" class="add-custom" id="btnAddCustom">＋ 직접 추가 / 커스텀 금액</button>
+
+      <div class="sub-block" id="discountBlock">
+        <div class="sub-title">이벤트 · 할인</div>
+        <div class="disc-grid" id="discGrid"></div>
+
+        <div class="kiosk">
+          <div class="kiosk-head">
+            <strong>현장 즉시 할인</strong>
+            <span>KIOSK MODE</span>
+          </div>
+          <div class="manual-grid" id="manualChips">
+            <button type="button" class="chip" data-mode="amount" aria-pressed="false">원 정액 할인</button>
+            <button type="button" class="chip" data-mode="percent" aria-pressed="false">% 정률 할인</button>
+            <button type="button" class="chip" data-mode="final" aria-pressed="false">최종금액 지정</button>
+          </div>
+          <div class="kiosk-input" id="kioskInput">
+            <input id="discValue" type="tel" inputmode="numeric" placeholder="0" aria-label="현장 할인 입력" />
+            <span class="unit" id="discUnit">원</span>
+          </div>
+          <div class="kiosk-hint" id="kioskHint"></div>
+        </div>
+      </div>
+
+      <div class="sub-block">
+        <div class="sub-title">결제수단</div>
+        <div class="pay-row">
+          <div class="chips" id="payChips">
+            <button type="button" class="chip" data-pay="카드" aria-pressed="true">카드</button>
+            <button type="button" class="chip" data-pay="계좌이체" aria-pressed="false">계좌이체 (현금할인가)</button>
+            <button type="button" class="chip" data-pay="현금" aria-pressed="false">현금</button>
+          </div>
+          <button type="button" class="toggle" id="cashToggle" aria-pressed="false">
+            <span class="switch"></span> 현금할인가 적용
+          </button>
+        </div>
+      </div>
+
+      <div class="summary" aria-live="polite">
+        <div class="summary-lines">
+          <div><span>원금액</span><b id="sumSubtotal">0원</b></div>
+          <div id="sumCashRow" hidden><span>현금할인가 적용</span><b id="sumCash">-0원</b></div>
+          <div id="sumDiscRow" hidden><span id="sumDiscLabel">이벤트 할인</span><b id="sumDiscount">-0원</b></div>
+        </div>
+        <div class="summary-total">
+          <span class="t-label">최종 총 결제금액</span>
+          <span class="t-value" id="sumTotal">0<small>원</small></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="card" id="sec3">
+      <div class="sec-head">
+        <div class="sec-num">03</div>
+        <h2>건강 체크 &amp; 시술 동의</h2>
+      </div>
+
+      <div class="sub-title">시술 전 건강·금기사항</div>
+      <div class="health-grid" id="healthGrid"></div>
+      <div class="health-note" id="healthNote">선택하신 항목은 시술 전 원장님과 상담 후 진행 여부를 결정합니다. 임신·수유 중이거나 혈액응고 관련 약을 복용 중인 경우 반드시 말씀해 주세요.</div>
+
+      <div class="consent-box">
+        <div class="consent-head">
+          <h3>반영구 시술 표준 동의 내용</h3>
+        </div>
+        <div class="consent-body">
+          <div class="c-item"><span class="c-num">01</span><p><b>개인차 안내</b> — 피부 타입, 생활 습관, 기존 시술 이력, 호르몬 변화에 따라 착색 정도와 유지 기간에 개인차가 있습니다. 1회 시술로 완전한 결과를 보장하지 않으며, 자연스러운 결과를 위해 <b>1~2회 리터치</b>를 권장합니다.</p></div>
+          <div class="c-item"><span class="c-num">02</span><p><b>시술 직후 안내</b> — 시술 직후에는 색이 진하게 보이고 붓기·홍조가 있을 수 있으며, 3~7일 안에 각질(탈각) 과정을 거치며 색이 옅어집니다. <b>당일 음주·사우나·찜질방·격한 운동·물 접촉</b>은 피해 주세요.</p></div>
+          <div class="c-item"><span class="c-num">03</span><p><b>리터치 안내</b> — 리터치는 1회 무료, 2회부터는 유료이며 시술일로부터 6개월 이내까지만 가능합니다.</p></div>
+          <div class="c-item"><span class="c-num">04</span><p><b>개인정보 수집·이용</b> — 성함, 연락처, 이메일, 생년월일, 건강 체크 및 시술 기록, 전자서명을 <b>시술 차트 관리·경과 확인·영수증 발급</b> 목적으로 수집합니다.</p></div>
+        </div>
+        <details class="consent-more">
+          <summary>리터치·예약 변경 및 개인정보 보유 기준 자세히 보기</summary>
+          <div class="more-body">
+            <p><b>리터치</b> · 1회는 무료로 진행되며, 2회부터는 유료입니다. 리터치는 시술일로부터 6개월 이내까지만 가능하고, 그 이후는 별도 상담 후 진행합니다. 색 보완 범위를 넘는 추가 시술은 별도 비용이 발생할 수 있습니다.</p>
+            <p><b>예약 변경</b> · 일정 변경은 시술일 하루 전까지 미리 알려 주세요.</p>
+            <p><b>개인정보 보유·이용 기간</b> · 시술일로부터 5년 또는 동의 철회 시까지 보관하며, 목적을 달성하면 지체 없이 파기합니다. 동의를 거부하실 수 있으나, 이 경우 시술 진행과 영수증 발급이 제한될 수 있습니다.</p>
+            <p style="color:#6E6A63">※ 세부 기준은 애드윤 매장 정책을 따릅니다.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="agree-list">
+        <button type="button" class="agree" data-agree="care" aria-pressed="false">
+          <span class="box">✓</span>
+          <span>[필수] 시술 안내 및 주의사항을 확인했으며 이에 동의합니다.</span>
+        </button>
+        <button type="button" class="agree" data-agree="privacy" aria-pressed="false">
+          <span class="box">✓</span>
+          <span>[필수] 개인정보 수집·이용에 동의합니다.</span>
+        </button>
+      </div>
+
+      <div class="sub-block">
+        <div class="field">
+          <label class="label" for="memo">특이사항 메모</label>
+          <textarea class="input" id="memo" placeholder="피부 상태, 이전 시술 이력, 요청 사항 등을 자유롭게 적어 주세요."></textarea>
+        </div>
+      </div>
+
+      <div class="sig-block">
+        <div class="sig-head">
+          <h3>전자서명</h3>
+          <button type="button" class="sig-clear" id="btnSigClear">지우기</button>
+        </div>
+        <div class="sig-pad" id="sigPad">
+          <canvas id="sigCanvas" aria-label="전자서명 입력란"></canvas>
+          <div class="sig-guide"></div>
+          <div class="sig-placeholder">손가락 또는 애플펜슬로 아래에 서명해 주세요</div>
+        </div>
+        <div class="sig-meta">
+          <span></span>
+          <span id="sigState">서명 전</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="card" id="sec4">
+      <div class="sec-head">
+        <div class="sec-num">04</div>
+        <h2>확인 및 발급</h2>
+      </div>
+
+      <dl class="review">
+        <div class="review-row"><dt>고객명</dt><dd id="rvName">—</dd></div>
+        <div class="review-row"><dt>시술내역</dt><dd id="rvItems">—</dd></div>
+        <div class="review-row"><dt>원금액</dt><dd id="rvSubtotal">0원</dd></div>
+        <div class="review-row"><dt>할인</dt><dd id="rvDiscount">—</dd></div>
+        <div class="review-row"><dt>총 결제금액</dt><dd id="rvTotal">0원</dd></div>
+        <div class="review-row"><dt>결제수단</dt><dd id="rvPay">카드</dd></div>
+        <div class="review-row"><dt>이메일 영수증</dt><dd id="rvEmail">받지 않음</dd></div>
+      </dl>
+
+      <div class="req-list" id="reqList">
+        <div class="req-item" data-req="name"><span class="dot">✓</span>성함</div>
+        <div class="req-item" data-req="phone"><span class="dot">✓</span>연락처</div>
+        <div class="req-item" data-req="items"><span class="dot">✓</span>시술 메뉴 1개 이상</div>
+        <div class="req-item" data-req="health"><span class="dot">✓</span>건강 체크</div>
+        <div class="req-item" data-req="care"><span class="dot">✓</span>주의사항 동의</div>
+        <div class="req-item" data-req="privacy"><span class="dot">✓</span>개인정보 동의</div>
+        <div class="req-item" data-req="sig"><span class="dot">✓</span>전자서명</div>
+      </div>
+
+      <div class="submit-row">
+        <button type="button" class="btn btn--wide" id="btnSubmit">동의서 저장 및 영수증 발급</button>
+        <div class="send-state" id="sendState"></div>
+        <p class="submit-note" id="submitNote">저장하면 구글 시트에 기록되고, 이메일을 입력한 경우 영수증 메일이 자동 발송됩니다.</p>
+        <button type="button" class="link-btn" id="btnReset">입력 전체 초기화</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <b>애드윤 (ADDYOON)</b><br />
+    배곧점 · 경기 시흥시 서울대학로278번길 19-13 A동 244호<br />
+    강남점 · 서울 강남구 테헤란로13길 8-3 3층<br />
+    이 화면의 동의서와 영수증은 매장 시술 기록용으로 발급됩니다. 세금계산서·현금영수증과는 별개입니다.
+  </footer>
+</div>
+
+<div class="stickybar">
+  <div class="inner">
+    <div class="sticky-total">
+      <span>최종 총 결제금액</span>
+      <strong id="stickyTotal">0원</strong><em id="stickyHint"></em>
+    </div>
+    <button type="button" class="btn" id="btnSubmitTop">영수증 발급</button>
+  </div>
+</div>
+
+<!-- ⚙️ 연동 설정 -->
+<div class="modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div>
+        <h2 id="settingsTitle">연동 설정</h2>
+        <p>구글 시트 저장·메뉴 동기화·이메일 영수증을 연결합니다.</p>
+      </div>
+      <button type="button" class="modal-close" data-close="settingsModal" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step">스프레드시트 <span class="inline-code">애드윤_고객동의서_영수증_DB</span> → <b>확장 프로그램 → Apps Script</b>를 엽니다.</div>
+        <div class="step"><span class="inline-code">애드윤-동의서-AppsScript.gs</span> 내용을 전부 붙여넣고 저장(⌘S)합니다.</div>
+        <div class="step"><b>배포 → 새 배포 → 웹 앱</b> · 실행: <b>나</b> / 액세스: <b>모든 사용자</b>로 배포합니다.</div>
+        <div class="step">나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.</div>
+      </div>
+      <div class="sync-row">
+        <span class="badge" id="syncBadge"><i></i><span id="syncBadgeText">테스트 모드</span></span>
+        <button type="button" class="btn btn--ghost btn--sm sync-btn" id="btnSync" title="시트의 시술메뉴설정 탭에서 메뉴·가격을 다시 불러옵니다"><span class="btn-label">시트 동기화</span> ↻</button>
+      </div>
+      <div class="field">
+        <label class="label" for="webappUrl">Apps Script 웹 앱 URL</label>
+        <input class="input" id="webappUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocapitalize="off" spellcheck="false" />
+        <span class="hint">이 기기에만 저장됩니다. 비워 두면 <b>테스트 모드</b>로 동작해 시트에는 기록되지 않습니다.</span>
+      </div>
+      <div class="status-line" id="connStatus"></div>
+      <div class="note-box">
+        <b>테스트 모드 안내</b> — 주소가 없어도 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동합니다. 다만 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <button type="button" class="btn" id="btnSaveUrl">저장</button>
+        <button type="button" class="btn btn--ghost" id="btnTestConn">연결 테스트</button>
+      </div>
+      <button type="button" class="btn btn--ghost btn--sm" id="btnClearUrl" style="justify-self:center">주소 삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🧾 영수증 -->
+<div class="modal modal--receipt" id="receiptModal" hidden role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
+  <div class="modal-sheet">
+    <div class="no-print" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
+      <div>
+        <h2 id="receiptTitle" style="font-family:var(--font-serif);font-size:20px">영수증이 발급되었습니다</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:4px" id="receiptSub">아래에서 이미지 저장·인쇄가 가능합니다.</p>
+      </div>
+      <button type="button" class="modal-close" data-close="receiptModal" aria-label="닫기">✕</button>
+    </div>
+
+    <div class="status-line no-print" id="receiptStatus"></div>
+
+    <div class="receipt" id="receiptDoc" style="margin-top:14px">
+      <div class="r-top">
+        <div class="r-brand">ADDYOON</div>
+        <div class="r-kind">RECEIPT</div>
+      </div>
+      <h3 class="r-title">애드윤 시술 영수증</h3>
+      <p class="r-addr" id="rAddr">경기 시흥시 서울대학로278번길 19-13 A동 244호</p>
+      <div class="r-rule"></div>
+      <dl class="r-meta">
+        <div><dt>영수증번호</dt><dd id="rNo">—</dd></div>
+        <div><dt>발급일시</dt><dd id="rDate">—</dd></div>
+        <div><dt>지점</dt><dd id="rBranch">배곧점</dd></div>
+        <div><dt>고객명</dt><dd id="rName">—</dd></div>
+        <div><dt>연락처</dt><dd id="rPhone">—</dd></div>
+      </dl>
+      <div class="r-rule"></div>
+      <div class="r-items" id="rItems"></div>
+      <div class="r-sum" id="rSum"></div>
+      <div class="r-total">
+        <span>총 결제금액</span>
+        <strong id="rTotal">0<small>원</small></strong>
+      </div>
+      <div class="r-pay"><span>결제수단</span><span id="rPay">카드</span></div>
+      <div class="r-sign">
+        <span class="lbl">고객 서명</span>
+        <img id="rSig" alt="고객 서명" hidden />
+        <span class="empty" id="rSigEmpty">서명</span>
+      </div>
+      <div class="r-stamp">애드윤 드림</div>
+      <div class="r-foot">
+        본 영수증은 애드윤 매장에서 발급한 시술 확인용 영수증이며, 세금계산서·현금영수증과는 별개입니다.<br />
+        문의 및 리터치 예약은 매장으로 연락해 주세요. 감사합니다.
+      </div>
+    </div>
+
+    <div id="pngPreviewBox">
+      <img id="pngPreview" alt="영수증 이미지 미리보기" />
+      <p>이미지를 길게 눌러 ‘사진에 저장’하면 카카오톡으로 바로 보낼 수 있습니다.</p>
+    </div>
+
+    <div class="receipt-actions no-print">
+      <button type="button" class="primary" id="btnSavePng">🖼️ 영수증 이미지(PNG) 저장</button>
+      <div class="row">
+        <button type="button" id="btnPrint">🖨️ 인쇄 / PDF 저장</button>
+        <button type="button" id="btnNew">새 고객 작성하기</button>
+      </div>
+      <button type="button" id="btnRetry" style="display:none">↻ 시트에 다시 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ───────── 저장 키 ───────── */
+  const STORE = {
+    config: 'addyoon_consent_config_v1',
+    seqPrefix: 'addyoon_receipt_seq_',
+    issued: 'addyoon_issued_v1',
+    pending: 'addyoon_pending_v1',
+    lastBranch: 'addyoon_last_branch_v1',
+    menuCache: 'addyoon_menu_cache_v1',
+    draft: 'addyoon_draft_v1'
+  };
+
+  const SHOP = {
+    name: '애드윤',
+    nameEn: 'ADDYOON',
+    address: '경기 시흥시 서울대학로278번길 19-13 A동 244호',
+    branchAddress: {
+      '배곧점': '경기 시흥시 서울대학로278번길 19-13 A동 244호',
+      '강남점': '서울 강남구 테헤란로13길 8-3 3층'
+    }
+  };
+
+  /* 시트를 못 읽을 때 쓰는 기본 메뉴 (2026-11-26 기준) */
+  const DEFAULT_MENU = [
+    { name: '섀도우 눈썹', price: 280000, cashPrice: 250000, note: '기법별 가격' },
+    { name: '콤보 눈썹',   price: 240000, cashPrice: 220000, note: '기법별 가격' },
+    { name: '자연 눈썹',   price: 200000, cashPrice: 180000, note: '기법별 가격' },
+    { name: '틴트립',      price: 250000, cashPrice: null,   note: '립 시술' },
+    { name: '립라인 교정', price: 250000, cashPrice: null,   note: '립 시술' },
+    { name: '립라인+틴트', price: 450000, cashPrice: null,   note: '립 시술' },
+    { name: '아이라인',    price: 150000, cashPrice: null,   note: '기본 시술' },
+    { name: '헤어라인',    price: 350000, cashPrice: null,   note: '범위에 따라 다름 (직접 수정 가능)' },
+    { name: '두피문신',    price: 200000, cashPrice: null,   note: '범위에 따라 다름 (직접 수정 가능)' },
+    { name: '리터치',      price: 0,      cashPrice: null,   note: '1회 무료 · 2회 유료' }
+  ];
+
+  const PRESETS = [
+    { id: 'none',   label: '정가 적용',         sub: '할인 없음',       kind: 'fixed', value: 0 },
+    { id: 'first',  label: '첫 방문 할인',      sub: '-30,000원',      kind: 'fixed', value: 30000 },
+    { id: 'return', label: '재방문 할인',       sub: '-50,000원',      kind: 'fixed', value: 50000 },
+    { id: 'sale30', label: '12월 연말 30% OFF', sub: '원금액의 30%',    kind: 'rate',  value: 0.3 }
+  ];
+
+  const HEALTH = [
+    '켈로이드·비후성 반흔 체질',
+    '혈액응고장애·아스피린 등 복용',
+    '임신·수유 중',
+    '최근 2주 내 피부과 시술·필링',
+    '마취크림·금속 알레르기'
+  ];
+  const HEALTH_NONE = '해당 사항 없음';
+
+  const state = {
+    branch: '배곧점',
+    source: '',
+    payment: '카드',
+    cashMode: false,
+    menu: [],
+    menuSource: 'default',       // default | cache | sheet
+    menuSyncedAt: null,
+    selected: new Set(),         // 시술명
+    priceOverrides: {},          // 시술명 → 직접 입력 금액
+    customItems: [],
+    discountMode: 'none',        // none|first|return|sale30|amount|percent|final
+    discountValue: 0,
+    agree: { care: false, privacy: false },
+    health: new Set(),
+    hasInk: false,
+    submitted: false,
+    sending: false,
+    lastPayload: null
+  };
+
+  /* ───────── helpers ───────── */
+  const $  = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const won = n => Number(n || 0).toLocaleString('ko-KR');
+  const pad = (n, len) => String(n).padStart(len, '0');
+  const wonText = n => won(n) + '원';
+  const digits = v => String(v == null ? '' : v).replace(/[^0-9]/g, '');
+  const num = v => Number(digits(v)) || 0;
+  const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1, 2) + '-' + pad(d.getDate(), 2); };
+  const ymd = d => String(d.getFullYear()) + pad(d.getMonth() + 1, 2) + pad(d.getDate(), 2);
+
+  function toast(msg, ms) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('is-on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('is-on'), ms || 2800);
+  }
+  function loadJSON(key, fallback) {
+    try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch (e) { return fallback; }
+  }
+  function saveJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  function getConfig() { const c = loadJSON(STORE.config, {}) || {}; return { webappUrl: (c.webappUrl || '').trim() }; }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  /* ───────── 메뉴 정규화 ───────── */
+  function normalizeMenus(rows) {
+    const out = [];
+    (rows || []).forEach(r => {
+      if (!r) return;
+      const name = String(r.name || r.시술명 || '').trim();
+      if (!name) return;
+      const price = num(r.price != null ? r.price : r.정가);
+      const cashRaw = (r.cashPrice != null ? r.cashPrice : r.현금할인가);
+      const cash = (cashRaw === '' || cashRaw == null) ? null : num(cashRaw);
+      const note = String(r.note || r.비고 || '').trim();
+      const editable = /변동|수정|별도|입력|~/.test(note) || /두피|헤어|리터치/.test(name);
+      out.push({
+        name: name,
+        price: price,
+        cashPrice: (cash != null && cash > 0 && cash < price) ? cash : null,
+        note: note,
+        editable: editable
+      });
+    });
+    return out;
+  }
+
+  function applyMenu(menus, source) {
+    const list = normalizeMenus(menus);
+    if (!list.length) return false;
+    state.menu = list;
+    state.menuSource = source;
+    state.menuSyncedAt = Date.now();
+    // 사라진 메뉴의 선택·금액 정리
+    const names = new Set(list.map(m => m.name));
+    Array.from(state.selected).forEach(n => { if (!names.has(n)) state.selected.delete(n); });
+    Object.keys(state.priceOverrides).forEach(k => { if (!names.has(k)) delete state.priceOverrides[k]; });
+    renderMenu();
+    updateMenuStatus();
+    updateTotals();
+    return true;
+  }
+
+  function menuItem(name) { return state.menu.find(m => m.name === name); }
+
+  function cashApplies(item) { return item && item.cashPrice != null && item.cashPrice < item.price; }
+
+  function listPrice(item) {
+    return (state.priceOverrides[item.name] != null) ? state.priceOverrides[item.name] : item.price;
+  }
+  function appliedPrice(item) {
+    const base = listPrice(item);
+    if (state.cashMode && cashApplies(item)) return item.cashPrice;
+    return base;
+  }
+
+  /* ───────── 헤더 ───────── */
+  function initHeader() {
+    const d = new Date();
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const todayEl = $('#todayText');
+    if (todayEl) todayEl.textContent = d.getFullYear() + '.' + pad(d.getMonth() + 1, 2) + '.' + pad(d.getDate(), 2) + ' (' + days[d.getDay()] + ')';
+    $('#birth').max = todayISO();
+    updateSyncBadge();
+    updateReceiptPreview();
+  }
+
+  function updateSyncBadge() {
+    const url = getConfig().webappUrl;
+    const badge = $('#syncBadge');
+    const txt = $('#syncBadgeText');
+    if (badge && txt) {
+      if (url) { badge.classList.add('is-on'); txt.textContent = '시트 연동됨'; }
+      else { badge.classList.remove('is-on'); txt.textContent = '테스트 모드'; }
+    }
+    $('#submitNote').textContent = url
+      ? '저장하면 구글 시트에 기록되고, 이메일을 입력한 경우 영수증 메일이 자동 발송됩니다.'
+      : '테스트 모드입니다. 지금은 시트 저장·메일 발송 없이 영수증만 발급됩니다. (⚙️ 연동 설정에서 주소 입력)';
+  }
+
+  function updateMenuStatus() {
+    const el = $('#menuStatus');
+    const srcText = state.menuSource === 'sheet' ? '시트' : (state.menuSource === 'cache' ? '저장된 시트' : '기본값');
+    const time = state.menuSyncedAt ? new Date(state.menuSyncedAt) : null;
+    const timeText = time ? pad(time.getHours(), 2) + ':' + pad(time.getMinutes(), 2) : '';
+    const meta = $('#menuMeta');
+    if (meta) meta.textContent = srcText + (timeText ? ' · ' + timeText : '');
+    if (!el) return;
+    el.innerHTML = '<span class="dot"></span>메뉴 ' + state.menu.length + '개 · ' + srcText + (timeText ? ' (' + timeText + ' 동기화)' : '') +
+      ' · 가격은 시술메뉴설정 탭에서 수정';
+  }
+
+  function updateReceiptPreview() { const el = $('#receiptPreview'); if (el) el.textContent = 'AD-' + ymd(new Date()) + '-••••'; }
+
+  /* ───────── 메뉴 렌더 ───────── */
+  const menuEls = new Map();
+  const MENU_GROUP_ORDER = ['눈썹', '립', '기타 부위'];
+  const GENERIC_NOTES = ['기법별 가격', '립 시술', '기본 시술'];
+
+  function groupOf(name) {
+    if (/눈썹/.test(name)) return '눈썹';
+    if (/립|입술/.test(name)) return '립';
+    return '기타 부위';
+  }
+  function noteText(note) {
+    return String(note || '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function priceLabel(item) {
+    if (item.price <= 0) return '무료';
+    return won(item.price) + '원' + (item.editable ? '~' : '');
+  }
+
+  function renderMenu() {
+    const grid = $('#menuGrid');
+    grid.innerHTML = '';
+    menuEls.clear();
+    grid.classList.toggle('cash-on', state.cashMode);
+
+    const buckets = new Map();
+    state.menu.forEach(item => {
+      const g = groupOf(item.name);
+      if (!buckets.has(g)) buckets.set(g, []);
+      buckets.get(g).push(item);
+    });
+    const order = MENU_GROUP_ORDER.filter(g => buckets.has(g))
+      .concat(Array.from(buckets.keys()).filter(g => MENU_GROUP_ORDER.indexOf(g) === -1));
+
+    order.forEach(g => {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'menu-group';
+      const labelEl = document.createElement('div');
+      labelEl.className = 'mg-label';
+      labelEl.textContent = g;
+      const row = document.createElement('div');
+      row.className = 'mg-row';
+      groupEl.appendChild(labelEl);
+      groupEl.appendChild(row);
+
+      buckets.get(g).forEach(item => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'menu';
+        b.dataset.name = item.name;
+        b.setAttribute('aria-pressed', state.selected.has(item.name) ? 'true' : 'false');
+        const cashLine = cashApplies(item) ? '<span class="m-cash">현금 ' + won(item.cashPrice) + '원</span>' : '';
+        const note = noteText(item.note);
+        const showNote = note && GENERIC_NOTES.indexOf(note) === -1;
+        const ov = state.priceOverrides[item.name];
+        b.innerHTML =
+          '<span class="m-check">✓</span>' +
+          '<span class="m-name">' + escapeHtml(item.name) + '</span>' +
+          '<span class="m-prices"><span class="m-price">' + priceLabel(item) + '</span>' + cashLine + '</span>' +
+          (showNote ? '<span class="m-tag">' + escapeHtml(note) + '</span>' : '') +
+          (item.editable
+            ? '<span class="m-edit"><input type="tel" inputmode="numeric" value="' + ((ov != null ? ov : item.price) > 0 ? (ov != null ? ov : item.price) : '') + '" aria-label="' + escapeHtml(item.name) + ' 금액"><span>원</span></span>'
+            : '');
+        b.addEventListener('click', e => {
+          if (e.target.closest('.m-edit')) return;
+          toggleMenu(item.name);
+        });
+        if (item.editable) {
+          const inp = $('input', b);
+          inp.addEventListener('click', e => e.stopPropagation());
+          inp.addEventListener('input', () => {
+            state.priceOverrides[item.name] = num(inp.value);
+            if (!state.selected.has(item.name)) {
+              state.selected.add(item.name);
+              b.setAttribute('aria-pressed', 'true');
+            }
+            updateTotals();
+          });
+          inp.addEventListener('focus', () => {
+            if (!state.selected.has(item.name)) {
+              state.selected.add(item.name);
+              b.setAttribute('aria-pressed', 'true');
+              updateTotals();
+            }
+          });
+        }
+        menuEls.set(item.name, b);
+        row.appendChild(b);
+      });
+      grid.appendChild(groupEl);
+    });
+  }
+
+  function toggleMenu(name) {
+    if (state.selected.has(name)) state.selected.delete(name);
+    else state.selected.add(name);
+    const el = menuEls.get(name);
+    if (el) el.setAttribute('aria-pressed', state.selected.has(name) ? 'true' : 'false');
+    updateTotals();
+  }
+
+  /* ───────── 커스텀 항목 ───────── */
+  function renderCustomItems() {
+    const box = $('#customList');
+    box.innerHTML = '';
+    state.customItems.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'custom-item';
+      row.innerHTML =
+        '<input type="text" placeholder="시술명 (예: 수강·상담)" value="' + escapeHtml(item.name) + '" aria-label="커스텀 시술명">' +
+        '<input type="tel" inputmode="numeric" placeholder="금액" value="' + (item.amount ? won(item.amount) : '') + '" aria-label="커스텀 금액">' +
+        '<button type="button" aria-label="삭제">✕</button>';
+      const [nameInp, amountInp] = $$('input', row);
+      nameInp.addEventListener('input', () => { state.customItems[idx].name = nameInp.value; updateTotals(); });
+      amountInp.addEventListener('input', () => {
+        state.customItems[idx].amount = num(amountInp.value);
+        const pos = amountInp.selectionStart;
+        if (amountInp.value !== '' && digits(amountInp.value) !== amountInp.value) {
+          amountInp.value = won(state.customItems[idx].amount);
+          try { amountInp.setSelectionRange(pos, pos); } catch (e) {}
+        }
+        updateTotals();
+      });
+      $('button', row).addEventListener('click', () => {
+        state.customItems.splice(idx, 1);
+        renderCustomItems();
+        updateTotals();
+      });
+      box.appendChild(row);
+    });
+  }
+
+  $('#btnAddCustom').addEventListener('click', () => {
+    if (state.customItems.length >= 5) { toast('커스텀 항목은 최대 5개까지 추가할 수 있어요.'); return; }
+    state.customItems.push({ name: '', amount: 0 });
+    renderCustomItems();
+    const rows = $$('.custom-item');
+    if (rows.length) $('input', rows[rows.length - 1]).focus();
+  });
+
+  /* ───────── 이벤트 프리셋 + 현장 할인 ───────── */
+  function renderPresets() {
+    const grid = $('#discGrid');
+    grid.innerHTML = '';
+    PRESETS.forEach(p => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'disc';
+      b.dataset.preset = p.id;
+      b.setAttribute('aria-pressed', state.discountMode === p.id ? 'true' : 'false');
+      b.innerHTML = '<span><span class="d-label">' + p.label + '</span><br><span class="d-sub">' + p.sub + '</span></span>' +
+        '<span class="d-amount" data-amt></span>';
+      b.addEventListener('click', () => {
+        state.discountMode = p.id;
+        state.discountValue = 0;
+        $('#discValue').value = '';
+        $('#kioskInput').classList.remove('is-open');
+        $$('#manualChips .chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+        $$('.disc', grid).forEach(x => x.setAttribute('aria-pressed', x.dataset.preset === p.id ? 'true' : 'false'));
+        updateTotals();
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  function bindManualDiscount() {
+    $('#manualChips').addEventListener('click', e => {
+      const chip = e.target.closest('[data-mode]');
+      if (!chip) return;
+      const mode = chip.dataset.mode;
+      if (state.discountMode === mode) {
+        state.discountMode = 'none';
+        state.discountValue = 0;
+        $('#discValue').value = '';
+        $('#kioskInput').classList.remove('is-open');
+      } else {
+        state.discountMode = mode;
+        state.discountValue = 0;
+        $('#discValue').value = '';
+        $('#kioskInput').classList.add('is-open');
+        $('#discUnit').textContent = mode === 'percent' ? '%' : '원';
+        $('#discValue').placeholder = mode === 'amount' ? '예: 20000' : (mode === 'percent' ? '예: 10' : '예: 350000');
+        setTimeout(() => $('#discValue').focus(), 40);
+      }
+      $$('#manualChips .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.mode === state.discountMode ? 'true' : 'false'));
+      $$('#discGrid .disc').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      updateTotals();
+    });
+
+    $('#discValue').addEventListener('input', () => {
+      const raw = digits($('#discValue').value);
+      state.discountValue = Number(raw) || 0;
+      if (state.discountMode !== 'percent') {
+        $('#discValue').value = raw === '' ? '' : won(state.discountValue);
+      } else {
+        $('#discValue').value = raw;
+      }
+      updateTotals();
+    });
+  }
+
+  /* ───────── 결제수단 · 현금할인가 ───────── */
+  function setPayment(pay, autoCash) {
+    state.payment = pay;
+    $$('#payChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.pay === pay ? 'true' : 'false'));
+    if (autoCash) setCashMode(pay === '현금' || pay === '계좌이체');
+    updateTotals();
+  }
+  function setCashMode(on) {
+    state.cashMode = on;
+    $('#cashToggle').setAttribute('aria-pressed', on ? 'true' : 'false');
+    $('#menuGrid').classList.toggle('cash-on', on);
+    updateTotals();
+  }
+
+  /* ───────── 건강 체크 ───────── */
+  function renderHealth() {
+    const grid = $('#healthGrid');
+    grid.innerHTML = '';
+    HEALTH.forEach(h => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'check-row';
+      b.dataset.health = h;
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = '<span class="box">✓</span><span>' + escapeHtml(h) + '</span>';
+      b.addEventListener('click', () => toggleHealth(h));
+      grid.appendChild(b);
+    });
+    const none = document.createElement('button');
+    none.type = 'button';
+    none.className = 'check-row check-row--none';
+    none.dataset.health = HEALTH_NONE;
+    none.setAttribute('aria-pressed', 'false');
+    none.innerHTML = '<span class="box">✓</span><span><b>' + HEALTH_NONE + '</b> · 위 항목에 해당하지 않습니다</span>';
+    none.addEventListener('click', () => toggleHealth(HEALTH_NONE));
+    grid.appendChild(none);
+  }
+
+  function toggleHealth(item) {
+    if (item === HEALTH_NONE) {
+      if (state.health.has(HEALTH_NONE)) state.health.clear();
+      else { state.health.clear(); state.health.add(HEALTH_NONE); }
+    } else {
+      state.health.delete(HEALTH_NONE);
+      if (state.health.has(item)) state.health.delete(item);
+      else state.health.add(item);
+    }
+    $$('#healthGrid .check-row').forEach(b => b.setAttribute('aria-pressed', state.health.has(b.dataset.health) ? 'true' : 'false'));
+    $('#healthNote').classList.toggle('is-on', HEALTH.some(h => state.health.has(h)));
+    updateRequirements();
+  }
+
+  /* ───────── 동의 ───────── */
+  $$('.agree').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.agree;
+      state.agree[key] = !state.agree[key];
+      btn.setAttribute('aria-pressed', state.agree[key] ? 'true' : 'false');
+      updateRequirements();
+    });
+  });
+
+  /* ───────── 입력 ───────── */
+  const phone = $('#phone');
+  phone.addEventListener('input', () => {
+    let v = phone.value.replace(/[^0-9]/g, '').slice(0, 11);
+    if (v.length > 7) v = v.slice(0, 3) + '-' + v.slice(3, v.length - 4) + '-' + v.slice(v.length - 4);
+    else if (v.length > 4) v = v.slice(0, 3) + '-' + v.slice(3, v.length - 3) + '-' + v.slice(v.length - 3);
+    else if (v.length > 3) v = v.slice(0, 3) + '-' + v.slice(3);
+    phone.value = v;
+    clearBad('#fPhone');
+    updateRequirements();
+  });
+  $('#name').addEventListener('input', () => { clearBad('#fName'); updateRequirements(); });
+  $('#email').addEventListener('input', () => clearBad('#fEmail'));
+  function clearBad(sel) { $(sel).classList.remove('is-bad'); }
+
+  /* ───────── 전자서명 ───────── */
+  const sigPad = $('#sigPad');
+  const canvas = $('#sigCanvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let lastPt = null;
+
+  function sigResize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const prev = state.hasInk ? canvas.toDataURL('image/png') : null;
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#242321'; ctx.fillStyle = '#242321';
+    if (prev) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+      img.src = prev;
+    }
+  }
+  function pt(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    drawing = true; lastPt = pt(e);
+    ctx.beginPath(); ctx.arc(lastPt.x, lastPt.y, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y);
+    setInk(true);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = pt(e);
+    const mid = { x: (lastPt.x + p.x) / 2, y: (lastPt.y + p.y) / 2 };
+    ctx.quadraticCurveTo(lastPt.x, lastPt.y, mid.x, mid.y);
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mid.x, mid.y);
+    lastPt = p;
+  });
+  function endStroke(e) {
+    if (!drawing) return;
+    drawing = false; lastPt = null;
+    try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+  }
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  canvas.addEventListener('pointerleave', e => { if (drawing) endStroke(e); });
+
+  function setInk(v) {
+    state.hasInk = v;
+    sigPad.classList.toggle('has-ink', v);
+    sigPad.classList.remove('is-bad');
+    $('#sigState').textContent = v ? '서명됨' : '서명 전';
+    updateRequirements();
+  }
+
+  $('#btnSigClear').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sigPad.classList.remove('has-ink');
+    setInk(false);
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(sigResize, 180); });
+  window.addEventListener('orientationchange', () => setTimeout(sigResize, 320));
+
+  function signatureDataUrl() {
+    if (!state.hasInk) return '';
+    const w = canvas.width, h = canvas.height;
+    if (!w || !h) return '';
+    let data;
+    try { data = ctx.getImageData(0, 0, w, h).data; } catch (e) { return canvas.toDataURL('image/png'); }
+    let minX = w, minY = h, maxX = -1, maxY = -1;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (data[(y * w + x) * 4 + 3] > 12) {
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return '';
+    const ratio = (w / (canvas.getBoundingClientRect().width || 1)) || 1;
+    const padPx = Math.round(12 * ratio);
+    minX = Math.max(0, minX - padPx); minY = Math.max(0, minY - padPx);
+    maxX = Math.min(w - 1, maxX + padPx); maxY = Math.min(h - 1, maxY + padPx);
+    const cw = maxX - minX + 1, ch = maxY - minY + 1;
+    const out = document.createElement('canvas');
+    out.width = cw; out.height = ch;
+    out.getContext('2d').drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch);
+    return out.toDataURL('image/png');
+  }
+
+  /* ───────── 금액 계산 ───────── */
+  function itemLines() {
+    const lines = [];
+    state.selected.forEach(name => {
+      const item = menuItem(name);
+      if (!item) return;
+      const lp = listPrice(item);
+      const ap = appliedPrice(item);
+      lines.push({
+        name: item.name,
+        listPrice: lp,
+        price: ap,
+        cashApplied: ap < lp,
+        editable: !!item.editable
+      });
+    });
+    state.customItems.forEach(it => {
+      const nm = (it.name || '').trim();
+      if (nm || it.amount) lines.push({ name: nm || '기타 시술', listPrice: Number(it.amount) || 0, price: Number(it.amount) || 0, cashApplied: false, custom: true });
+    });
+    return lines;
+  }
+
+  function calc() {
+    const lines = itemLines();
+    const regular = lines.reduce((s, l) => s + (Number(l.listPrice) || 0), 0);
+    const applied = lines.reduce((s, l) => s + (Number(l.price) || 0), 0);
+    const cashDiscount = Math.max(0, regular - applied);
+
+    let disc = 0;
+    let label = '';
+    switch (state.discountMode) {
+      case 'first':  disc = 30000; label = '첫 방문 할인'; break;
+      case 'return': disc = 50000; label = '재방문 할인'; break;
+      case 'sale30': disc = Math.round(applied * 0.3 / 10) * 10; label = '12월 연말 30% OFF'; break;
+      case 'amount': disc = state.discountValue; label = '현장 정액 할인'; break;
+      case 'percent': disc = Math.round(applied * Math.min(100, state.discountValue) / 100 / 10) * 10; label = '현장 ' + Math.min(100, state.discountValue) + '% 할인'; break;
+      case 'final': disc = state.discountValue > 0 ? applied - state.discountValue : 0; label = '최종금액 지정'; break;
+      default: disc = 0; label = '';
+    }
+    disc = Math.max(0, Math.min(disc, applied));
+    const total = Math.max(0, applied - disc);
+    return { lines, regular, applied, cashDiscount, disc, label, total };
+  }
+
+  function discountText() {
+    const c = calc();
+    const parts = [];
+    if (c.cashDiscount > 0) parts.push('현금할인가 (-' + wonText(c.cashDiscount) + ')');
+    if (c.disc > 0) parts.push(c.label + ' (-' + wonText(c.disc) + ')');
+    return parts.length ? parts.join(' + ') : '정가 적용';
+  }
+
+  function discountsPayloadText() {
+    const c = calc();
+    const parts = [];
+    if (c.cashDiscount > 0) parts.push('현금할인가');
+    if (c.disc > 0) parts.push(c.label + ' (-' + wonText(c.disc) + ')');
+    return parts.length ? parts.join(' / ') : '없음';
+  }
+
+  function updateTotals() {
+    const c = calc();
+
+    $('#sumSubtotal').textContent = wonText(c.regular);
+    const cashRow = $('#sumCashRow');
+    cashRow.hidden = !(c.cashDiscount > 0);
+    $('#sumCash').textContent = '-' + wonText(c.cashDiscount);
+    const discRow = $('#sumDiscRow');
+    discRow.hidden = !(c.disc > 0);
+    $('#sumDiscLabel').textContent = c.label || '이벤트 할인';
+    $('#sumDiscount').textContent = '-' + wonText(c.disc);
+    $('#sumTotal').innerHTML = won(c.total) + '<small>원</small>';
+    $('#stickyTotal').textContent = wonText(c.total);
+    $('#stickyHint').textContent = c.cashDiscount > 0 || c.disc > 0 ? '할인 -' + wonText(c.cashDiscount + c.disc) : '';
+
+    // 현장 할인 힌트
+    const hint = $('#kioskHint');
+    if (state.discountMode === 'percent') {
+      hint.classList.add('is-on');
+      hint.textContent = Math.min(100, state.discountValue) + '% = ' + wonText(c.disc) + ' 할인 · 최종 ' + wonText(c.total);
+    } else if (state.discountMode === 'final') {
+      hint.classList.add('is-on');
+      if (state.discountValue > c.applied) {
+        hint.textContent = '총액(' + wonText(c.applied) + ')보다 큰 금액이에요. 최종 금액을 다시 확인해 주세요.';
+      } else {
+        hint.textContent = state.discountValue > 0
+          ? '최종 ' + won(state.discountValue) + '원으로 지정 · 할인 ' + wonText(c.disc)
+          : '결제할 최종 금액을 입력하면 할인이 자동 계산됩니다.';
+      }
+    } else if (state.discountMode === 'amount') {
+      hint.classList.add('is-on');
+      hint.textContent = wonText(c.disc) + ' 할인 · 최종 ' + wonText(c.total);
+    } else {
+      hint.classList.remove('is-on');
+      hint.textContent = '';
+    }
+
+    // 프리셋 금액 미리보기
+    $$('#discGrid .disc').forEach(b => {
+      const p = PRESETS.find(x => x.id === b.dataset.preset);
+      if (!p) return;
+      const amt = p.kind === 'fixed' ? Math.min(p.value, c.applied) : Math.round(c.applied * p.value / 10) * 10;
+      $('[data-amt]', b).textContent = (p.kind === 'rate' && amt > 0) ? '-' + won(amt) + '원' : '';
+    });
+
+    // 확인 영역
+    $('#rvName').textContent = ($('#name').value || '').trim() || '—';
+    $('#rvItems').textContent = c.lines.length ? c.lines.map(l => l.name + (l.cashApplied ? ' (현금할인가)' : '')).join(', ') : '—';
+    $('#rvSubtotal').textContent = wonText(c.regular);
+    $('#rvDiscount').textContent = (c.cashDiscount + c.disc) > 0 ? discountText() : '정가 적용';
+    $('#rvTotal').textContent = wonText(c.total);
+    $('#rvPay').textContent = state.payment + (state.cashMode ? ' · 현금할인가' : '');
+    const em = ($('#email').value || '').trim();
+    $('#rvEmail').textContent = em || '받지 않음';
+
+    updateRequirements();
+  }
+
+  /* ───────── 필수 항목 ───────── */
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  const phoneOk = v => digits(v).length >= 10;
+
+  function checks() {
+    return {
+      name: ($('#name').value || '').trim().length > 0,
+      phone: phoneOk($('#phone').value || ''),
+      items: itemLines().length > 0,
+      health: state.health.size > 0,
+      care: state.agree.care === true,
+      privacy: state.agree.privacy === true,
+      sig: state.hasInk === true
+    };
+  }
+
+  function updateRequirements() {
+    const c = checks();
+    $$('#reqList .req-item').forEach(el => el.classList.toggle('is-done', !!c[el.dataset.req]));
+  }
+
+  /* ───────── 영수증 번호 ───────── */
+  function nextReceiptNo() {
+    const key = STORE.seqPrefix + ymd(new Date());
+    let seq = parseInt(localStorage.getItem(key) || '0', 10);
+    const issued = loadJSON(STORE.issued, []) || [];
+    let no;
+    do { seq += 1; no = 'AD-' + ymd(new Date()) + '-' + pad(seq, 4); }
+    while (issued.indexOf(no) !== -1 && seq < 9999);
+    try { localStorage.setItem(key, String(seq)); } catch (e) {}
+    issued.push(no);
+    saveJSON(STORE.issued, issued.slice(-300));
+    return no;
+  }
+
+  /* ───────── 전송 ───────── */
+  function buildPayload(receiptNo) {
+    const c = calc();
+    const now = new Date();
+    return {
+      type: 'consent',
+      version: 2,
+      receiptNo: receiptNo,
+      receivedAt: now.toISOString(),
+      receivedAtLocal: now.getFullYear() + '-' + pad(now.getMonth() + 1, 2) + '-' + pad(now.getDate(), 2) + ' ' + pad(now.getHours(), 2) + ':' + pad(now.getMinutes(), 2) + ':' + pad(now.getSeconds(), 2),
+      branch: state.branch,
+      name: ($('#name').value || '').trim(),
+      phone: ($('#phone').value || '').trim(),
+      email: ($('#email').value || '').trim(),
+      birthdate: $('#birth').value || '',
+      source: state.source || '',
+      items: c.lines.map(l => ({ name: l.name, listPrice: l.listPrice, price: l.price, cashApplied: l.cashApplied })),
+      subtotal: c.regular,
+      cashDiscount: c.cashDiscount,
+      cashApplied: state.cashMode,
+      discountMode: state.discountMode,
+      discountLabel: c.label || '',
+      discount: c.disc,
+      discountText: discountsPayloadText(),
+      total: c.total,
+      payment: state.payment,
+      health: Array.from(state.health),
+      agreeCare: state.agree.care === true,
+      agreePrivacy: state.agree.privacy === true,
+      memo: ($('#memo').value || '').trim(),
+      signature: signatureDataUrl(),
+      menuSource: state.menuSource,
+      device: navigator.userAgent
+    };
+  }
+
+  function queuePending(payload) {
+    const list = loadJSON(STORE.pending, []) || [];
+    if (list.some(p => p.receiptNo === payload.receiptNo)) return;
+    list.push(payload);
+    saveJSON(STORE.pending, list.slice(-20));
+  }
+  function dropPending(receiptNo) {
+    saveJSON(STORE.pending, (loadJSON(STORE.pending, []) || []).filter(p => p.receiptNo !== receiptNo));
+  }
+
+  async function sendPayload(payload) {
+    const url = getConfig().webappUrl;
+    if (!url) return { state: 'test' };
+    const body = JSON.stringify(payload);
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body,
+        signal: ctrl.signal,
+        redirect: 'follow'
+      });
+      clearTimeout(timer);
+      let data = null;
+      const text = await res.text();
+      try { data = JSON.parse(text); } catch (e) {}
+      if (data && data.ok) return { state: 'sent', data: data };
+      if (data && data.ok === false) return { state: 'error', message: data.message || '시트 저장에 실패했어요.' };
+      return { state: 'unverified', message: '전송은 되었지만 응답을 확인하지 못했어요. 시트를 확인해 주세요.' };
+    } catch (err) {
+      try {
+        await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body });
+        return { state: 'unverified', message: '전송을 보냈어요. 네트워크 환경상 결과 확인은 되지 않았습니다.' };
+      } catch (err2) {
+        queuePending(payload);
+        return { state: 'error', message: '네트워크 오류로 저장하지 못했어요. (재전송 대기열에 보관됨)' };
+      }
+    }
+  }
+
+  /* ───────── 제출 ───────── */
+  function markBad(sel) { $(sel).classList.add('is-bad'); }
+
+  function validate() {
+    const c = checks();
+    let firstEl = null;
+    if (!c.name) { markBad('#fName'); toast('성함을 입력해 주세요.'); firstEl = firstEl || $('#fName'); }
+    if (!c.phone) { markBad('#fPhone'); toast('연락처를 정확히 입력해 주세요.'); firstEl = firstEl || $('#fPhone'); }
+    const em = ($('#email').value || '').trim();
+    if (em && !emailOk(em)) { markBad('#fEmail'); toast('이메일 형식을 확인해 주세요.'); firstEl = firstEl || $('#fEmail'); }
+    if (!c.items) { toast('시술 메뉴를 1개 이상 선택해 주세요.'); firstEl = firstEl || $('#sec2'); }
+    if (!c.health) { toast("건강 체크를 선택해 주세요. (없으면 '해당 사항 없음')"); firstEl = firstEl || $('#healthGrid'); }
+    if (!c.care || !c.privacy) { toast('필수 동의 2가지에 체크해 주세요.'); firstEl = firstEl || $('.agree-list'); }
+    if (!c.sig) { sigPad.classList.add('is-bad'); toast('전자서명을 해 주세요.'); firstEl = firstEl || sigPad; }
+    if (firstEl) { firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
+    return true;
+  }
+
+  async function submit() {
+    if (state.sending) return;
+    if (state.submitted) { toast('이미 발급된 영수증이 있어요. 새 고객으로 시작해 주세요.'); return; }
+    if (!validate()) return;
+
+    state.sending = true;
+    const btn = $('#btnSubmit'), btnTop = $('#btnSubmitTop');
+    const oldText = btn.textContent;
+    btn.disabled = true; btnTop.disabled = true; btn.textContent = '저장 중…';
+    $('#sendState').classList.add('is-on');
+    $('#sendState').textContent = getConfig().webappUrl ? '구글 시트에 저장하고 있어요…' : '영수증을 만들고 있어요…';
+
+    const receiptNo = nextReceiptNo();
+    let payload = buildPayload(receiptNo);
+    state.lastPayload = payload;
+
+    let result = await sendPayload(payload);
+
+    // 다른 기기(예: 강남점·배곧점 패드)에서 같은 영수증번호를 먼저 저장한 경우,
+    // 새 번호로 한 번만 다시 보내 기록이 누락되지 않게 합니다.
+    if (result.state === 'sent' && result.data && result.data.duplicate) {
+      dropPending(payload.receiptNo);
+      const retryNo = nextReceiptNo();
+      payload = buildPayload(retryNo);
+      state.lastPayload = payload;
+      result = await sendPayload(payload);
+    }
+
+    if (result.state === 'sent' || result.state === 'unverified') dropPending(payload.receiptNo);
+
+    state.sending = false;
+    state.submitted = true;
+    btn.disabled = false; btnTop.disabled = false; btn.textContent = oldText;
+    $('#sendState').classList.remove('is-on'); $('#sendState').textContent = '';
+
+    openReceipt(payload, result);
+  }
+
+  $('#btnSubmit').addEventListener('click', submit);
+  $('#btnSubmitTop').addEventListener('click', submit);
+
+  /* ───────── 영수증 모달 ───────── */
+  function openReceipt(payload, result) {
+    $('#rNo').textContent = payload.receiptNo;
+    $('#rDate').textContent = formatDateTime(payload.receivedAt);
+    $('#rBranch').textContent = payload.branch;
+    $('#rName').textContent = payload.name;
+    $('#rPhone').textContent = payload.phone;
+    $('#rAddr').textContent = SHOP.branchAddress[payload.branch] || SHOP.address;
+
+    $('#rItems').innerHTML = payload.items.map(it =>
+      '<div class="r-item"><span class="n">' + escapeHtml(it.name) + (it.cashApplied ? '<small>현금할인가</small>' : '') +
+      '</span><span class="p">' + wonText(it.price) + '</span></div>'
+    ).join('') || '<div class="r-item"><span class="n">시술 내역 없음</span><span class="p">0원</span></div>';
+
+    let sum = '<div><span>원금액</span><b>' + wonText(payload.subtotal) + '</b></div>';
+    if (payload.cashDiscount > 0) sum += '<div><span>현금할인가 적용</span><b>-' + wonText(payload.cashDiscount) + '</b></div>';
+    if (payload.discount > 0) sum += '<div><span>' + escapeHtml(payload.discountLabel) + '</span><b>-' + wonText(payload.discount) + '</b></div>';
+    $('#rSum').innerHTML = sum;
+    $('#rTotal').innerHTML = won(payload.total) + '<small>원</small>';
+    $('#rPay').textContent = payload.payment + (payload.cashApplied ? ' · 현금할인가' : '');
+
+    const sig = $('#rSig'), empty = $('#rSigEmpty');
+    if (payload.signature) { sig.src = payload.signature; sig.hidden = false; empty.style.display = 'none'; }
+    else { sig.hidden = true; sig.removeAttribute('src'); empty.style.display = 'inline-block'; }
+
+    renderReceiptStatus(result);
+    $('#pngPreviewBox').classList.remove('is-on');
+    $('#pngPreview').removeAttribute('src');
+    $('#receiptModal').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('#receiptModal .modal-sheet').scrollTop = 0;
+  }
+
+  function formatDateTime(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return d.getFullYear() + '.' + pad(d.getMonth() + 1, 2) + '.' + pad(d.getDate(), 2) + ' ' + pad(d.getHours(), 2) + ':' + pad(d.getMinutes(), 2);
+  }
+
+  function renderReceiptStatus(result) {
+    const el = $('#receiptStatus');
+    const retry = $('#btnRetry');
+    el.className = 'status-line no-print is-on';
+    retry.style.display = 'none';
+    if (result.state === 'sent') {
+      const email = result.data && result.data.emailStatus;
+      const dup = result.data && result.data.duplicate;
+      let msg = dup ? '이미 저장된 영수증이에요. (중복 저장 없음)' : '구글 시트에 저장했어요.';
+      if (email === '발송완료') msg += ' · 이메일 영수증 발송완료';
+      else if (email === '미입력') msg += ' · 이메일 미입력 (화면·이미지로 전달)';
+      else if (email === '실패') msg += ' · 이메일 발송은 실패했어요. 화면 영수증을 사용해 주세요.';
+      el.classList.add('is-ok');
+      el.textContent = '✅ ' + msg;
+    } else if (result.state === 'test') {
+      el.textContent = '🧪 테스트 모드 — 시트에 저장되지 않았습니다. ⚙️ 연동 설정에서 웹 앱 URL을 넣으면 자동 저장됩니다.';
+    } else if (result.state === 'unverified') {
+      el.textContent = '⚠️ ' + result.message;
+    } else {
+      el.classList.add('is-bad');
+      el.textContent = '❌ ' + (result.message || '저장하지 못했어요.');
+      retry.style.display = '';
+    }
+  }
+
+  $('#btnRetry').addEventListener('click', async () => {
+    if (!state.lastPayload) return;
+    const btn = $('#btnRetry');
+    btn.disabled = true; btn.textContent = '저장 중…';
+    const r = await sendPayload(state.lastPayload);
+    btn.disabled = false; btn.textContent = '↻ 시트에 다시 저장';
+    if (r.state === 'sent' || r.state === 'unverified') dropPending(state.lastPayload.receiptNo);
+    renderReceiptStatus(r);
+  });
+
+  $('#btnNew').addEventListener('click', () => {
+    closeModal('receiptModal');
+    resetForm();
+    toast('새 고객 작성 화면으로 돌아왔습니다.');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* 전체 초기화: 두 번 눌러 확인 (실수 방지) */
+  let resetArmed = false;
+  let resetTimer = null;
+  $('#btnReset').addEventListener('click', () => {
+    const btn = $('#btnReset');
+    if (resetArmed) {
+      clearTimeout(resetTimer);
+      resetArmed = false;
+      btn.classList.remove('is-armed');
+      btn.textContent = '입력 전체 초기화';
+      resetForm();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast('입력한 내용을 모두 지웠어요.');
+      return;
+    }
+    resetArmed = true;
+    btn.classList.add('is-armed');
+    btn.textContent = '한 번 더 누르면 모두 지워집니다';
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      resetArmed = false;
+      btn.classList.remove('is-armed');
+      btn.textContent = '입력 전체 초기화';
+    }, 3500);
+  });
+
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  /* ───────── PNG 생성 ───────── */
+  function drawTracked(g, text, x, y, spacing) {
+    let cur = x;
+    for (const ch of text) { g.fillText(ch, cur, y); cur += g.measureText(ch).width + spacing; }
+    return cur;
+  }
+  function wrapText(g, text, maxWidth) {
+    const lines = [];
+    let line = '';
+    for (const ch of text) {
+      if (g.measureText(line + ch).width > maxWidth) { lines.push(line); line = ch; }
+      else line += ch;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  async function buildReceiptCanvas(p) {
+    const W = 780, scale = 2, padX = 52;
+    const c = document.createElement('canvas');
+    const g = c.getContext('2d');
+    const serif = '"AppleMyungjo","Nanum Myeongjo","Times New Roman",serif';
+    const sans = '-apple-system,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif';
+
+    const sigImg = p.signature ? await loadImage(p.signature) : null;
+    const items = p.items.length ? p.items : [{ name: '시술 내역 없음', price: 0 }];
+
+    // 1차: 높이 측정
+    g.font = '13px ' + sans;
+    let measureY = 0;
+    items.forEach(it => { measureY += 21 * wrapText(g, it.name, W - padX * 2 - 170).length + 10; });
+    const footLines = wrapText(g, '본 영수증은 애드윤 매장에서 발급한 시술 확인용 영수증이며, 세금계산서·현금영수증과는 별개입니다.', W - padX * 2);
+    const H = 470 + measureY + footLines.length * 16 + (sigImg ? 90 : 40);
+
+    c.width = W * scale; c.height = H * scale;
+    g.scale(scale, scale);
+    g.fillStyle = '#F7F5F0'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = '#DAD4CC'; g.lineWidth = 1; g.strokeRect(18, 18, W - 36, H - 36);
+    g.textBaseline = 'alphabetic';
+
+    let y = 74;
+    g.fillStyle = '#242321'; g.font = '600 15px ' + serif;
+    drawTracked(g, 'ADDYOON', padX, y, 5);
+    g.font = '11px ' + sans; g.fillStyle = '#9A948B';
+    let kw = 0; for (const ch of 'RECEIPT') kw += g.measureText(ch).width + 3;
+    drawTracked(g, 'RECEIPT', W - padX - kw, y, 3);
+
+    y += 42;
+    g.fillStyle = '#242321'; g.font = '600 30px ' + serif;
+    g.fillText('애드윤 시술 영수증', padX, y);
+
+    y += 24;
+    g.font = '12px ' + sans; g.fillStyle = '#6E6A63';
+    g.fillText(SHOP.branchAddress[p.branch] || SHOP.address, padX, y);
+
+    y += 30;
+    g.strokeStyle = 'rgba(36,35,33,0.28)'; g.setLineDash([4, 4]);
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke(); g.setLineDash([]);
+
+    const meta = [['영수증번호', p.receiptNo], ['발급일시', formatDateTime(p.receivedAt)], ['지점', p.branch], ['고객명', p.name], ['연락처', p.phone]];
+    y += 30; g.font = '13px ' + sans;
+    meta.forEach(([k, v]) => {
+      g.fillStyle = '#6E6A63'; g.fillText(k, padX, y);
+      g.fillStyle = '#242321'; g.fillText(v, W - padX - g.measureText(v).width, y);
+      y += 25;
+    });
+
+    y += 8;
+    g.strokeStyle = 'rgba(36,35,33,0.28)'; g.setLineDash([4, 4]);
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke(); g.setLineDash([]);
+    y += 34;
+
+    g.font = '15px ' + sans;
+    items.forEach(it => {
+      g.fillStyle = '#3A3833';
+      const name = it.name + (it.cashApplied ? '  (현금할인가)' : '');
+      const nameLines = wrapText(g, name, W - padX * 2 - 170);
+      nameLines.forEach((ln, i) => g.fillText(ln, padX, y + i * 21));
+      g.fillStyle = '#242321';
+      const priceStr = wonText(it.price);
+      g.fillText(priceStr, W - padX - g.measureText(priceStr).width, y);
+      y += 21 * nameLines.length + 10;
+    });
+
+    y += 4; g.font = '13.5px ' + sans; g.fillStyle = '#6E6A63';
+    g.fillText('원금액', padX, y);
+    let v = wonText(p.subtotal);
+    g.fillText(v, W - padX - g.measureText(v).width, y);
+    y += 23;
+    if (p.cashDiscount > 0) {
+      g.fillText('현금할인가 적용', padX, y);
+      v = '-' + wonText(p.cashDiscount);
+      g.fillText(v, W - padX - g.measureText(v).width, y);
+      y += 23;
+    }
+    if (p.discount > 0) {
+      g.fillText(p.discountLabel || '할인', padX, y);
+      v = '-' + wonText(p.discount);
+      g.fillText(v, W - padX - g.measureText(v).width, y);
+      y += 23;
+    }
+
+    y += 14;
+    g.strokeStyle = '#242321'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke();
+    y += 40;
+    g.fillStyle = '#242321'; g.font = '13.5px ' + sans;
+    g.fillText('총 결제금액', padX, y + 6);
+    const totalStr = won(p.total);
+    g.font = '600 36px ' + serif;
+    g.fillText(totalStr, W - padX - g.measureText(totalStr).width - 18, y + 8);
+    g.font = '14px ' + sans;
+    g.fillText('원', W - padX - 12, y + 8);
+    y += 28;
+    g.font = '13px ' + sans; g.fillStyle = '#6E6A63';
+    g.fillText('결제수단', padX, y);
+    const payText = p.payment + (p.cashApplied ? ' · 현금할인가' : '');
+    g.fillText(payText, W - padX - g.measureText(payText).width, y);
+
+    y += 26;
+    if (sigImg) {
+      const maxW = 190, maxH = 62;
+      const ratio = Math.min(maxW / sigImg.width, maxH / sigImg.height);
+      const dw = sigImg.width * ratio, dh = sigImg.height * ratio;
+      g.drawImage(sigImg, W - padX - dw, y, dw, dh);
+    }
+    g.fillStyle = '#6E6A63'; g.font = '11.5px ' + sans;
+    g.fillText('고객 서명', padX, y + 40);
+    y += sigImg ? 82 : 46;
+
+    g.fillStyle = '#242321'; g.font = '13px ' + serif;
+    const stamp = '애드윤 드림';
+    g.fillText(stamp, W - padX - g.measureText(stamp).width, y);
+
+    y += 22;
+    g.strokeStyle = 'rgba(36,35,33,0.12)';
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke();
+    y += 20;
+    g.fillStyle = '#9A948B'; g.font = '10.5px ' + sans;
+    wrapText(g, '본 영수증은 애드윤 매장에서 발급한 시술 확인용 영수증이며, 세금계산서·현금영수증과는 별개입니다.', W - padX * 2).forEach(ln => { g.fillText(ln, padX, y); y += 15; });
+    wrapText(g, '문의 및 리터치 예약은 매장으로 연락해 주세요. 감사합니다.', W - padX * 2).forEach(ln => { g.fillText(ln, padX, y); y += 15; });
+
+    return c;
+  }
+
+  function loadImage(src) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  $('#btnSavePng').addEventListener('click', async () => {
+    if (!state.lastPayload) return;
+    const p = state.lastPayload;
+    const btn = $('#btnSavePng');
+    const old = btn.textContent;
+    btn.disabled = true; btn.textContent = '이미지 만드는 중…';
+    try {
+      const c = await buildReceiptCanvas(p);
+      const url = c.toDataURL('image/png');
+      $('#pngPreview').src = url;
+      $('#pngPreviewBox').classList.add('is-on');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '애드윤_영수증_' + p.receiptNo + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast('영수증 이미지를 저장했어요. (저장되지 않으면 아래 이미지를 길게 눌러 주세요)');
+      setTimeout(() => $('#pngPreviewBox').scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
+    } catch (e) {
+      toast('이미지를 만들지 못했어요. 인쇄/PDF를 사용해 주세요.');
+    } finally {
+      btn.disabled = false; btn.textContent = old;
+    }
+  });
+
+  /* ───────── 시트에서 읽기 (fetch → JSONP 예비 경로) ───────── */
+  function withParams(url, params) {
+    const q = Object.keys(params).map(k => k + '=' + encodeURIComponent(params[k])).join('&');
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + q;
+  }
+
+  function jsonpGet(url, action) {
+    return new Promise((resolve, reject) => {
+      const cb = '__addyoonCb_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      const script = document.createElement('script');
+      let done = false;
+      const cleanup = () => {
+        clearTimeout(timer);
+        try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
+      const timer = setTimeout(() => { if (!done) { done = true; cleanup(); reject(new Error('timeout')); } }, 15000);
+      window[cb] = data => { if (done) return; done = true; cleanup(); resolve(data); };
+      script.onerror = () => { if (done) return; done = true; cleanup(); reject(new Error('script error')); };
+      script.src = withParams(url, { action: action, callback: cb, t: Date.now() });
+      document.body.appendChild(script);
+    });
+  }
+
+  async function getJSON(url, action) {
+    try {
+      const res = await fetch(withParams(url, { action: action, t: Date.now() }), { method: 'GET', redirect: 'follow' });
+      const data = JSON.parse(await res.text());
+      if (data && typeof data === 'object') return data;
+      throw new Error('bad');
+    } catch (e) {
+      return await jsonpGet(url, action);
+    }
+  }
+
+  /* ───────── 시트 동기화 ───────── */
+  async function syncMenu(manual) {
+    const url = getConfig().webappUrl;
+    const btn = $('#btnSync');
+    if (!url) {
+      if (manual) { toast('⚙️ 연동 설정에서 웹 앱 URL을 먼저 입력해 주세요.'); openModal('settingsModal'); }
+      return;
+    }
+    btn.classList.add('is-busy');
+    const label = btn.querySelector('.btn-label') || btn;
+    const oldText = label.textContent;
+    label.textContent = '동기화 중';
+    try {
+      const data = await getJSON(url, 'menu');
+      if (!data || !data.ok || !Array.isArray(data.menus) || !data.menus.length) throw new Error('bad');
+      if (applyMenu(data.menus, 'sheet')) {
+        saveJSON(STORE.menuCache, { menus: data.menus, savedAt: Date.now() });
+        if (manual) toast('시트에서 메뉴 ' + data.menus.length + '개를 불러왔어요.');
+      } else throw new Error('empty');
+    } catch (e) {
+      if (manual) toast('시트에서 메뉴를 불러오지 못했어요. 저장된 메뉴로 표시합니다.');
+    } finally {
+      btn.classList.remove('is-busy');
+      label.textContent = oldText;
+    }
+  }
+
+  $('#btnSync').addEventListener('click', () => syncMenu(true));
+
+  /* ───────── 리셋 ───────── */
+  function resetForm() {
+    $('#name').value = ''; $('#phone').value = ''; $('#email').value = ''; $('#birth').value = ''; $('#memo').value = '';
+    state.source = '';
+    $$('#sourceChips .chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    state.selected.clear();
+    state.priceOverrides = {};
+    renderMenu();
+    state.customItems = []; renderCustomItems();
+    state.discountMode = 'none'; state.discountValue = 0;
+    $('#discValue').value = '';
+    $('#kioskInput').classList.remove('is-open');
+    $$('#manualChips .chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    renderPresets();
+    setPayment('카드', true);
+    state.agree = { care: false, privacy: false };
+    $$('.agree').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    state.health.clear();
+    $$('#healthGrid .check-row').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    $('#healthNote').classList.remove('is-on');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sigPad.classList.remove('has-ink', 'is-bad');
+    setInk(false);
+    state.submitted = false;
+    state.lastPayload = null;
+    ['#fName', '#fPhone', '#fEmail'].forEach(clearBad);
+    try { localStorage.removeItem(STORE.draft); } catch (e) {}
+    updateTotals();
+    updateReceiptPreview();
+  }
+
+  /* ───────── 모달 ───────── */
+  function openModal(id) { $('#' + id).hidden = false; document.body.style.overflow = 'hidden'; }
+  function closeModal(id) { $('#' + id).hidden = true; document.body.style.overflow = ''; }
+  $$('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+  $$('.modal').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) closeModal(m.id); }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.modal').forEach(m => { if (!m.hidden) closeModal(m.id); }); });
+
+  /* ───────── 연동 설정 ───────── */
+  $('#btnSettings').addEventListener('click', () => {
+    $('#webappUrl').value = getConfig().webappUrl;
+    $('#connStatus').className = 'status-line';
+    $('#connStatus').textContent = '';
+    openModal('settingsModal');
+  });
+
+  $('#btnSaveUrl').addEventListener('click', () => {
+    const url = $('#webappUrl').value.trim();
+    if (url && !/^https:\/\/script\.google\.com\/macros\/s\/.+/i.test(url)) {
+      showConn('is-bad', 'Apps Script 웹 앱 주소(https://script.google.com/macros/s/…/exec)를 붙여넣어 주세요.');
+      return;
+    }
+    saveJSON(STORE.config, { webappUrl: url });
+    updateSyncBadge();
+    showConn(url ? 'is-ok' : '', url ? '저장했어요. 이제 시트 저장·메뉴 동기화·이메일 발송이 함께 작동합니다.' : '테스트 모드로 전환했어요.');
+    toast(url ? '연동 주소를 저장했어요.' : '연동 주소를 비웠어요. (테스트 모드)');
+    if (url) { syncMenu(false); retryPending(); }
+  });
+
+  $('#btnClearUrl').addEventListener('click', () => {
+    $('#webappUrl').value = '';
+    saveJSON(STORE.config, { webappUrl: '' });
+    updateSyncBadge();
+    showConn('', '주소를 삭제했어요. 테스트 모드로 동작합니다.');
+  });
+
+  function showConn(kind, msg) {
+    const el = $('#connStatus');
+    el.className = 'status-line is-on ' + (kind || '');
+    el.textContent = msg;
+  }
+
+  $('#btnTestConn').addEventListener('click', async () => {
+    const url = ($('#webappUrl').value || getConfig().webappUrl || '').trim();
+    if (!url) { showConn('is-bad', '주소를 먼저 입력해 주세요. (테스트 모드로는 연결 테스트를 할 수 없어요)'); return; }
+    showConn('', '연결을 확인하고 있어요…');
+    try {
+      const data = await getJSON(url, 'ping');
+      if (data && data.ok) {
+        const n = Array.isArray(data.menus) ? data.menus.length : 0;
+        showConn('is-ok', '연결 성공 · 서비스: ' + (data.service || 'addyoon-consent') + (n ? ' · 시트 메뉴 ' + n + '개' : ' · 메뉴 없음'));
+      } else {
+        showConn('is-bad', '응답을 확인했지만 형식이 달라요. 배포 설정(액세스: 모든 사용자)을 확인해 주세요.');
+      }
+    } catch (e) {
+      showConn('is-bad', '연결하지 못했어요. 배포 주소와 ‘액세스: 모든 사용자’ 설정을 확인해 주세요.');
+    }
+  });
+
+  async function retryPending() {
+    const list = loadJSON(STORE.pending, []) || [];
+    if (!list.length || !getConfig().webappUrl) return;
+    let done = 0;
+    for (const p of list) {
+      const r = await sendPayload(p);
+      if (r.state === 'sent' || r.state === 'unverified') { dropPending(p.receiptNo); done++; }
+    }
+    if (done) toast('이전에 저장하지 못한 동의서 ' + done + '건을 시트로 보냈어요.');
+  }
+
+  /* ───────── 초안 ───────── */
+  function saveDraft() {
+    if (state.submitted) return;
+    saveJSON(STORE.draft, {
+      name: $('#name').value, phone: $('#phone').value, email: $('#email').value,
+      birth: $('#birth').value, memo: $('#memo').value
+    });
+  }
+  ['#name', '#phone', '#email', '#birth', '#memo'].forEach(sel => $(sel).addEventListener('input', saveDraft));
+  function restoreDraft() {
+    const d = loadJSON(STORE.draft, null);
+    if (!d) return;
+    if (d.name) $('#name').value = d.name;
+    if (d.phone) $('#phone').value = d.phone;
+    if (d.email) $('#email').value = d.email;
+    if (d.birth) $('#birth').value = d.birth;
+    if (d.memo) $('#memo').value = d.memo;
+  }
+
+  /* ───────── 시작 ───────── */
+  function boot() {
+    try {
+      const b = localStorage.getItem(STORE.lastBranch);
+      if (b === '강남점' || b === '배곧점') state.branch = b;
+    } catch (e) {}
+    $$('#branchSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.branch === state.branch ? 'true' : 'false'));
+
+    // 메뉴: 저장된 시트 캐시 → 기본값 순
+    const cache = loadJSON(STORE.menuCache, null);
+    if (cache && Array.isArray(cache.menus) && cache.menus.length) {
+      state.menu = normalizeMenus(cache.menus);
+      state.menuSource = 'cache';
+      state.menuSyncedAt = cache.savedAt || null;
+    } else {
+      state.menu = normalizeMenus(DEFAULT_MENU);
+      state.menuSource = 'default';
+    }
+
+    renderMenu();
+    renderPresets();
+    renderHealth();
+    renderCustomItems();
+    initHeader();
+    updateMenuStatus();
+
+    $('#branchSeg').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-branch]');
+      if (!btn) return;
+      state.branch = btn.dataset.branch;
+      $$('#branchSeg button').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+      try { localStorage.setItem(STORE.lastBranch, state.branch); } catch (e) {}
+    });
+
+    $('#sourceChips').addEventListener('click', e => {
+      const btn = e.target.closest('[data-source]');
+      if (!btn) return;
+      const on = btn.getAttribute('aria-pressed') === 'true';
+      $$('#sourceChips .chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', on ? 'false' : 'true');
+      state.source = on ? '' : btn.dataset.source;
+    });
+
+    $('#payChips').addEventListener('click', e => {
+      const btn = e.target.closest('[data-pay]');
+      if (!btn) return;
+      setPayment(btn.dataset.pay, true);
+    });
+
+    $('#cashToggle').addEventListener('click', () => setCashMode(!state.cashMode));
+
+    bindManualDiscount();
+    sigResize();
+    setTimeout(sigResize, 60);
+    updateTotals();
+    if (getConfig().webappUrl) { syncMenu(false).then(() => retryPending()); }
+  }
+
+  /* 테스트/검증용 훅 */
+  window.__addyoon = {
+    state: state,
+    calc: calc,
+    buildPayload: buildPayload,
+    checks: checks,
+    signatureDataUrl: signatureDataUrl,
+    applyMenu: applyMenu,
+    syncMenu: syncMenu,
+    setCashMode: setCashMode,
+    setPayment: setPayment,
+    menuEls: menuEls
+  };
+
+  boot();
+  restoreDraft();
+  updateTotals();
+})();
+</script>
+</body>
+</html>
