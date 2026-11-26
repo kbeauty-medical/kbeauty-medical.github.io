@@ -15,8 +15,10 @@
   ─────────────────────────────────────────────────────────────────────────────
   · 한지윤 · 송지원 대표원장 공동 운영 버전. 이 파일 하나만 태블릿 브라우저에서 열면 바로 사용합니다.
   · 구글 시트 자동 저장 + 고객 이메일 영수증은 `롱래스팅-동의서-AppsScript.gs`를
-    스프레드시트 `롱래스팅센터_고객동의서_영수증_DB`에 붙여넣고 웹 앱으로 배포한 뒤,
-    우측 상단 `연동 설정 ⚙️`에 주소(/exec)를 넣으면 작동합니다.
+    스프레드시트 `롱래스팅센터_고객동의서_영수증_DB`에 붙여넣고 웹 앱으로 배포합니다.
+    현재 배포된 웹 앱 주소는 이 파일의 `DEFAULT_GAS_URL`에 기본값으로 내장되어 있어,
+    그대로 열면 시트 저장·메뉴 동기화·이메일 발송이 바로 작동합니다.
+    다른 주소로 바꿀 때만 우측 상단 `연동 설정 ⚙️`에서 덮어쓰면 됩니다.
   · 메뉴·가격은 `시술메뉴설정` 탭(시술명 | 정가 | 현금할인가 | 비고)에서 읽어옵니다.
   · 언어: 한국어 · EN · 中文 · 日本語 (상단 우측 버튼). 시술명은 시트의 한국어 이름을 기준으로 번역 표시합니다.
   · 지점: 강남점(기본) / 배곧점 · 담당 원장: 한지윤 원장 / 송지원 원장 → 시트 `담당원장` 열에 기록.
@@ -765,7 +767,7 @@
         <div class="step"><span data-i18n-html="setStep1">스프레드시트 <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>확장 프로그램 → Apps Script</b>를 엽니다.</span></div>
         <div class="step"><span data-i18n-html="setStep2"><span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> 내용을 전부 붙여넣고 저장합니다.</span></div>
         <div class="step"><span data-i18n-html="setStep3"><b>배포 → 새 배포 → 웹 앱</b> · 실행: <b>나</b> / 액세스: <b>모든 사용자</b>로 배포합니다.</span></div>
-        <div class="step"><span data-i18n-html="setStep4">나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.</span></div>
+        <div class="step"><span data-i18n-html="setStep4">기본 주소는 이 페이지에 이미 내장되어 있습니다. 다른 주소로 바꿀 때만 아래에 붙여넣고 저장합니다.</span></div>
       </div>
       <div class="sync-row">
         <span class="badge badge-lite" id="syncBadge"><i></i><span id="syncBadgeText">테스트 모드</span></span>
@@ -774,15 +776,15 @@
       <div class="field">
         <label class="label" for="webappUrl" data-i18n="urlLabel">Apps Script 웹 앱 URL</label>
         <input class="input" id="webappUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocapitalize="off" spellcheck="false" />
-        <span class="hint" data-i18n="urlHint">이 기기에만 저장됩니다. 비워 두면 테스트 모드로 동작해 시트에는 기록되지 않습니다.</span>
+        <span class="hint" data-i18n="urlHint">기본 연동 주소가 내장되어 있어 그대로 쓰시면 됩니다. 여기에 다른 주소를 저장하면 이 기기에서만 그 주소가 우선합니다.</span>
       </div>
       <div class="status-line" id="connStatus"></div>
-      <div class="note-box" data-i18n="testNote">테스트 모드 안내 — 주소가 없어도 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동합니다. 다만 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.</div>
+      <div class="note-box" data-i18n="testNote">테스트 모드 안내 — 주소를 비우고 저장하면 테스트 모드로 동작합니다. 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동하고, 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <button type="button" class="btn" id="btnSaveUrl" data-i18n="save">저장</button>
         <button type="button" class="btn btn--ghost" id="btnTestConn" data-i18n="testConn">연결 테스트</button>
       </div>
-      <button type="button" class="btn btn--ghost btn--sm" id="btnClearUrl" style="justify-self:center" data-i18n="clearUrl">주소 삭제</button>
+      <button type="button" class="btn btn--ghost btn--sm" id="btnClearUrl" style="justify-self:center" data-i18n="clearUrl">기본 주소로 되돌리기</button>
     </div>
   </div>
 </div>
@@ -873,6 +875,10 @@
     menuCache: 'llc_menu_cache_v1',
     draft: 'llc_draft_v1'
   };
+
+  /* 시트 연동 기본 웹 앱 주소 — 이 파일에 내장된 기본값 (2026-11-26 배포분)
+     ⚙️ 연동 설정에서 다른 주소를 저장하면 그 주소가 우선하고, ‘기본 주소로 되돌리기’를 누르면 이 값으로 돌아옵니다. */
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzfQzBkUpeb9CSfkSiwUQ2HUvBNdOrhg0bq-CiS0Wj66ptyu8BKC5zy-3xZS7jSC2QTkQ/exec';
 
   const CENTER = {
     brand: 'K-BEAUTY × MEDICAL',
@@ -1044,13 +1050,14 @@
       setStep1: '스프레드시트 <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>확장 프로그램 → Apps Script</b>를 엽니다.',
       setStep2: '<span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> 내용을 전부 붙여넣고 저장합니다.',
       setStep3: '<b>배포 → 새 배포 → 웹 앱</b> · 실행: <b>나</b> / 액세스: <b>모든 사용자</b>로 배포합니다.',
-      setStep4: '나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.',
+      setStep4: '기본 주소는 이 페이지에 이미 내장되어 있습니다. 다른 주소로 바꿀 때만 아래에 붙여넣고 저장합니다.',
       syncBtn: '시트 동기화', badgeOn: '시트 연동됨', badgeTest: '테스트 모드',
       urlLabel: 'Apps Script 웹 앱 URL',
-      urlHint: '이 기기에만 저장됩니다. 비워 두면 테스트 모드로 동작해 시트에는 기록되지 않습니다.',
-      testNote: '테스트 모드 안내 — 주소가 없어도 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동합니다. 다만 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.',
-      save: '저장', testConn: '연결 테스트', clearUrl: '주소 삭제',
-      'toast.clearedUrl': '주소를 삭제했어요. 테스트 모드로 동작합니다.',
+      urlHint: '기본 연동 주소가 내장되어 있어 그대로 쓰시면 됩니다. 여기에 다른 주소를 저장하면 이 기기에서만 그 주소가 우선합니다.',
+      testNote: '테스트 모드 안내 — 주소를 비우고 저장하면 테스트 모드로 동작합니다. 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동하고, 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.',
+      save: '저장', testConn: '연결 테스트', clearUrl: '기본 주소로 되돌리기',
+      'toast.clearedUrl': '내장된 기본 주소로 되돌렸어요. 시트 저장·메뉴 동기화가 기본 주소로 동작합니다.',
+      'toast.clearedDone': '기본 주소로 되돌렸어요.',
       rcTitle: '영수증이 발급되었습니다', rcSub: '아래에서 이미지 저장·인쇄가 가능합니다.',
       rcDocTitle: '롱래스팅 센터 시술 영수증',
       rcNo: '영수증번호', rcDate: '발급일시', rcTotal: '총 결제금액', rcSig: '고객 서명', rcSigEmpty: '서명',
@@ -1174,13 +1181,14 @@
       setStep1: 'Open the spreadsheet <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>Extensions → Apps Script</b>.',
       setStep2: 'Paste the whole <span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> and save.',
       setStep3: '<b>Deploy → New deployment → Web app</b> · Execute as <b>Me</b> / Access <b>Anyone</b>.',
-      setStep4: 'Paste the <b>web app URL</b> (ending in /exec) below and save.',
+      setStep4: 'The default address is already built into this page. Paste another address below only when switching to it.',
       syncBtn: 'Sync menu', badgeOn: 'Sheet connected', badgeTest: 'Test mode',
       urlLabel: 'Apps Script web app URL',
-      urlHint: 'Stored on this device only. If empty, it runs in test mode without recording to the sheet.',
-      testNote: 'Test mode — consent, pricing, signature and receipt images all work. Only sheet saving, menu sync and email are inactive.',
-      save: 'Save', testConn: 'Test connection', clearUrl: 'Delete URL',
-      'toast.clearedUrl': 'URL deleted. Running in test mode.',
+      urlHint: 'A default connection address is built in, so you can use it as is. If you save a different address here, it takes priority on this device only.',
+      testNote: 'Test mode — if you clear the address and save, it runs in test mode. Consent, pricing, signature and receipt images all work; only sheet saving, menu sync and email are inactive.',
+      save: 'Save', testConn: 'Test connection', clearUrl: 'Restore default URL',
+      'toast.clearedUrl': 'Restored the built-in default address. Sheet saving and menu sync use it now.',
+      'toast.clearedDone': 'Restored the default address.',
       rcTitle: 'Receipt issued', rcSub: 'You can save the image or print below.',
       rcDocTitle: 'Long-Lasting Center Treatment Receipt',
       rcNo: 'Receipt no.', rcDate: 'Issued', rcTotal: 'Total paid', rcSig: 'Customer signature', rcSigEmpty: 'Signature',
@@ -1304,13 +1312,14 @@
       setStep1: '打开电子表格 <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>扩展程序 → Apps Script</b>。',
       setStep2: '将 <span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> 全部粘贴并保存。',
       setStep3: '<b>部署 → 新建部署 → Web 应用</b> · 执行身份：<b>我</b> / 访问权限：<b>所有人</b>。',
-      setStep4: '将生成的 <b>Web 应用 URL</b>（以 /exec 结尾）粘贴到下方并保存。',
+      setStep4: '默认地址已内置于本页面中。仅在更换地址时粘贴到下方并保存。',
       syncBtn: '同步表格', badgeOn: '已连接表格', badgeTest: '测试模式',
       urlLabel: 'Apps Script Web 应用 URL',
-      urlHint: '仅保存在本设备。留空则以测试模式运行，不记录到表格。',
-      testNote: '测试模式说明 — 即使没有地址，同意书填写、金额计算、签名、收据图片保存均可正常使用，仅无法记录表格、同步菜单和发送邮件。',
-      save: '保存', testConn: '测试连接', clearUrl: '删除地址',
-      'toast.clearedUrl': '已删除地址，以测试模式运行。',
+      urlHint: '已内置默认联动地址，直接使用即可。在此保存其他地址时，仅在本设备优先使用该地址。',
+      testNote: '测试模式说明 — 清空地址并保存即进入测试模式。同意书填写、金额计算、签名、收据图片保存均可正常使用，仅无法记录表格、同步菜单和发送邮件。',
+      save: '保存', testConn: '测试连接', clearUrl: '恢复默认地址',
+      'toast.clearedUrl': '已恢复内置默认地址，表格保存·菜单同步将使用该地址。',
+      'toast.clearedDone': '已恢复默认地址。',
       rcTitle: '收据已开具', rcSub: '可在下方保存图片或打印。',
       rcDocTitle: '长期化妆中心施术收据',
       rcNo: '收据编号', rcDate: '开具时间', rcTotal: '结算金额', rcSig: '客户签名', rcSigEmpty: '签名',
@@ -1434,13 +1443,14 @@
       setStep1: 'スプレッドシート <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>拡張機能 → Apps Script</b> を開きます。',
       setStep2: '<span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> の内容をすべて貼り付けて保存します。',
       setStep3: '<b>デプロイ → 新しいデプロイ → ウェブアプリ</b> · 実行：<b>自分</b> / アクセス：<b>全員</b>でデプロイします。',
-      setStep4: '表示された <b>ウェブアプリ URL</b>（/exec で終わるアドレス）を下に貼り付けて保存します。',
+      setStep4: '既定のアドレスはこのページに内蔵されています。別のアドレスに変えるときだけ下に貼り付けて保存します。',
       syncBtn: 'シート同期', badgeOn: 'シート連携済み', badgeTest: 'テストモード',
       urlLabel: 'Apps Script ウェブアプリ URL',
-      urlHint: 'この端末にのみ保存されます。空欄の場合はテストモードで動作し、シートには記録されません。',
-      testNote: 'テストモードのご案内 — アドレスがなくても同意書の作成・金額計算・署名・領収書画像の保存はすべて動作します。シート記録・メニュー同期・メール送信のみ行われません。',
-      save: '保存', testConn: '接続テスト', clearUrl: 'アドレス削除',
-      'toast.clearedUrl': 'アドレスを削除しました。テストモードで動作します。',
+      urlHint: '既定の連携アドレスが内蔵されているので、そのままご利用いただけます。ここに別のアドレスを保存すると、この端末でのみそのアドレスが優先されます。',
+      testNote: 'テストモードのご案内 — アドレスを空にして保存するとテストモードで動作します。同意書の作成・金額計算・署名・領収書画像の保存はすべて動作し、シート記録・メニュー同期・メール送信のみ行われません。',
+      save: '保存', testConn: '接続テスト', clearUrl: '既定のアドレスに戻す',
+      'toast.clearedUrl': '内蔵の既定アドレスに戻しました。シート保存・メニュー同期はこのアドレスで動作します。',
+      'toast.clearedDone': '既定のアドレスに戻しました。',
       rcTitle: '領収書を発行しました', rcSub: '下から画像保存・印刷ができます。',
       rcDocTitle: 'ロングラスティングセンター 施術領収書',
       rcNo: '領収書番号', rcDate: '発行日時', rcTotal: 'お支払い金額', rcSig: 'お客様署名', rcSigEmpty: '署名',
@@ -1538,7 +1548,15 @@
   function saveJSON(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
   }
-  function getConfig() { const c = loadJSON(STORE.config, {}) || {}; return { webappUrl: (c.webappUrl || '').trim() }; }
+  function getConfig() {
+    const c = loadJSON(STORE.config, null);
+    // 이 기기에 저장된 설정이 없으면 내장 기본 주소(DEFAULT_GAS_URL)를 사용합니다.
+    // 저장된 값이 있으면 그 값을 그대로 존중합니다. (빈 문자열로 저장하면 테스트 모드)
+    const raw = (c && typeof c === 'object' && Object.prototype.hasOwnProperty.call(c, 'webappUrl'))
+      ? c.webappUrl
+      : DEFAULT_GAS_URL;
+    return { webappUrl: String(raw == null ? '' : raw).trim() };
+  }
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
@@ -2848,10 +2866,12 @@
   });
 
   $('#btnClearUrl').addEventListener('click', () => {
-    $('#webappUrl').value = '';
-    saveJSON(STORE.config, { webappUrl: '' });
+    $('#webappUrl').value = DEFAULT_GAS_URL;
+    try { localStorage.removeItem(STORE.config); } catch (e) {}
     updateSyncBadge();
-    showConn('', t('toast.clearedUrl'));
+    showConn('is-ok', t('toast.clearedUrl'));
+    toast(t('toast.clearedDone'));
+    syncMenu(false); retryPending();
   });
 
   function showConn(kind, msg) {
