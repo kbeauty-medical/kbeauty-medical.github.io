@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FBF6EC">
+<meta name="description" content="애드윤 미션 클리어 할인 — 인스타그램 팔로우 · 현금/계좌이체 결제 · 네이버 리뷰, 3개 미션을 모두 클리어하면 현금 할인.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="미션 클리어">
+<meta name="format-detection" content="telephone=no">
+<title>ADDYOON · 미션 클리어 할인</title>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23FF6B5C'/%3E%3Cpath d='M45 94l30 30 60-64' stroke='%23FFF6E9' stroke-width='18' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme: light;
+    --cream:#FBF6EC;
+    --cream-2:#F5EDDD;
+    --paper:#FFFFFF;
+    --ink:#242321;
+    --ink-2:#6E675D;
+    --ink-3:#9C9488;
+    --line:rgba(36,35,33,.10);
+    --coral:#FF6B5C;
+    --coral-d:#E8493A;
+    --coral-soft:#FFE6E1;
+    --butter:#FFCE5A;
+    --butter-d:#EFB32E;
+    --butter-soft:#FFF4D6;
+    --mint:#57C99B;
+    --mint-d:#2E9E76;
+    --mint-soft:#E4F8EF;
+    --radius:26px;
+    --sans: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+            "Pretendard", "Noto Sans KR", "Noto Sans CJK KR", system-ui, "Helvetica Neue", Arial, sans-serif;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; min-height:100dvh;
+    background:
+      radial-gradient(900px 420px at 12% -12%, #FFE9DF 0%, rgba(255,233,223,0) 62%),
+      radial-gradient(760px 400px at 100% 0%, #FFF6D8 0%, rgba(255,246,216,0) 60%),
+      var(--cream);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.45;
+    letter-spacing:-0.015em;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none; user-select:none;
+    overflow-x:hidden;
+  }
+  h1,h2,p{ margin:0; }
+  button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; -webkit-appearance:none; touch-action:manipulation; }
+  a{ color:inherit; text-decoration:none; touch-action:manipulation; }
+  :focus-visible{ outline:3px solid var(--coral); outline-offset:3px; border-radius:14px; }
+
+  .wrap{ width:min(100%, 1080px); margin-inline:auto; padding:0 clamp(14px, 3.2vw, 34px) calc(26px + env(safe-area-inset-bottom)); }
+
+  /* ── 상단 바 ─────────────────────────────────────── */
+  .top{
+    position:sticky; top:0; z-index:40;
+    padding-top:env(safe-area-inset-top);
+    background:rgba(251,246,236,.86);
+    -webkit-backdrop-filter:saturate(150%) blur(14px);
+    backdrop-filter:saturate(150%) blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .top__in{
+    width:min(100%, 1080px); margin-inline:auto;
+    padding:0 clamp(14px, 3.2vw, 34px);
+    min-height:3.4rem; display:flex; align-items:center; gap:.6rem;
+  }
+  .brand{ display:flex; align-items:center; gap:.5rem; font-size:.78rem; font-weight:800; letter-spacing:.16em; white-space:nowrap; }
+  .brand b{ font-size:.72rem; font-weight:700; letter-spacing:.02em; color:var(--ink-2); }
+  .brand .dot{ width:.5rem; height:.5rem; border-radius:50%; background:var(--coral); box-shadow:0 0 0 3px var(--coral-soft); }
+  .tools{ margin-left:auto; display:flex; align-items:center; gap:.4rem; }
+  .tbtn{
+    display:inline-flex; align-items:center; gap:.35rem;
+    height:2.4rem; padding:0 .8rem;
+    border-radius:999px; border:1.5px solid var(--line);
+    background:var(--paper); font-size:.82rem; font-weight:700; color:var(--ink-2);
+    box-shadow:0 2px 0 rgba(36,35,33,.05);
+    transition:transform .12s ease, background .18s ease;
+  }
+  .tbtn:active{ transform:translateY(1px) scale(.98); }
+  .tbtn .ico{ font-size:1rem; line-height:1; }
+  .tbtn[aria-pressed="false"]{ color:var(--ink-3); background:var(--cream-2); }
+
+  /* ── 히어로 ──────────────────────────────────────── */
+  .hero{ padding:clamp(16px,2.6vh,30px) 0 clamp(14px,2vh,22px); text-align:center; position:relative; }
+  .kicker{
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.34rem .82rem; margin-bottom:.65rem;
+    background:var(--butter-soft); border:1.5px solid #FFE39B; border-radius:999px;
+    font-size:.78rem; font-weight:800; color:#8A6415; letter-spacing:.02em;
+  }
+  .title{
+    font-size:clamp(1.9rem, 5.4vw, 3.15rem);
+    font-weight:900; letter-spacing:-0.045em; line-height:1.06;
+  }
+  .title .hl{ position:relative; display:inline-block; color:var(--coral-d); }
+  .title .hl::after{
+    content:""; position:absolute; left:-2%; right:-2%; bottom:.04em; height:.22em;
+    background:var(--butter); border-radius:999px; z-index:-1; opacity:.95;
+  }
+  .sub{ margin-top:.55rem; font-size:clamp(.9rem, 1.6vw, 1.05rem); color:var(--ink-2); font-weight:600; }
+  .sub b{ color:var(--ink); font-weight:900; }
+
+  /* ── 진행 게이지 ─────────────────────────────────── */
+  .gauge{
+    margin:clamp(12px,1.8vh,18px) auto 0; max-width:520px;
+    display:flex; align-items:center; gap:.7rem;
+    padding:.55rem .7rem .55rem .8rem;
+    background:var(--paper); border:2px solid var(--line); border-radius:999px;
+    box-shadow:0 6px 18px rgba(36,35,33,.06);
+  }
+  .track{ position:relative; flex:1; height:.86rem; border-radius:999px; background:var(--cream-2); overflow:hidden; box-shadow:inset 0 1px 2px rgba(36,35,33,.08); }
+  .fill{
+    position:absolute; inset:0; border-radius:999px;
+    background:linear-gradient(90deg,#FF8A7B 0%,#FFCE5A 48%,#57C99B 100%);
+    clip-path:inset(0 100% 0 0);
+    transition:clip-path .62s cubic-bezier(.32,1.24,.5,1);
+  }
+  .fill::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 62%);
+  }
+  .tick{ position:absolute; top:0; bottom:0; width:2px; background:rgba(255,255,255,.85); }
+  .count{ display:flex; align-items:baseline; gap:.05rem; font-weight:900; font-variant-numeric:tabular-nums; }
+  .count b{ font-size:1.32rem; letter-spacing:-.03em; display:inline-block; transition:transform .2s ease; }
+  .count.bump b{ animation:countPop .42s cubic-bezier(.2,1.7,.4,1); }
+  @keyframes countPop{ 0%{transform:scale(1)} 45%{transform:scale(1.28) rotate(-4deg)} 100%{transform:scale(1)} }
+  .count i{ font-style:normal; font-size:.9rem; color:var(--ink-3); font-weight:800; }
+
+  /* ── 카드 그리드 ─────────────────────────────────── */
+  .grid{
+    display:grid; gap:clamp(12px, 1.6vw, 18px);
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    margin-top:clamp(14px,2.2vh,22px);
+  }
+  @media (max-width:760px){ .grid{ grid-template-columns:1fr; } }
+
+  .card{
+    position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+    padding:clamp(14px,1.5vw,20px);
+    background:var(--paper);
+    border:2px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:0 10px 26px rgba(36,35,33,.07), 0 2px 0 rgba(36,35,33,.03);
+    transition:border-color .25s ease, background .35s ease, transform .3s cubic-bezier(.34,1.4,.64,1), box-shadow .3s ease;
+  }
+  .card::before{
+    content:""; position:absolute; inset:-40% -20% auto auto; width:60%; aspect-ratio:1;
+    background:radial-gradient(circle, var(--glow, #FFE6E1) 0%, rgba(255,255,255,0) 70%);
+    opacity:.9; pointer-events:none; transition:opacity .35s;
+  }
+  .card[data-m="1"]{ --glow:#FFE6E1; --accent:var(--coral); --accent-d:var(--coral-d); --accent-soft:var(--coral-soft); }
+  .card[data-m="2"]{ --glow:#FFF4D6; --accent:var(--butter-d); --accent-d:#D99A16; --accent-soft:var(--butter-soft); }
+  .card[data-m="3"]{ --glow:#E4F8EF; --accent:var(--mint-d); --accent-d:#1F8460; --accent-soft:var(--mint-soft); }
+
+  .card.is-clear{ background:linear-gradient(180deg,#FFFFFF 0%, var(--accent-soft) 130%); border-color:var(--accent); }
+  .card.is-clear::before{ opacity:.35; }
+
+  .card__top{ position:relative; display:flex; align-items:center; gap:.5rem; margin-bottom:.55rem; }
+  .badge{
+    display:grid; place-items:center; min-width:2.35rem; height:2.35rem; padding:0 .5rem;
+    border-radius:14px; background:var(--accent-soft); color:var(--accent-d);
+    font-size:.92rem; font-weight:900; letter-spacing:.02em; font-variant-numeric:tabular-nums;
+    transition:background .25s, color .25s;
+  }
+  .card.is-clear .badge{ background:var(--accent); color:#fff; }
+  .card__title{ font-size:clamp(1rem, 1.35vw, 1.12rem); font-weight:900; letter-spacing:-.03em; line-height:1.2; }
+  .card__hint{ position:relative; font-size:.82rem; color:var(--ink-2); font-weight:600; margin-top:.2rem; line-height:1.35; min-height:2.2em; }
+  .card__hint b{ color:var(--ink); font-weight:900; }
+
+  .stage{
+    position:relative; margin:.85rem 0 .7rem;
+    height:clamp(112px, 14vh, 136px);
+    display:grid; place-items:center;
+    border-radius:20px; background:var(--cream); border:1.5px dashed #E3DAC8;
+  }
+  .card.is-clear .stage{ background:#fff; border-color:var(--accent); border-style:solid; }
+
+  .qrbox{
+    background:#fff; padding:9px; border-radius:14px; line-height:0;
+    box-shadow:0 3px 10px rgba(36,35,33,.08);
+  }
+  .qrbox svg{ display:block; width:calc(clamp(112px, 14vh, 136px) - 52px); height:auto; }
+  .qrbox svg path{ fill:#242321; }
+
+  .cash{ display:flex; flex-direction:column; align-items:center; gap:.15rem; }
+  .cash__coin{
+    display:grid; place-items:center; width:2.9rem; height:2.9rem; border-radius:999px;
+    background:linear-gradient(160deg,#FFE79A,var(--butter)); color:#7A5410;
+    font-size:1.5rem; font-weight:900; box-shadow:inset 0 -3px 0 rgba(122,84,16,.16);
+  }
+  .cash__label{ font-size:.78rem; font-weight:800; color:#8A6415; letter-spacing:.01em; }
+
+  .acct{
+    width:100%; padding:.55rem .6rem; text-align:center;
+    border-radius:14px; background:#fff; border:1.5px solid #F1E5C6;
+  }
+  .acct__bank{ display:inline-block; font-size:.72rem; font-weight:800; color:#8A6415; background:var(--butter-soft); padding:.06rem .4rem; border-radius:6px; }
+  .acct__num{ display:block; margin-top:.2rem; font-size:clamp(1rem,1.5vw,1.16rem); font-weight:900; letter-spacing:.01em; font-variant-numeric:tabular-nums; }
+  .acct__who{ display:block; font-size:.74rem; font-weight:700; color:var(--ink-3); }
+
+  .card__foot{ position:relative; margin-top:auto; display:flex; flex-direction:column; gap:.4rem; }
+  .row2{ display:grid; grid-template-columns:1fr auto; gap:.4rem; }
+
+  .mini{
+    display:inline-flex; align-items:center; justify-content:center; gap:.28rem;
+    min-height:2.5rem; padding:0 .7rem;
+    border-radius:14px; background:var(--cream); border:1.5px solid #E7DECD; border-bottom:4px solid #DCD0B9;
+    font-size:.82rem; font-weight:800; color:var(--ink-2);
+    transition:transform .1s ease, background .18s, border-bottom-width .1s ease;
+  }
+  .mini:active{ transform:translateY(3px); border-bottom-width:1px; background:#EDE4D3; }
+
+  .clear{
+    display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+    min-height:3.1rem; padding:0 1rem; width:100%;
+    border-radius:16px; background:var(--accent); color:#fff;
+    border-bottom:4px solid var(--accent-d);
+    font-size:1.02rem; font-weight:900; letter-spacing:.01em;
+    box-shadow:0 8px 18px rgba(36,35,33,.12);
+    transition:transform .1s ease, border-bottom-width .1s ease, background .25s, color .25s;
+  }
+  .clear:active{ transform:translateY(4px); border-bottom-width:0; box-shadow:0 3px 8px rgba(36,35,33,.10); }
+  .card.is-clear .clear{ background:#fff; color:var(--accent-d); border-bottom-color:var(--accent-soft); box-shadow:none; }
+
+  /* CLEAR 도장 */
+  .stamp{
+    position:absolute; right:.35rem; top:.15rem;
+    padding:.28rem .55rem .22rem;
+    border:3px solid var(--accent); border-radius:10px; color:var(--accent-d);
+    font-size:.8rem; font-weight:900; letter-spacing:.08em; line-height:1;
+    background:rgba(255,255,255,.92);
+    box-shadow:0 3px 0 rgba(36,35,33,.06);
+    opacity:0; transform:rotate(-14deg) scale(2.4); pointer-events:none;
+  }
+  /* 쫀득한 클리어 팝 */
+  .card.pop{ animation:cardPop .5s cubic-bezier(.2,1.6,.42,1); }
+  @keyframes cardPop{
+    0%{ transform:scale(1); }
+    32%{ transform:scale(1.045) rotate(-.7deg); }
+    62%{ transform:scale(.985) rotate(.4deg); }
+    100%{ transform:scale(1); }
+  }
+  .card.pop .badge{ animation:badgePop .5s cubic-bezier(.2,1.8,.4,1); }
+  @keyframes badgePop{ 0%{transform:scale(1)} 40%{transform:scale(1.22) rotate(-8deg)} 100%{transform:scale(1)} }
+  .spark{
+    position:absolute; z-index:5; font-size:1rem; pointer-events:none;
+    animation:sparkUp .85s ease-out forwards;
+  }
+  @keyframes sparkUp{
+    0%{ opacity:0; transform:translate(0,0) scale(.4); }
+    18%{ opacity:1; }
+    100%{ opacity:0; transform:translate(var(--dx), var(--dy)) scale(1.1) rotate(var(--dr)); }
+  }
+  .card.is-clear .stamp{ animation:stampIn .5s cubic-bezier(.2,1.7,.5,1) forwards; }
+  @keyframes stampIn{
+    0%{ opacity:0; transform:rotate(-22deg) scale(2.6); }
+    62%{ opacity:1; transform:rotate(-10deg) scale(.94); }
+    100%{ opacity:1; transform:rotate(-11deg) scale(1); }
+  }
+
+  .note{ margin:clamp(14px,2vh,20px) auto 0; text-align:center; font-size:.78rem; font-weight:700; color:var(--ink-3); }
+
+  /* ── ALL CLEAR 오버레이 ─────────────────────────── */
+  .overlay{
+    position:fixed; inset:0; z-index:80;
+    display:grid; place-items:center; padding:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    background:radial-gradient(120% 90% at 50% 0%, rgba(255,246,216,.92), rgba(251,246,236,.94));
+    -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+    opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s;
+  }
+  .overlay.show{ opacity:1; visibility:visible; }
+  .board{
+    position:relative; width:min(100%, 540px); text-align:center;
+    padding:clamp(20px,3.4vw,34px) clamp(18px,3.4vw,32px) clamp(18px,3vw,26px);
+    background:var(--paper); border:3px solid var(--ink); border-radius:32px;
+    box-shadow:0 20px 0 rgba(36,35,33,.10), 0 30px 60px rgba(36,35,33,.18);
+    transform:translateY(18px) scale(.94); transition:transform .45s cubic-bezier(.2,1.5,.45,1);
+  }
+  .overlay.show .board{ transform:none; }
+  .board__rays{
+    position:absolute; inset:-3px; border-radius:32px; overflow:hidden; pointer-events:none; z-index:0;
+    background:
+      conic-gradient(from 0deg at 50% 42%, rgba(255,206,90,.55) 0 6deg, transparent 6deg 22deg),
+      radial-gradient(closest-side, rgba(255,255,255,0) 45%, rgba(255,246,216,.75) 100%);
+    opacity:.55;
+  }
+  .board > *{ position:relative; z-index:1; }
+  .board__flag{
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.34rem .8rem; margin-bottom:.7rem;
+    background:var(--mint-soft); color:var(--mint-d); border:2px solid var(--mint);
+    border-radius:999px; font-size:.8rem; font-weight:900; letter-spacing:.02em;
+  }
+  .board__title{
+    font-size:clamp(1.6rem, 5.6vw, 2.5rem); font-weight:900; letter-spacing:-.03em; line-height:1.02;
+    color:var(--ink);
+  }
+  .board__title em{ font-style:normal; color:var(--coral-d); }
+  .board__benefit{
+    display:inline-block; margin-top:.6rem; padding:.36rem .9rem;
+    background:var(--coral); color:#fff; border-radius:999px;
+    font-size:clamp(.9rem,2.4vw,1.02rem); font-weight:900; letter-spacing:-.01em;
+    box-shadow:0 3px 0 var(--coral-d);
+  }
+  .board__ask{
+    margin-top:.9rem; font-size:clamp(.92rem,2.3vw,1rem); font-weight:800; color:var(--ink-2);
+    display:flex; align-items:center; justify-content:center; gap:.35rem;
+  }
+  .board__dots{ display:flex; justify-content:center; gap:.32rem; margin:.85rem 0 .2rem; }
+  .board__dots i{ width:.62rem; height:.62rem; border-radius:999px; background:var(--cream-2); }
+  .board__dots i:nth-child(1){ background:var(--coral); }
+  .board__dots i:nth-child(2){ background:var(--butter); }
+  .board__dots i:nth-child(3){ background:var(--mint); }
+  .board__btns{ display:grid; grid-template-columns:1fr; gap:.5rem; margin-top:1rem; }
+  .board__reset{
+    min-height:3.2rem; border-radius:18px; background:var(--ink); color:#FFF6E9;
+    border-bottom:5px solid #000;
+    font-size:1rem; font-weight:900; letter-spacing:.01em;
+    box-shadow:0 10px 22px rgba(36,35,33,.20);
+    transition:transform .1s, border-bottom-width .1s;
+  }
+  .board__reset:active{ transform:translateY(5px); border-bottom-width:0; }
+  .board__close{ min-height:2.5rem; font-size:.84rem; font-weight:800; color:var(--ink-3); }
+
+  /* ── 토스트 ─────────────────────────────────────── */
+  .toast{
+    position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom)); z-index:95;
+    transform:translate(-50%, 24px); opacity:0; pointer-events:none;
+    padding:.7rem 1.1rem; border-radius:999px;
+    background:var(--ink); color:#FFF6E9; font-size:.88rem; font-weight:800;
+    box-shadow:0 10px 24px rgba(36,35,33,.25);
+    transition:transform .28s cubic-bezier(.2,1.4,.5,1), opacity .28s;
+  }
+  .toast.show{ transform:translate(-50%,0); opacity:1; }
+
+  #confetti{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:90; }
+
+  @media (max-height:680px){
+    .hero{ padding-top:12px; }
+    .kicker{ margin-bottom:.45rem; }
+    .stage{ height:104px; margin:.6rem 0 .55rem; }
+    .qrbox svg{ width:52px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top__in">
+    <div class="brand"><span class="dot"></span>ADDYOON <b>미션 클리어 할인</b></div>
+    <div class="tools">
+      <button class="tbtn" id="soundBtn" aria-pressed="true" aria-label="효과음 끄기">
+        <span class="ico" id="soundIco">🔊</span><span id="soundTxt">소리</span>
+      </button>
+      <button class="tbtn" id="resetBtn" aria-label="처음으로 리셋">
+        <span class="ico">↺</span><span>처음으로</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <p class="kicker">🎮 오늘의 미션 · 3개</p>
+    <h1 class="title">미션 클리어 <span class="hl">할인</span></h1>
+    <p class="sub">세 가지 미션을 모두 클리어하면 <b>현금 할인</b>!</p>
+
+    <div class="gauge" aria-hidden="true">
+      <div class="track">
+        <span class="fill" id="fill"></span>
+        <i class="tick" style="left:33.333%"></i>
+        <i class="tick" style="left:66.666%"></i>
+      </div>
+      <div class="count"><b id="countNow">0</b><i>/3</i></div>
+    </div>
+  </section>
+
+  <section class="grid" id="grid">
+
+    <!-- MISSION 01 -->
+    <article class="card" data-m="1">
+      <div class="card__top">
+        <span class="badge">01</span>
+        <h2 class="card__title">인스타 팔로우</h2>
+        <span class="stamp">CLEAR!</span>
+      </div>
+      <p class="card__hint"><b>@add.y__</b> 팔로우하고 단골 되기</p>
+      <div class="stage">
+        <div class="qrbox">
+          <svg viewBox="0 0 29 29" role="img" aria-label="애드윤 인스타그램 QR 코드" shape-rendering="crispEdges">
+            <path d="M0 0h7v1h-7zM10 0h6v1h-6zM18 0h3v1h-3zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h2v1h-2zM13 1h6v1h-6zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h1v1h-1zM10 2h2v1h-2zM13 2h1v1h-1zM15 2h1v1h-1zM19 2h2v1h-2zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h4v1h-4zM14 3h2v1h-2zM17 3h1v1h-1zM19 3h1v1h-1zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h3v1h-3zM15 4h5v1h-5zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h3v1h-3zM12 5h1v1h-1zM17 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM8 7h1v1h-1zM11 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM20 7h1v1h-1zM0 8h1v1h-1zM2 8h5v1h-5zM10 8h2v1h-2zM17 8h1v1h-1zM19 8h1v1h-1zM22 8h5v1h-5zM0 9h1v1h-1zM2 9h1v1h-1zM4 9h2v1h-2zM9 9h1v1h-1zM13 9h3v1h-3zM17 9h8v1h-8zM28 9h1v1h-1zM0 10h1v1h-1zM3 10h1v1h-1zM6 10h1v1h-1zM11 10h1v1h-1zM13 10h4v1h-4zM20 10h3v1h-3zM0 11h1v1h-1zM2 11h1v1h-1zM8 11h3v1h-3zM12 11h2v1h-2zM16 11h1v1h-1zM23 11h1v1h-1zM25 11h1v1h-1zM27 11h1v1h-1zM1 12h2v1h-2zM6 12h4v1h-4zM12 12h1v1h-1zM14 12h1v1h-1zM17 12h2v1h-2zM25 12h2v1h-2zM0 13h1v1h-1zM3 13h2v1h-2zM8 13h1v1h-1zM17 13h6v1h-6zM24 13h1v1h-1zM28 13h1v1h-1zM2 14h2v1h-2zM6 14h1v1h-1zM8 14h1v1h-1zM10 14h1v1h-1zM15 14h3v1h-3zM22 14h2v1h-2zM25 14h2v1h-2zM0 15h1v1h-1zM4 15h1v1h-1zM7 15h6v1h-6zM14 15h1v1h-1zM16 15h1v1h-1zM19 15h1v1h-1zM21 15h4v1h-4zM27 15h1v1h-1zM2 16h1v1h-1zM4 16h1v1h-1zM6 16h4v1h-4zM16 16h2v1h-2zM20 16h1v1h-1zM23 16h1v1h-1zM25 16h2v1h-2zM0 17h2v1h-2zM3 17h2v1h-2zM7 17h2v1h-2zM10 17h1v1h-1zM13 17h4v1h-4zM18 17h3v1h-3zM22 17h3v1h-3zM26 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM5 18h3v1h-3zM9 18h2v1h-2zM12 18h5v1h-5zM18 18h1v1h-1zM20 18h2v1h-2zM23 18h1v1h-1zM26 18h1v1h-1zM0 19h1v1h-1zM2 19h1v1h-1zM4 19h1v1h-1zM9 19h1v1h-1zM13 19h1v1h-1zM16 19h1v1h-1zM19 19h2v1h-2zM22 19h3v1h-3zM27 19h1v1h-1zM0 20h1v1h-1zM2 20h5v1h-5zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h2v1h-2zM20 20h5v1h-5zM26 20h3v1h-3zM8 21h1v1h-1zM10 21h1v1h-1zM12 21h1v1h-1zM15 21h2v1h-2zM18 21h1v1h-1zM20 21h1v1h-1zM24 21h5v1h-5zM0 22h7v1h-7zM9 22h1v1h-1zM11 22h1v1h-1zM15 22h2v1h-2zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h3v1h-3zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h4v1h-4zM14 23h2v1h-2zM18 23h3v1h-3zM24 23h1v1h-1zM27 23h2v1h-2zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM8 24h3v1h-3zM16 24h2v1h-2zM20 24h5v1h-5zM26 24h2v1h-2zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h4v1h-4zM14 25h1v1h-1zM16 25h1v1h-1zM18 25h2v1h-2zM23 25h1v1h-1zM25 25h4v1h-4zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM8 26h2v1h-2zM14 26h2v1h-2zM22 26h6v1h-6zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h1v1h-1zM11 27h3v1h-3zM16 27h1v1h-1zM18 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h1v1h-1zM13 28h1v1h-1zM17 28h3v1h-3zM21 28h1v1h-1zM23 28h4v1h-4z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card__foot">
+        <a class="mini" href="https://www.instagram.com/add.y__/" target="_blank" rel="noopener">인스타 열기 ↗</a>
+        <button class="clear" data-clear="1"><span>클리어!</span></button>
+      </div>
+    </article>
+
+    <!-- MISSION 02 -->
+    <article class="card" data-m="2">
+      <div class="card__top">
+        <span class="badge">02</span>
+        <h2 class="card__title">현금 · 계좌이체</h2>
+        <span class="stamp">CLEAR!</span>
+      </div>
+      <p class="card__hint">카드 대신 <b>현금 / 이체</b>로 결제</p>
+      <div class="stage">
+        <div class="acct">
+          <span class="acct__bank">신한은행</span>
+          <span class="acct__num">110-542-173014</span>
+          <span class="acct__who">예금주 한지윤</span>
+        </div>
+      </div>
+      <div class="card__foot">
+        <div class="row2">
+          <button class="mini" id="copyBtn">📋 계좌 복사</button>
+          <div class="cash" aria-hidden="true"><span class="cash__coin">₩</span></div>
+        </div>
+        <button class="clear" data-clear="2"><span>클리어!</span></button>
+      </div>
+    </article>
+
+    <!-- MISSION 03 -->
+    <article class="card" data-m="3">
+      <div class="card__top">
+        <span class="badge">03</span>
+        <h2 class="card__title">네이버 리뷰</h2>
+        <span class="stamp">CLEAR!</span>
+      </div>
+      <p class="card__hint">애드윤 <b>리뷰</b> 남기고 다음에 또 봐요</p>
+      <div class="stage">
+        <div class="qrbox">
+          <svg viewBox="0 0 33 33" role="img" aria-label="애드윤 네이버 플레이스 리뷰 QR 코드" shape-rendering="crispEdges">
+            <path d="M0 0h7v1h-7zM9 0h1v1h-1zM11 0h2v1h-2zM16 0h1v1h-1zM18 0h2v1h-2zM21 0h1v1h-1zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM10 1h2v1h-2zM15 1h4v1h-4zM21 1h2v1h-2zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h4v1h-4zM14 2h2v1h-2zM19 2h1v1h-1zM21 2h2v1h-2zM24 2h1v1h-1zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM15 3h1v1h-1zM17 3h1v1h-1zM20 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h4v1h-4zM14 4h10v1h-10zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h2v1h-2zM11 5h1v1h-1zM13 5h1v1h-1zM17 5h1v1h-1zM20 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h2v1h-2zM11 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM18 7h1v1h-1zM21 7h4v1h-4zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h1v1h-1zM11 8h1v1h-1zM13 8h2v1h-2zM17 8h1v1h-1zM19 8h2v1h-2zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h5v1h-5zM0 9h2v1h-2zM3 9h1v1h-1zM5 9h1v1h-1zM7 9h7v1h-7zM16 9h6v1h-6zM23 9h1v1h-1zM26 9h2v1h-2zM29 9h4v1h-4zM1 10h2v1h-2zM6 10h3v1h-3zM12 10h4v1h-4zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM2 11h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1zM13 11h1v1h-1zM15 11h2v1h-2zM20 11h2v1h-2zM28 11h3v1h-3zM32 11h1v1h-1zM1 12h3v1h-3zM5 12h2v1h-2zM8 12h1v1h-1zM12 12h1v1h-1zM14 12h1v1h-1zM16 12h2v1h-2zM22 12h2v1h-2zM28 12h2v1h-2zM1 13h2v1h-2zM4 13h1v1h-1zM7 13h3v1h-3zM12 13h1v1h-1zM15 13h1v1h-1zM19 13h3v1h-3zM23 13h1v1h-1zM25 13h3v1h-3zM30 13h3v1h-3zM2 14h2v1h-2zM6 14h3v1h-3zM10 14h1v1h-1zM12 14h1v1h-1zM14 14h5v1h-5zM21 14h2v1h-2zM25 14h3v1h-3zM30 14h2v1h-2zM1 15h2v1h-2zM7 15h2v1h-2zM10 15h4v1h-4zM15 15h1v1h-1zM19 15h5v1h-5zM25 15h2v1h-2zM30 15h1v1h-1zM0 16h3v1h-3zM5 16h2v1h-2zM8 16h4v1h-4zM13 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM23 16h3v1h-3zM27 16h3v1h-3zM32 16h1v1h-1zM0 17h2v1h-2zM8 17h2v1h-2zM11 17h1v1h-1zM14 17h1v1h-1zM16 17h1v1h-1zM18 17h3v1h-3zM23 17h1v1h-1zM26 17h2v1h-2zM29 17h4v1h-4zM0 18h1v1h-1zM3 18h1v1h-1zM5 18h4v1h-4zM13 18h1v1h-1zM15 18h1v1h-1zM21 18h1v1h-1zM24 18h1v1h-1zM27 18h2v1h-2zM30 18h1v1h-1zM0 19h1v1h-1zM2 19h1v1h-1zM7 19h2v1h-2zM11 19h2v1h-2zM14 19h2v1h-2zM18 19h5v1h-5zM24 19h9v1h-9zM0 20h2v1h-2zM3 20h1v1h-1zM5 20h2v1h-2zM11 20h5v1h-5zM17 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM24 20h1v1h-1zM28 20h2v1h-2zM31 20h2v1h-2zM0 21h1v1h-1zM2 21h1v1h-1zM5 21h1v1h-1zM11 21h1v1h-1zM13 21h8v1h-8zM23 21h5v1h-5zM29 21h2v1h-2zM32 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM4 22h1v1h-1zM6 22h3v1h-3zM11 22h2v1h-2zM14 22h1v1h-1zM17 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM25 22h3v1h-3zM31 22h1v1h-1zM0 23h1v1h-1zM8 23h1v1h-1zM11 23h2v1h-2zM14 23h1v1h-1zM16 23h1v1h-1zM19 23h3v1h-3zM23 23h1v1h-1zM25 23h1v1h-1zM27 23h1v1h-1zM30 23h2v1h-2zM0 24h1v1h-1zM2 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM8 24h4v1h-4zM13 24h2v1h-2zM16 24h2v1h-2zM19 24h2v1h-2zM22 24h1v1h-1zM24 24h6v1h-6zM32 24h1v1h-1zM8 25h1v1h-1zM12 25h1v1h-1zM16 25h6v1h-6zM23 25h2v1h-2zM28 25h1v1h-1zM30 25h1v1h-1zM32 25h1v1h-1zM0 26h7v1h-7zM9 26h3v1h-3zM13 26h5v1h-5zM20 26h5v1h-5zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h3v1h-3zM16 27h1v1h-1zM21 27h4v1h-4zM28 27h4v1h-4zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h5v1h-5zM14 28h1v1h-1zM17 28h1v1h-1zM22 28h1v1h-1zM24 28h6v1h-6zM31 28h1v1h-1zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM8 29h1v1h-1zM10 29h1v1h-1zM12 29h1v1h-1zM15 29h1v1h-1zM17 29h1v1h-1zM19 29h1v1h-1zM22 29h1v1h-1zM28 29h1v1h-1zM30 29h3v1h-3zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM8 30h1v1h-1zM10 30h1v1h-1zM12 30h2v1h-2zM15 30h1v1h-1zM20 30h1v1h-1zM22 30h2v1h-2zM26 30h2v1h-2zM30 30h1v1h-1zM0 31h1v1h-1zM6 31h1v1h-1zM14 31h1v1h-1zM19 31h3v1h-3zM23 31h1v1h-1zM28 31h1v1h-1zM30 31h1v1h-1zM0 32h7v1h-7zM8 32h1v1h-1zM10 32h1v1h-1zM12 32h1v1h-1zM15 32h1v1h-1zM17 32h2v1h-2zM22 32h1v1h-1zM24 32h2v1h-2zM27 32h1v1h-1zM29 32h1v1h-1zM31 32h1v1h-1z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card__foot">
+        <a class="mini" href="https://m.place.naver.com/place/2060040317/review/visitor" target="_blank" rel="noopener">리뷰 쓰러 가기 ↗</a>
+        <button class="clear" data-clear="3"><span>클리어!</span></button>
+      </div>
+    </article>
+
+  </section>
+
+  <p class="note">미션은 순서 상관없이 · 하나씩 클리어!</p>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="acTitle">
+  <div class="board">
+    <div class="board__rays"></div>
+    <div class="board__dots"><i></i><i></i><i></i></div>
+    <span class="board__flag">✓ 3 / 3 CLEAR</span>
+    <h2 class="board__title" id="acTitle">MISSION<br>ALL CLEAR!</h2>
+    <p class="board__benefit">미션 클리어 할인 적용 완료</p>
+    <p class="board__ask">이 화면을 원장님께 보여주세요 💗</p>
+    <div class="board__btns">
+      <button class="board__reset" id="resetBig">다음 손님 · 처음으로</button>
+      <button class="board__close" id="closeOverlay">닫기</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var KEY = "adyoon-mission-v1";
+  var state = { cleared: [], sound: true };
+
+  try{
+    var saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if(saved && Array.isArray(saved.cleared)) state.cleared = saved.cleared.filter(function(n){ return n>=1 && n<=3; });
+    if(saved && typeof saved.sound === "boolean") state.sound = saved.sound;
+  }catch(e){}
+
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  /* ── 효과음 (Web Audio · 마림바/벨) ──────────────── */
+  var ac = null, master = null, verb = null;
+
+  function impulseBuf(seconds, decay){
+    var rate = ac.sampleRate, len = Math.max(1, Math.floor(rate * seconds));
+    var buf = ac.createBuffer(2, len, rate);
+    for(var ch=0; ch<2; ch++){
+      var d = buf.getChannelData(ch);
+      for(var i=0; i<len; i++){ d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, decay); }
+    }
+    return buf;
+  }
+
+  function audio(){
+    if(!ac){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      ac = new AC();
+      master = ac.createGain(); master.gain.value = 0.8; master.connect(ac.destination);
+      try{
+        verb = ac.createConvolver(); verb.buffer = impulseBuf(1.1, 3.4);
+        var wet = ac.createGain(); wet.gain.value = 0.26;
+        verb.connect(wet); wet.connect(master);
+      }catch(e){ verb = null; }
+    }
+    if(ac.state === "suspended"){ ac.resume().catch(function(){}); }
+    return ac;
+  }
+  // iOS Safari: 첫 터치에서 AudioContext 를 깨워 둔다
+  document.addEventListener("pointerdown", function(){ if(state.sound) audio(); }, { passive:true });
+  document.addEventListener("touchstart", function(){ if(state.sound) audio(); }, { passive:true });
+
+  function noise(at, dur, hpFreq, vol){
+    var c = audio(); if(!c) return;
+    var t0 = c.currentTime + at;
+    var len = Math.max(1, Math.floor(c.sampleRate * dur));
+    var buf = c.createBuffer(1, len, c.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0; i<len; i++){ d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.4); }
+    var src = c.createBufferSource(); src.buffer = buf;
+    var f = c.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hpFreq || 4000;
+    var g = c.createGain(); g.gain.value = vol == null ? 0.05 : vol;
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t0);
+  }
+
+  // 마림바 한 음: 따뜻한 사인 + 살짝 떨어지는 어택 + 나무 4배음 + 말렛 클릭
+  function marimba(freq, at, dur, vol){
+    var c = audio(); if(!c) return;
+    dur = dur || 0.45; vol = vol == null ? 0.2 : vol;
+    var t0 = c.currentTime + at;
+
+    var out = c.createGain();
+    out.gain.setValueAtTime(0.0001, t0);
+    out.gain.linearRampToValueAtTime(vol, t0 + 0.007);
+    out.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    out.connect(master); if(verb) out.connect(verb);
+
+    var o1 = c.createOscillator(); o1.type = "sine";
+    o1.frequency.setValueAtTime(freq * 1.015, t0);
+    o1.frequency.exponentialRampToValueAtTime(freq, t0 + 0.055);
+    var g1 = c.createGain(); g1.gain.value = 1;
+    o1.connect(g1); g1.connect(out);
+
+    var o2 = c.createOscillator(); o2.type = "sine";
+    o2.frequency.value = freq * 4.01;
+    var g2 = c.createGain();
+    g2.gain.setValueAtTime(vol * 0.34, t0);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t0 + dur * 0.28);
+    o2.connect(g2); g2.connect(master); if(verb) g2.connect(verb);
+
+    noise(at, 0.03, freq * 4, vol * 0.22);
+    o1.start(t0); o1.stop(t0 + dur + 0.06);
+    o2.start(t0); o2.stop(t0 + dur * 0.4 + 0.03);
+  }
+
+  // 맑은 벨(반짝임)
+  function bell(freq, at, dur, vol){
+    var c = audio(); if(!c) return;
+    dur = dur || 0.5; vol = vol == null ? 0.05 : vol;
+    var t0 = c.currentTime + at;
+    var out = c.createGain();
+    out.gain.setValueAtTime(0.0001, t0);
+    out.gain.linearRampToValueAtTime(vol, t0 + 0.01);
+    out.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    out.connect(master); if(verb) out.connect(verb);
+    [1, 2.76].forEach(function(mult, i){
+      var o = c.createOscillator(); o.type = "sine";
+      o.frequency.value = freq * mult;
+      var g = c.createGain(); g.gain.value = i ? 0.36 : 1;
+      o.connect(g); g.connect(out);
+      o.start(t0); o.stop(t0 + dur + 0.05);
+    });
+  }
+
+  // 01 · "딩-동!" 올라가는 두 음
+  function sfxDing(){
+    marimba(880.00, 0.00, 0.40, 0.24);
+    marimba(1174.66, 0.105, 0.55, 0.22);
+    bell(1760.00, 0.105, 0.45, 0.045);
+    marimba(1760.00, 0.20, 0.40, 0.05);
+  }
+  // 02 · 한 단계 더 높은 상승 아르페지오
+  function sfxLevelUp(){
+    var seq = [659.25, 830.61, 987.77, 1318.51];
+    seq.forEach(function(f, i){ marimba(f, i * 0.072, 0.46, 0.20); });
+    marimba(1318.51, 0.30, 0.75, 0.13);
+    bell(1975.53, 0.29, 0.55, 0.04);
+    bell(2637.02, 0.36, 0.5, 0.028);
+  }
+  // 03 · 레슨 완료 팡파레
+  function sfxFanfare(){
+    var seq = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+    seq.forEach(function(f, i){ marimba(f, i * 0.058, 0.45, 0.185); });
+    [1046.50, 1318.51, 1567.98, 2093.00].forEach(function(f){ marimba(f, 0.40, 0.95, 0.11); });
+    [523.25, 783.99].forEach(function(f){ marimba(f, 0.40, 1.05, 0.09); });
+    bell(2093.00, 0.42, 1.20, 0.045);
+    bell(3135.96, 0.50, 0.9, 0.03);
+    for(var i=0; i<11; i++){
+      bell(2093 * Math.pow(2, i/12), 0.50 + i * 0.052, 0.34, 0.020);
+    }
+  }
+
+  /* ── 상태 렌더 ──────────────────────────────────── */
+  var countEl = document.getElementById("countNow");
+  var countBox = document.querySelector(".count");
+  var fillEl = document.getElementById("fill");
+  var segs = [].slice.call(document.querySelectorAll(".seg"));
+  var cards = [].slice.call(document.querySelectorAll(".card"));
+  var overlay = document.getElementById("overlay");
+
+  function isCleared(n){ return state.cleared.indexOf(n) !== -1; }
+
+  function render(){
+    var n = state.cleared.length;
+    countEl.textContent = String(n);
+    var pct = Math.min(100, (n / 3) * 100);
+    var cp = "inset(0 " + (100 - pct) + "% 0 0)";
+    fillEl.style.clipPath = cp;
+    fillEl.style.webkitClipPath = cp;
+    countBox.classList.remove("bump");
+    void countBox.offsetWidth;
+    if(n > 0) countBox.classList.add("bump");
+    cards.forEach(function(card){
+      var m = Number(card.getAttribute("data-m"));
+      var on = isCleared(m);
+      card.classList.toggle("is-clear", on);
+      var btn = card.querySelector(".clear");
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.querySelector("span").textContent = on ? "✓ 클리어 완료" : "클리어!";
+    });
+  }
+
+  function cardFor(n){
+    for(var i=0; i<cards.length; i++){
+      if(Number(cards[i].getAttribute("data-m")) === n) return cards[i];
+    }
+    return null;
+  }
+
+  var SPARKS = ["✨", "⭐️", "💫", "🎉", "💗"];
+  function sparks(card){
+    if(!card) return;
+    for(var i=0; i<8; i++){
+      var el = document.createElement("span");
+      el.className = "spark";
+      el.textContent = SPARKS[(Math.random()*SPARKS.length)|0];
+      el.style.left = (20 + Math.random()*60) + "%";
+      el.style.top = (30 + Math.random()*40) + "%";
+      el.style.setProperty("--dx", (Math.random()*90 - 45).toFixed(0) + "px");
+      el.style.setProperty("--dy", (-40 - Math.random()*50).toFixed(0) + "px");
+      el.style.setProperty("--dr", (Math.random()*120 - 60).toFixed(0) + "deg");
+      el.style.animationDelay = (i * 0.045).toFixed(2) + "s";
+      card.appendChild(el);
+      (function(node){ setTimeout(function(){ if(node.parentNode) node.parentNode.removeChild(node); }, 1300); })(el);
+    }
+  }
+
+  function buzz(pattern){
+    try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+  }
+
+  function showOverlay(){ overlay.classList.add("show"); }
+  function hideOverlay(){ overlay.classList.remove("show"); }
+
+  /* ── 컨페티 ─────────────────────────────────────── */
+  var cv = document.getElementById("confetti");
+  var cx = cv.getContext("2d");
+  var parts = [], raf = null, endAt = 0, dpr = 1;
+
+  function sizeCanvas(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.floor(window.innerWidth * dpr);
+    cv.height = Math.floor(window.innerHeight * dpr);
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener("resize", function(){ sizeCanvas(); });
+
+  var COLORS = ["#FF6B5C","#FFCE5A","#57C99B","#FF9E7A","#8FD9FF","#FFB3D1","#B9A7F0"];
+
+  function burst(){
+    sizeCanvas();
+    var W = window.innerWidth, H = window.innerHeight;
+    parts = [];
+    for(var i=0;i<170;i++){
+      parts.push({
+        x: W * (0.5 + (Math.random()-0.5) * 0.25),
+        y: H * 0.42 + (Math.random()-0.5) * 40,
+        vx: (Math.random()-0.5) * 13,
+        vy: -Math.random() * 14 - 4,
+        w: 6 + Math.random()*8,
+        h: 8 + Math.random()*10,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random()-0.5) * 0.34,
+        color: COLORS[(Math.random()*COLORS.length)|0],
+        round: Math.random() < 0.28
+      });
+    }
+    endAt = performance.now() + 4200;
+    if(!raf) raf = requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    var W = window.innerWidth, H = window.innerHeight;
+    cx.clearRect(0, 0, W, H);
+    var alive = false;
+    for(var i=0;i<parts.length;i++){
+      var p = parts[i];
+      p.vy += 0.34;
+      p.vx *= 0.995;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      if(p.y < H + 60) alive = true;
+      cx.save();
+      cx.translate(p.x, p.y);
+      cx.rotate(p.rot);
+      cx.fillStyle = p.color;
+      cx.globalAlpha = now > endAt ? Math.max(0, 1 - (now-endAt)/600) : 1;
+      if(p.round){
+        cx.beginPath(); cx.arc(0, 0, p.w/2, 0, Math.PI*2); cx.fill();
+      }else{
+        cx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      }
+      cx.restore();
+    }
+    if(alive && now < endAt + 700){
+      raf = requestAnimationFrame(tick);
+    }else{
+      cx.clearRect(0, 0, W, H);
+      raf = null;
+      parts = [];
+    }
+  }
+
+  /* ── 토스트 ─────────────────────────────────────── */
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 1800);
+  }
+
+  /* ── 클리어 토글 ────────────────────────────────── */
+  function toggle(n){
+    var i = state.cleared.indexOf(n);
+    if(i === -1){
+      state.cleared.push(n);
+      state.cleared.sort();
+      render(); save();
+      var c = state.cleared.length;
+      var card = cardFor(n);
+      if(card){
+        card.classList.remove("pop");
+        void card.offsetWidth;
+        card.classList.add("pop");
+        sparks(card);
+      }
+      if(c === 1){ buzz([18]); }
+      else if(c === 2){ buzz([16, 40, 22]); }
+      else { buzz([0, 45, 55, 45, 55, 130]); }
+      if(state.sound){
+        if(c === 1) sfxDing();
+        else if(c === 2) sfxLevelUp();
+        else sfxFanfare();
+      }
+      if(c === 3){
+        setTimeout(function(){ burst(); showOverlay(); }, 320);
+      }else{
+        toast(c + "/3 클리어!");
+      }
+    }else{
+      state.cleared.splice(i, 1);
+      render(); save();
+      hideOverlay();
+      buzz([10]);
+      if(state.sound) marimba(392.00, 0, 0.22, 0.12);
+    }
+  }
+
+  document.getElementById("grid").addEventListener("click", function(e){
+    var btn = e.target.closest("[data-clear]");
+    if(!btn) return;
+    if(state.sound) audio();
+    toggle(Number(btn.getAttribute("data-clear")));
+  });
+
+  /* ── 복사 ───────────────────────────────────────── */
+  var ACCT = "110-542-173014";
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try{ ok = document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  document.getElementById("copyBtn").addEventListener("click", function(){
+    buzz([12]);
+    if(state.sound) marimba(1318.51, 0, 0.22, 0.10);
+    var done = function(){ toast("계좌번호 복사 완료!"); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ACCT).then(done).catch(function(){
+        if(fallbackCopy(ACCT)) done(); else toast("신한은행 110-542-173014");
+      });
+    }else{
+      if(fallbackCopy(ACCT)) done(); else toast("신한은행 110-542-173014");
+    }
+  });
+
+  /* ── 사운드 토글 / 리셋 ─────────────────────────── */
+  var sBtn = document.getElementById("soundBtn");
+  function paintSound(){
+    sBtn.setAttribute("aria-pressed", state.sound ? "true" : "false");
+    sBtn.setAttribute("aria-label", state.sound ? "효과음 끄기" : "효과음 켜기");
+    document.getElementById("soundIco").textContent = state.sound ? "🔊" : "🔇";
+    document.getElementById("soundTxt").textContent = state.sound ? "소리" : "꺼짐";
+  }
+  sBtn.addEventListener("click", function(){
+    state.sound = !state.sound;
+    paintSound(); save();
+    buzz([12]);
+    if(state.sound) sfxDing();
+  });
+
+  function reset(){
+    state.cleared = [];
+    render(); save();
+    hideOverlay();
+    buzz([10]);
+    if(state.sound){ marimba(523.25, 0, 0.22, 0.12); marimba(783.99, 0.07, 0.3, 0.10); }
+    toast("처음으로 리셋!");
+  }
+  document.getElementById("resetBtn").addEventListener("click", reset);
+  document.getElementById("resetBig").addEventListener("click", reset);
+  document.getElementById("closeOverlay").addEventListener("click", hideOverlay);
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") hideOverlay(); });
+
+  /* ── 시작 ───────────────────────────────────────── */
+  paintSound();
+  render();
+  sizeCanvas();
+  if(state.cleared.length === 3) showOverlay();
+})();
+</script>
+</body>
+</html>
