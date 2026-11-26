@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#FBF6EC">
-<meta name="description" content="애드윤 미션 클리어 할인 — 인스타그램 팔로우 · 현금/계좌이체 결제 · 네이버 리뷰, 3개 미션을 모두 클리어하면 현금 할인.">
+<meta name="description" content="애드윤 미션 클리어 할인 — 네이버 플레이스 저장·알림받기 · 인스타그램 팔로우 · 네이버 리뷰, 3개 미션을 모두 클리어하면 할인.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -75,7 +75,7 @@
     padding:0 clamp(14px, 3.2vw, 34px);
     min-height:3.4rem; display:flex; align-items:center; gap:.6rem;
   }
-  .brand{ display:flex; align-items:center; gap:.5rem; font-size:.78rem; font-weight:800; letter-spacing:.16em; white-space:nowrap; }
+  .brand{ display:flex; align-items:center; gap:.5rem; min-width:0; font-size:.78rem; font-weight:800; letter-spacing:.16em; white-space:nowrap; }
   .brand b{ font-size:.72rem; font-weight:700; letter-spacing:.02em; color:var(--ink-2); }
   .brand .dot{ width:.5rem; height:.5rem; border-radius:50%; background:var(--coral); box-shadow:0 0 0 3px var(--coral-soft); }
   .tools{ margin-left:auto; display:flex; align-items:center; gap:.4rem; }
@@ -84,6 +84,7 @@
     height:2.4rem; padding:0 .8rem;
     border-radius:999px; border:1.5px solid var(--line);
     background:var(--paper); font-size:.82rem; font-weight:700; color:var(--ink-2);
+    white-space:nowrap;
     box-shadow:0 2px 0 rgba(36,35,33,.05);
     transition:transform .12s ease, background .18s ease;
   }
@@ -199,24 +200,6 @@
   .qrbox svg{ display:block; width:var(--qr); height:auto; }
   .qrbox svg path{ fill:#242321; }
 
-  .cash{ display:flex; flex-direction:column; align-items:center; gap:.15rem; }
-  .cash__coin{
-    display:grid; place-items:center; width:2.9rem; height:2.9rem; border-radius:999px;
-    background:linear-gradient(160deg,#FFE79A,var(--butter)); color:#7A5410;
-    font-size:1.5rem; font-weight:900; box-shadow:inset 0 -3px 0 rgba(122,84,16,.16);
-  }
-  .cash__label{ font-size:.78rem; font-weight:800; color:#8A6415; letter-spacing:.01em; }
-
-  .payrow{ display:flex; align-items:center; gap:.45rem; width:calc(100% - 18px); }
-  .payrow .cash__coin{ flex:none; }
-  .payrow .acct{ flex:1; }
-  .acct{
-    width:100%; padding:.5rem .55rem; text-align:center;
-    border-radius:14px; background:#fff; border:1.5px solid #F1E5C6;
-  }
-  .acct__bank{ display:inline-block; font-size:.72rem; font-weight:800; color:#8A6415; background:var(--butter-soft); padding:.06rem .4rem; border-radius:6px; }
-  .acct__num{ display:block; margin-top:.2rem; font-size:clamp(1rem,1.5vw,1.16rem); font-weight:900; letter-spacing:.01em; font-variant-numeric:tabular-nums; }
-  .acct__who{ display:block; font-size:.74rem; font-weight:700; color:var(--ink-3); }
 
   .card__foot{ position:relative; margin-top:auto; display:flex; flex-direction:column; gap:.4rem; }
   .row2{ display:grid; grid-template-columns:1fr auto; gap:.4rem; }
@@ -358,6 +341,10 @@
     .stage{ --qr:88px; margin:.55rem 0 .5rem; }
     .card__hint{ min-height:0; }
   }
+  @media (max-width:430px){
+    .brand b{ display:none; }
+    .tbtn{ padding:0 .62rem; font-size:.78rem; }
+  }
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
   }
@@ -385,7 +372,7 @@
   <section class="hero">
     <p class="kicker"><span class="kdot" aria-hidden="true"></span>오늘의 미션 · 3개</p>
     <h1 class="title">미션 클리어 <span class="hl">할인</span></h1>
-    <p class="sub">세 가지 미션을 모두 클리어하면 <b>현금 할인</b>!</p>
+    <p class="sub">세 가지 미션을 모두 클리어하면 <b>할인</b>!</p>
 
     <div class="gauge" aria-hidden="true">
       <div class="track">
@@ -403,6 +390,27 @@
     <article class="card" data-m="1">
       <div class="card__top">
         <span class="badge">01</span>
+        <h2 class="card__title">플레이스 저장</h2>
+        <span class="stamp">CLEAR!</span>
+      </div>
+      <p class="card__hint">플레이스에서 <b>저장 + 알림받기</b></p>
+      <div class="stage">
+        <div class="qrbox">
+          <svg viewBox="0 0 33 33" role="img" aria-label="애드윤 네이버 플레이스 QR 코드" shape-rendering="crispEdges">
+            <path d="M0 0h7v1h-7zM9 0h3v1h-3zM13 0h2v1h-2zM17 0h2v1h-2zM20 0h1v1h-1zM22 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h5v1h-5zM16 1h1v1h-1zM18 1h1v1h-1zM21 1h2v1h-2zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h1v1h-1zM12 2h1v1h-1zM14 2h2v1h-2zM19 2h1v1h-1zM21 2h2v1h-2zM24 2h1v1h-1zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h2v1h-2zM12 3h1v1h-1zM14 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h2v1h-2zM24 3h1v1h-1zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM11 4h2v1h-2zM14 4h4v1h-4zM20 4h2v1h-2zM23 4h1v1h-1zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM9 5h1v1h-1zM11 5h3v1h-3zM15 5h1v1h-1zM17 5h1v1h-1zM19 5h1v1h-1zM21 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h1v1h-1zM10 7h3v1h-3zM14 7h3v1h-3zM18 7h3v1h-3zM22 7h1v1h-1zM24 7h1v1h-1zM0 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM13 8h2v1h-2zM17 8h1v1h-1zM19 8h2v1h-2zM22 8h5v1h-5zM29 8h3v1h-3zM1 9h1v1h-1zM3 9h3v1h-3zM7 9h2v1h-2zM11 9h1v1h-1zM13 9h3v1h-3zM17 9h3v1h-3zM21 9h3v1h-3zM28 9h4v1h-4zM1 10h2v1h-2zM6 10h1v1h-1zM9 10h1v1h-1zM13 10h3v1h-3zM17 10h1v1h-1zM20 10h3v1h-3zM24 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM0 11h6v1h-6zM8 11h1v1h-1zM11 11h3v1h-3zM16 11h3v1h-3zM20 11h1v1h-1zM22 11h1v1h-1zM27 11h4v1h-4zM32 11h1v1h-1zM0 12h3v1h-3zM4 12h3v1h-3zM9 12h3v1h-3zM13 12h1v1h-1zM17 12h1v1h-1zM19 12h1v1h-1zM24 12h3v1h-3zM31 12h2v1h-2zM1 13h3v1h-3zM5 13h1v1h-1zM7 13h2v1h-2zM11 13h1v1h-1zM18 13h1v1h-1zM23 13h1v1h-1zM25 13h2v1h-2zM30 13h3v1h-3zM0 14h1v1h-1zM2 14h1v1h-1zM4 14h1v1h-1zM6 14h1v1h-1zM8 14h4v1h-4zM14 14h5v1h-5zM20 14h3v1h-3zM25 14h3v1h-3zM30 14h2v1h-2zM1 15h1v1h-1zM3 15h3v1h-3zM7 15h2v1h-2zM10 15h1v1h-1zM12 15h3v1h-3zM16 15h1v1h-1zM20 15h1v1h-1zM23 15h1v1h-1zM25 15h1v1h-1zM27 15h2v1h-2zM30 15h1v1h-1zM32 15h1v1h-1zM0 16h1v1h-1zM4 16h3v1h-3zM8 16h2v1h-2zM13 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM23 16h3v1h-3zM27 16h3v1h-3zM32 16h1v1h-1zM2 17h1v1h-1zM4 17h2v1h-2zM9 17h2v1h-2zM13 17h1v1h-1zM15 17h2v1h-2zM18 17h3v1h-3zM23 17h1v1h-1zM26 17h1v1h-1zM29 17h4v1h-4zM0 18h2v1h-2zM3 18h2v1h-2zM6 18h1v1h-1zM8 18h3v1h-3zM13 18h9v1h-9zM23 18h5v1h-5zM29 18h4v1h-4zM0 19h6v1h-6zM10 19h2v1h-2zM14 19h1v1h-1zM19 19h2v1h-2zM22 19h1v1h-1zM24 19h3v1h-3zM28 19h5v1h-5zM0 20h2v1h-2zM4 20h3v1h-3zM15 20h1v1h-1zM18 20h1v1h-1zM21 20h1v1h-1zM24 20h1v1h-1zM28 20h2v1h-2zM31 20h2v1h-2zM0 21h1v1h-1zM3 21h3v1h-3zM9 21h1v1h-1zM13 21h1v1h-1zM17 21h1v1h-1zM21 21h5v1h-5zM28 21h3v1h-3zM0 22h1v1h-1zM2 22h6v1h-6zM9 22h5v1h-5zM17 22h1v1h-1zM19 22h1v1h-1zM22 22h1v1h-1zM25 22h3v1h-3zM31 22h1v1h-1zM0 23h1v1h-1zM2 23h1v1h-1zM4 23h1v1h-1zM7 23h3v1h-3zM13 23h1v1h-1zM15 23h2v1h-2zM19 23h2v1h-2zM23 23h1v1h-1zM25 23h1v1h-1zM30 23h3v1h-3zM0 24h4v1h-4zM5 24h3v1h-3zM9 24h1v1h-1zM11 24h2v1h-2zM23 24h6v1h-6zM8 25h1v1h-1zM10 25h1v1h-1zM12 25h1v1h-1zM14 25h8v1h-8zM23 25h2v1h-2zM28 25h1v1h-1zM30 25h1v1h-1zM32 25h1v1h-1zM0 26h7v1h-7zM9 26h2v1h-2zM12 26h1v1h-1zM15 26h3v1h-3zM20 26h1v1h-1zM22 26h3v1h-3zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h2v1h-2zM12 27h1v1h-1zM15 27h1v1h-1zM17 27h2v1h-2zM20 27h5v1h-5zM28 27h5v1h-5zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM9 28h3v1h-3zM16 28h1v1h-1zM20 28h3v1h-3zM24 28h6v1h-6zM31 28h1v1h-1zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM10 29h1v1h-1zM12 29h1v1h-1zM14 29h1v1h-1zM17 29h2v1h-2zM21 29h1v1h-1zM27 29h2v1h-2zM30 29h1v1h-1zM32 29h1v1h-1zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM10 30h3v1h-3zM15 30h1v1h-1zM17 30h1v1h-1zM19 30h1v1h-1zM25 30h1v1h-1zM27 30h6v1h-6zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h2v1h-2zM12 31h3v1h-3zM23 31h1v1h-1zM27 31h2v1h-2zM30 31h1v1h-1zM0 32h7v1h-7zM8 32h2v1h-2zM13 32h3v1h-3zM17 32h2v1h-2zM22 32h1v1h-1zM24 32h2v1h-2zM27 32h1v1h-1zM29 32h1v1h-1zM31 32h1v1h-1z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card__foot">
+        <a class="mini" href="https://m.place.naver.com/place/2060040317/home" target="_blank" rel="noopener">플레이스 열기 ↗</a>
+        <button class="clear" data-clear="1"><span>클리어!</span></button>
+      </div>
+    </article>
+
+    <!-- MISSION 02 -->
+    <article class="card" data-m="2">
+      <div class="card__top">
+        <span class="badge">02</span>
         <h2 class="card__title">인스타 팔로우</h2>
         <span class="stamp">CLEAR!</span>
       </div>
@@ -416,30 +424,6 @@
       </div>
       <div class="card__foot">
         <a class="mini" href="https://www.instagram.com/add.y__/" target="_blank" rel="noopener">인스타 열기 ↗</a>
-        <button class="clear" data-clear="1"><span>클리어!</span></button>
-      </div>
-    </article>
-
-    <!-- MISSION 02 -->
-    <article class="card" data-m="2">
-      <div class="card__top">
-        <span class="badge">02</span>
-        <h2 class="card__title">현금 · 계좌이체</h2>
-        <span class="stamp">CLEAR!</span>
-      </div>
-      <p class="card__hint">카드 대신 <b>현금 / 이체</b>로 결제</p>
-      <div class="stage">
-        <div class="payrow">
-          <span class="cash__coin" aria-hidden="true">₩</span>
-          <div class="acct">
-            <span class="acct__bank">신한은행</span>
-            <span class="acct__num">110-542-173014</span>
-            <span class="acct__who">예금주 한지윤</span>
-          </div>
-        </div>
-      </div>
-      <div class="card__foot">
-        <button class="mini" id="copyBtn"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15.5 5.6A2.6 2.6 0 0 0 13 3H6.6A2.6 2.6 0 0 0 4 5.6V12a2.6 2.6 0 0 0 2.6 2.6"/></svg>계좌번호 복사</button>
         <button class="clear" data-clear="2"><span>클리어!</span></button>
       </div>
     </article>
@@ -491,7 +475,7 @@
 (function(){
   "use strict";
 
-  var KEY = "adyoon-mission-v1";
+  var KEY = "adyoon-mission-v2";
   var state = { cleared: [], sound: true };
 
   try{
@@ -686,7 +670,10 @@
     try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
   }
 
-  function showOverlay(){ overlay.classList.add("show"); }
+  function showOverlay(){
+    if(toastEl){ toastEl.classList.remove("show"); clearTimeout(toastTimer); }
+    overlay.classList.add("show");
+  }
   function hideOverlay(){ overlay.classList.remove("show"); }
 
   /* ── 컨페티 ─────────────────────────────────────── */
@@ -811,33 +798,6 @@
     if(!btn) return;
     if(state.sound) audio();
     toggle(Number(btn.getAttribute("data-clear")));
-  });
-
-  /* ── 복사 ───────────────────────────────────────── */
-  var ACCT = "110-542-173014";
-  function fallbackCopy(text){
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
-    document.body.appendChild(ta);
-    ta.select(); ta.setSelectionRange(0, text.length);
-    var ok = false;
-    try{ ok = document.execCommand("copy"); }catch(e){}
-    document.body.removeChild(ta);
-    return ok;
-  }
-  document.getElementById("copyBtn").addEventListener("click", function(){
-    buzz([12]);
-    if(state.sound) marimba(1318.51, 0, 0.22, 0.10);
-    var done = function(){ toast("계좌번호 복사 완료!"); };
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(ACCT).then(done).catch(function(){
-        if(fallbackCopy(ACCT)) done(); else toast("신한은행 110-542-173014");
-      });
-    }else{
-      if(fallbackCopy(ACCT)) done(); else toast("신한은행 110-542-173014");
-    }
   });
 
   /* ── 사운드 토글 / 리셋 ─────────────────────────── */
