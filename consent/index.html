@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#F7F5F0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="format-detection" content="telephone=no" />
-<!-- 카톡·인앱 브라우저에 예전 화면이 남지 않도록 캐시 힌트 (2026-11-26 v2) -->
+<!-- 카톡·인앱 브라우저에 예전 화면이 남지 않도록 캐시 힌트 (2026-11-26 v3) -->
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="expires" content="0" />
@@ -16,7 +16,10 @@
   ─────────────────────────────────────────────────────────────
   · 이 파일 하나만 아이패드/태블릿 브라우저에서 열면 바로 사용할 수 있습니다. (서버·설치 불필요)
   · 구글 시트 자동 저장 + 고객 이메일 영수증은 `애드윤-동의서-AppsScript.gs`를
-    스프레드시트에 붙여넣고 웹 앱으로 배포한 뒤, 우측 상단 `연동 설정 ⚙️`에 주소(/exec)를 넣으면 작동합니다.
+    스프레드시트에 붙여넣고 웹 앱으로 배포한 뒤 그 주소(/exec)를 쓰는 구조입니다.
+    현재 배포된 웹 앱 주소는 이 파일의 `DEFAULT_GAS_URL`에 기본값으로 내장되어 있어,
+    주소를 따로 넣지 않아도 바로 시트 연동 상태로 동작합니다.
+    (다른 주소로 바꿔야 할 때만 우측 상단 `연동 설정 ⚙️`에서 덮어쓸 수 있습니다.)
   · 메뉴·가격은 `시술메뉴설정` 탭(시술명 | 정가 | 현금할인가 | 비고)에서 읽어옵니다.
     시트를 고친 뒤 ⚙️ 연동 설정의 `시트 동기화 ↻`를 누르면 코드 수정 없이 패드에 바로 반영됩니다.
   · 시술 관련 문구(리터치 무료 횟수·6개월 기간, 예약 변경 기준)는 매장 정책에 맞게
@@ -767,7 +770,7 @@
         <div class="step">스프레드시트 <span class="inline-code">애드윤_고객동의서_영수증_DB</span> → <b>확장 프로그램 → Apps Script</b>를 엽니다.</div>
         <div class="step"><span class="inline-code">애드윤-동의서-AppsScript.gs</span> 내용을 전부 붙여넣고 저장(⌘S)합니다.</div>
         <div class="step"><b>배포 → 새 배포 → 웹 앱</b> · 실행: <b>나</b> / 액세스: <b>모든 사용자</b>로 배포합니다.</div>
-        <div class="step">나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.</div>
+        <div class="step">기본 웹 앱 주소는 <b>이 페이지에 이미 내장</b>되어 있습니다. 다른 주소로 바꿀 때만 나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.</div>
       </div>
       <div class="sync-row">
         <span class="badge" id="syncBadge"><i></i><span id="syncBadgeText">테스트 모드</span></span>
@@ -776,17 +779,17 @@
       <div class="field">
         <label class="label" for="webappUrl">Apps Script 웹 앱 URL</label>
         <input class="input" id="webappUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocapitalize="off" spellcheck="false" />
-        <span class="hint">이 기기에만 저장됩니다. 비워 두면 <b>테스트 모드</b>로 동작해 시트에는 기록되지 않습니다.</span>
+        <span class="hint">기본 연동 주소가 내장되어 있어 그대로 쓰시면 됩니다. 여기에 다른 주소를 저장하면 <b>이 기기에서만</b> 그 주소가 우선합니다.</span>
       </div>
       <div class="status-line" id="connStatus"></div>
       <div class="note-box">
-        <b>테스트 모드 안내</b> — 주소가 없어도 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동합니다. 다만 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.
+        <b>테스트 모드 안내</b> — 주소를 비우고 저장하면 테스트 모드로 동작합니다. 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동하고, 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <button type="button" class="btn" id="btnSaveUrl">저장</button>
         <button type="button" class="btn btn--ghost" id="btnTestConn">연결 테스트</button>
       </div>
-      <button type="button" class="btn btn--ghost btn--sm" id="btnClearUrl" style="justify-self:center">주소 삭제</button>
+      <button type="button" class="btn btn--ghost btn--sm" id="btnClearUrl" style="justify-self:center">기본 주소로 되돌리기</button>
     </div>
   </div>
 </div>
@@ -871,6 +874,10 @@
     menuCache: 'addyoon_menu_cache_v1',
     draft: 'addyoon_draft_v1'
   };
+
+  /* 시트 연동 기본 웹 앱 주소 — 이 파일에 내장된 기본값 (2026-11-26 배포분)
+     ⚙️ 연동 설정에서 다른 주소를 저장하면 그 주소가 우선하고, ‘기본 주소로 되돌리기’를 누르면 이 값으로 돌아옵니다. */
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyIfc0e_3VYzWAvSfcJaMb5x7GUskUc3pWobG0CtDCXISac4bMqp1ClfeORM5RapErZ6A/exec';
 
   const SHOP = {
     name: '애드윤',
@@ -958,7 +965,15 @@
   function saveJSON(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
   }
-  function getConfig() { const c = loadJSON(STORE.config, {}) || {}; return { webappUrl: (c.webappUrl || '').trim() }; }
+  function getConfig() {
+    const c = loadJSON(STORE.config, null);
+    // 이 기기에 저장된 설정이 없으면 내장 기본 주소(DEFAULT_GAS_URL)를 사용합니다.
+    // 저장된 값이 있으면 그 값을 그대로 존중합니다. (빈 문자열로 저장하면 테스트 모드)
+    const raw = (c && typeof c === 'object' && Object.prototype.hasOwnProperty.call(c, 'webappUrl'))
+      ? c.webappUrl
+      : DEFAULT_GAS_URL;
+    return { webappUrl: String(raw == null ? '' : raw).trim() };
+  }
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
@@ -2179,10 +2194,12 @@
   });
 
   $('#btnClearUrl').addEventListener('click', () => {
-    $('#webappUrl').value = '';
-    saveJSON(STORE.config, { webappUrl: '' });
+    $('#webappUrl').value = DEFAULT_GAS_URL;
+    try { localStorage.removeItem(STORE.config); } catch (e) {}
     updateSyncBadge();
-    showConn('', '주소를 삭제했어요. 테스트 모드로 동작합니다.');
+    showConn('is-ok', '내장된 기본 주소로 되돌렸어요. 시트 저장·메뉴 동기화가 기본 주소로 동작합니다.');
+    toast('기본 주소로 되돌렸어요.');
+    syncMenu(false); retryPending();
   });
 
   function showConn(kind, msg) {
