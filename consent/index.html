@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#F7F5F0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="format-detection" content="telephone=no" />
-<!-- 카톡·인앱 브라우저에 예전 화면이 남지 않도록 캐시 힌트 (2026-11-26 v3) -->
+<!-- 카톡·인앱 브라우저에 예전 화면이 남지 않도록 캐시 힌트 (2026-11-26 v4 · 계좌이체 입금 계좌 안내) -->
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="expires" content="0" />
@@ -245,6 +245,29 @@
 
   /* payment + cash toggle */
   .pay-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+
+  /* 계좌이체 선택 시 입금 계좌 안내 */
+  .bank-box{
+    display:none;margin-top:12px;border:1px solid var(--line);border-left:2px solid var(--ink);
+    background:var(--paper-2);padding:15px 17px;
+  }
+  .bank-box.is-on{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;animation:selIn .18s ease-out;}
+  .bank-label{font-size:11.5px;letter-spacing:.14em;color:var(--faint);white-space:nowrap;}
+  .bank-info{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;min-width:0;}
+  .bank-name{font-size:13.5px;color:var(--muted);white-space:nowrap;}
+  .bank-account{
+    font-size:19px;font-weight:600;color:var(--ink);white-space:nowrap;
+    font-variant-numeric:tabular-nums;letter-spacing:.01em;
+    user-select:all;-webkit-user-select:all;
+  }
+  .bank-holder{font-size:13px;color:var(--muted);white-space:nowrap;}
+  .bank-copy{
+    margin-left:auto;border:1px solid var(--line);background:#fff;color:var(--muted);
+    border-radius:999px;padding:7px 14px;font-size:12px;letter-spacing:.02em;white-space:nowrap;
+    transition:border-color .15s,color .15s,background .15s;-webkit-tap-highlight-color:transparent;
+  }
+  .bank-copy:active{background:#F4F1EA;}
+  .bank-copy.is-done{border-color:var(--ink);color:var(--ink);background:#F4F1EA;}
   .toggle{
     display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;
     border-radius:999px;padding:10px 16px 10px 12px;font-size:13.5px;color:var(--muted);
@@ -616,6 +639,16 @@
           <button type="button" class="toggle" id="cashToggle" aria-pressed="false">
             <span class="switch"></span> 현금할인가 적용
           </button>
+        </div>
+
+        <div class="bank-box" id="bankBox" aria-live="polite">
+          <span class="bank-label">입금 계좌</span>
+          <span class="bank-info">
+            <span class="bank-name">신한은행</span>
+            <span class="bank-account" id="bankAccount">110-542-173014</span>
+            <span class="bank-holder">예금주 한지윤</span>
+          </span>
+          <button type="button" class="bank-copy" id="bankCopy" data-account="110-542-173014">복사</button>
         </div>
       </div>
 
@@ -1314,8 +1347,56 @@
     state.payment = pay;
     $$('#payChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.pay === pay ? 'true' : 'false'));
     if (autoCash) setCashMode(pay === '현금' || pay === '계좌이체');
+    updateBankBox();
     updateTotals();
   }
+
+  /* 계좌이체 선택 시에만 입금 계좌 안내 표시 */
+  function updateBankBox() {
+    const box = $('#bankBox');
+    if (!box) return;
+    box.classList.toggle('is-on', state.payment === '계좌이체');
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { ta.setSelectionRange(0, ta.value.length); } catch (e) {}
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  (function bindBankCopy() {
+    const btn = $('#bankCopy');
+    if (!btn) return;
+    let timer = null;
+    btn.addEventListener('click', async () => {
+      const ok = await copyText(digits(btn.dataset.account || ''));
+      if (timer) clearTimeout(timer);
+      btn.classList.toggle('is-done', ok);
+      btn.textContent = ok ? '복사됨' : '다시 시도';
+      toast(ok ? '계좌번호를 복사했어요.' : '복사가 안 되면 계좌번호를 길게 눌러 선택해 주세요.');
+      timer = setTimeout(() => {
+        btn.classList.remove('is-done');
+        btn.textContent = '복사';
+      }, 2000);
+    });
+  })();
   function setCashMode(on) {
     state.cashMode = on;
     $('#cashToggle').setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -2342,6 +2423,7 @@
     syncMenu: syncMenu,
     setCashMode: setCashMode,
     setPayment: setPayment,
+    updateBankBox: updateBankBox,
     menuEls: menuEls
   };
 
