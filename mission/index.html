@@ -185,8 +185,8 @@
 
   .stage{
     position:relative; margin:.8rem 0 .65rem;
-    --stage:clamp(126px, 16vh, 152px);
-    height:var(--stage);
+    --qr:clamp(92px, 12.5vh, 118px);
+    height:calc(var(--qr) + 46px);
     display:grid; place-items:center;
     border-radius:20px; background:var(--cream); border:1.5px dashed #E3DAC8;
   }
@@ -196,7 +196,7 @@
     background:#fff; padding:8px; border-radius:14px; line-height:0;
     box-shadow:0 3px 10px rgba(36,35,33,.08);
   }
-  .qrbox svg{ display:block; width:calc(var(--stage) - 16px); height:auto; }
+  .qrbox svg{ display:block; width:var(--qr); height:auto; }
   .qrbox svg path{ fill:#242321; }
 
   .cash{ display:flex; flex-direction:column; align-items:center; gap:.15rem; }
@@ -355,7 +355,7 @@
   @media (max-height:700px){
     .hero{ padding-top:10px; padding-bottom:10px; }
     .kicker{ margin-bottom:.4rem; }
-    .stage{ --stage:112px; margin:.55rem 0 .5rem; }
+    .stage{ --qr:88px; margin:.55rem 0 .5rem; }
     .card__hint{ min-height:0; }
   }
   @media (prefers-reduced-motion: reduce){
