@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F7F5F0">
+<meta name="description" content="애드윤 시술 메뉴 — 눈썹 · 립 · 아이라인 · 헤어라인 · 두피문신. 배곧점 · 강남점. 한국어 · English · 中文 · 日本語.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ADDYOON MENU">
+<meta name="format-detection" content="telephone=no">
+<title>ADDYOON MENU — 시술 메뉴</title>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23242321'/%3E%3Ctext x='90' y='128' font-family='Georgia,serif' font-size='116' font-weight='400' fill='%23F3EFE8' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#F7F5F0;
+    --bg-soft:#F1EEE7;
+    --sand:#DAD4CC;
+    --ink:#242321;
+    --ink-2:#57524A;
+    --ink-3:#8B847A;
+    --line:rgba(36,35,33,.16);
+    --line-soft:rgba(36,35,33,.08);
+    --dark:#242321;
+    --dark-deep:#1B1A18;
+    --on-dark:#EDE8DF;
+    --on-dark-2:#A29B91;
+    --max:46rem;
+    --pad:clamp(1.15rem, 5vw, 2.6rem);
+    --sans:-apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto,
+           "Helvetica Neue", Helvetica, Arial, "Apple SD Gothic Neo", "Pretendard",
+           "Noto Sans KR", "PingFang SC", "Hiragino Sans", "Yu Gothic",
+           "Malgun Gothic", sans-serif;
+    --lbl: .6rem;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-weight:400;
+    font-size:1rem;
+    line-height:1.6;
+    letter-spacing:-0.01em;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    -webkit-tap-highlight-color:transparent;
+    overflow-x:hidden;
+    overscroll-behavior-y:none;
+  }
+  h1,h2,h3,p,dl,dd,dt,figure,ul,ol{ margin:0; }
+  ul,ol{ list-style:none; padding:0; }
+  button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; -webkit-appearance:none; }
+  button:focus-visible, a:focus-visible{ outline:1px solid var(--ink); outline-offset:3px; }
+  .num{ font-variant-numeric: tabular-nums lining-nums; }
+
+  /* ── 상단 바 ─────────────────────────────────────────────── */
+  .top{
+    position:sticky; top:0; z-index:30;
+    background:rgba(247,245,240,.88);
+    -webkit-backdrop-filter:saturate(140%) blur(14px);
+    backdrop-filter:saturate(140%) blur(14px);
+    border-bottom:1px solid var(--line);
+    padding-top:env(safe-area-inset-top);
+  }
+  .top__in{
+    width:min(calc(100% - var(--pad)*2), var(--max));
+    margin-inline:auto;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:.75rem;
+    min-height:3.65rem;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:.5rem;
+    font-size:.82rem; font-weight:500; letter-spacing:.2em; text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .brand i{
+    font-style:normal; font-size:.58rem; font-weight:400; letter-spacing:.24em;
+    color:var(--ink-3);
+  }
+  .langs{ display:flex; align-items:center; gap:.18rem; margin-left:auto; }
+  .lang{
+    display:grid; place-items:center;
+    min-height:2.1rem; padding:.2rem .44rem;
+    font-size:.72rem; letter-spacing:.02em; color:#6F6960;
+    border:1px solid transparent;
+    transition:color .18s ease, border-color .18s ease;
+  }
+  .lang[aria-pressed="true"]{ color:var(--ink); border-color:var(--ink); }
+  .lang:not([aria-pressed="true"]):hover{ color:var(--ink); }
+
+  /* ── 히어로 ─────────────────────────────────────────────── */
+  .hero{
+    width:min(calc(100% - var(--pad)*2), var(--max));
+    margin-inline:auto;
+    padding:clamp(2.4rem, 7vw, 4.4rem) 0 0;
+  }
+  .hero__lbl{
+    font-size:var(--lbl); letter-spacing:.26em; text-transform:uppercase;
+    color:var(--ink-3);
+  }
+  .hero__t{
+    margin-top:.9rem;
+    font-size:clamp(2rem, 8.4vw, 3rem);
+    font-weight:300; line-height:1.16; letter-spacing:-0.035em;
+  }
+  .hero__s{
+    margin-top:.85rem;
+    font-size:.82rem; line-height:1.7; color:var(--ink-2);
+    letter-spacing:.01em;
+  }
+  .hero__rule{
+    height:1px; background:var(--line); margin-top:clamp(1.6rem, 4vw, 2.2rem);
+  }
+
+  /* ── 카테고리 ───────────────────────────────────────────── */
+  .menu{
+    width:min(calc(100% - var(--pad)*2), var(--max));
+    margin-inline:auto;
+    padding-bottom:clamp(1.5rem, 4vw, 2.4rem);
+  }
+  .cat{ padding-top:clamp(2rem, 5vw, 2.7rem); }
+  .cat__head{
+    padding-bottom:.9rem;
+    border-bottom:1px solid var(--line);
+  }
+  .cat__meta{
+    display:flex; align-items:baseline; gap:.7rem;
+  }
+  .cat__no{
+    font-size:.6rem; letter-spacing:.2em; color:var(--ink-3);
+    font-variant-numeric:lining-nums;
+  }
+  .cat__lat{
+    font-size:.56rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-3);
+  }
+  .cat__t{
+    margin-top:.5rem;
+    font-size:clamp(1.16rem, 4.4vw, 1.4rem);
+    font-weight:400; letter-spacing:-0.025em; line-height:1.4;
+    word-break:keep-all;
+  }
+  .cat__note{
+    padding-top:.75rem;
+    font-size:.72rem; line-height:1.65; color:var(--ink-3);
+    letter-spacing:0;
+  }
+
+  /* ── 아이템(아코디언) ──────────────────────────────────── */
+  .item{ border-bottom:1px solid var(--line-soft); }
+  .item:last-child{ border-bottom:0; }
+  .item__head, .lang{ -webkit-user-select:none; user-select:none; }
+  .item__head{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto 1.05rem;
+    align-items:center;
+    gap:.9rem;
+    padding:1.12rem 0 1.05rem;
+    text-align:left;
+  }
+  .item__name{
+    font-size:clamp(1rem, 2.9vw, 1.1rem);
+    font-weight:500; letter-spacing:-0.02em; line-height:1.45;
+    word-break:keep-all;
+    transition:color .18s ease;
+  }
+  .item__price{
+    display:flex; flex-direction:column; align-items:flex-end;
+    gap:.16rem; text-align:right;
+  }
+  .p-main{
+    font-size:clamp(.95rem, 2.7vw, 1.02rem);
+    letter-spacing:-0.01em; line-height:1.3;
+    font-variant-numeric:tabular-nums lining-nums;
+    white-space:nowrap;
+  }
+  .p-sub{
+    font-size:.68rem; letter-spacing:0;
+    color:var(--ink-3); line-height:1.35;
+    font-variant-numeric:tabular-nums lining-nums;
+    white-space:nowrap;
+  }
+  .item__ico{ position:relative; width:1.05rem; height:1.05rem; }
+  .item__ico::before,.item__ico::after{
+    content:""; position:absolute; left:0; right:0; top:50%;
+    height:1px; background:var(--ink);
+    transform:translateY(-50%);
+    transition:transform .34s cubic-bezier(.22,.61,.36,1), opacity .24s ease;
+  }
+  .item__ico::after{ transform:translateY(-50%) rotate(90deg); }
+  .item.is-open .item__ico::after{ transform:translateY(-50%) rotate(0deg); }
+
+  .item__panel{
+    display:grid;
+    grid-template-rows:0fr;
+    transition:grid-template-rows .42s cubic-bezier(.22,.61,.36,1);
+  }
+  .item__panel > .item__in{ overflow:hidden; min-height:0; }
+  .item.is-open .item__panel{ grid-template-rows:1fr; }
+
+  .item__body{
+    padding:.15rem 1.6rem 1.5rem .05rem;
+    opacity:0; transform:translateY(-4px);
+    transition:opacity .34s ease .05s, transform .34s ease .05s;
+  }
+  .item.is-open .item__body{ opacity:1; transform:none; }
+  .item__desc{
+    font-size:.9rem; line-height:1.82; color:var(--ink-2);
+    letter-spacing:-0.005em;
+    word-break:keep-all;
+    overflow-wrap:break-word;
+  }
+  .specs{
+    display:flex; flex-wrap:wrap; gap:.35rem 1.35rem;
+    margin-top:.9rem;
+    padding-top:.75rem;
+    border-top:1px solid var(--line-soft);
+  }
+  .specs span{ display:flex; align-items:baseline; gap:.42rem; }
+  .specs em{
+    font-style:normal; font-size:.56rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-3);
+  }
+  .specs b{
+    font-weight:400; font-size:.8rem; color:var(--ink);
+    font-variant-numeric:lining-nums;
+    letter-spacing:0;
+  }
+  .item__fine{
+    margin-top:.6rem;
+    font-size:.66rem; line-height:1.6; color:var(--ink-3); letter-spacing:0;
+  }
+
+  /* ── 하단 안내 ─────────────────────────────────────────── */
+  .notes{
+    background:var(--bg-soft);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:clamp(2.2rem, 6vw, 3.4rem) 0;
+  }
+  .notes__in{
+    width:min(calc(100% - var(--pad)*2), var(--max));
+    margin-inline:auto;
+    display:grid; gap:clamp(1.8rem, 4.5vw, 2.6rem);
+  }
+  .note__lbl{
+    font-size:var(--lbl); letter-spacing:.26em; text-transform:uppercase;
+    color:var(--ink-3);
+  }
+  .note__t{
+    margin-top:.55rem;
+    font-size:1.02rem; font-weight:500; letter-spacing:-0.02em;
+  }
+  .note__p{
+    margin-top:.6rem;
+    font-size:.86rem; line-height:1.8; color:var(--ink-2);
+    word-break:keep-all;
+  }
+  .branches{ margin-top:.9rem; display:grid; gap:.9rem; }
+  .branch{ display:grid; grid-template-columns:5.6rem minmax(0,1fr); gap:.5rem; align-items:baseline; }
+  .branch dt{
+    font-size:.8rem; font-weight:500; letter-spacing:-0.01em; color:var(--ink);
+  }
+  .branch dd{
+    font-size:.82rem; line-height:1.6; color:var(--ink-2);
+    overflow-wrap:anywhere;
+  }
+
+  /* ── 푸터 ───────────────────────────────────────────────── */
+  .foot{
+    background:var(--dark); color:var(--on-dark);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .foot__in{
+    width:min(calc(100% - var(--pad)*2), var(--max));
+    margin-inline:auto;
+    padding:1.7rem 0 1.55rem;
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:1rem;
+  }
+  .foot__b{
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .foot__t{
+    font-size:.68rem; color:var(--on-dark-2); letter-spacing:.01em;
+    text-align:right; line-height:1.5;
+  }
+  .foot__bar{
+    background:var(--dark-deep);
+  }
+  .foot__bar .foot__in{
+    padding:.8rem 0;
+    font-size:.55rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--on-dark-2);
+  }
+
+  @media (max-width:420px){
+    .brand{ font-size:.74rem; letter-spacing:.16em; }
+    .brand i{ display:none; }
+    .lang{ padding:.2rem .34rem; font-size:.7rem; min-height:1.95rem; }
+    .item__body{ padding-right:.4rem; }
+    .branch{ grid-template-columns:4.6rem minmax(0,1fr); }
+  }
+  @media (min-width:700px){
+    .item__head{ padding:1.3rem 0 1.2rem; gap:1.4rem; }
+    .item__body{ padding-bottom:1.7rem; }
+    .notes__in{ grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{ transition-duration:.01ms !important; animation-duration:.01ms !important; }
+  }
+  @media print{
+    .top{ position:static; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top__in">
+    <div class="brand">ADDYOON <i>MENU</i></div>
+    <nav class="langs" aria-label="Language">
+      <button type="button" class="lang" data-lang="ko" lang="ko" aria-pressed="true">한국어</button>
+      <button type="button" class="lang" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      <button type="button" class="lang" data-lang="zh" lang="zh-Hans" aria-pressed="false">中文</button>
+      <button type="button" class="lang" data-lang="ja" lang="ja" aria-pressed="false">日本語</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="hero__lbl">ADDYOON · TREATMENT MENU</p>
+    <h1 class="hero__t" data-i18n="heroTitle">시술 메뉴</h1>
+    <p class="hero__s" data-i18n="heroSub">배곧 · 강남 | 반영구화장 · 아카데미</p>
+    <div class="hero__rule"></div>
+  </section>
+
+  <div class="menu" id="menu"></div>
+
+  <section class="notes">
+    <div class="notes__in">
+      <div class="note">
+        <p class="note__lbl">RETOUCH</p>
+        <h2 class="note__t" data-i18n="retouchTitle">리터치 안내</h2>
+        <p class="note__p" data-i18n="retouchText">리터치는 1회 무료, 2회부터는 유료이며 시술일로부터 6개월 이내까지만 가능합니다.</p>
+      </div>
+      <div class="note">
+        <p class="note__lbl">LOCATION</p>
+        <h2 class="note__t" data-i18n="branchTitle">지점 안내</h2>
+        <dl class="branches">
+          <div class="branch">
+            <dt data-i18n="branch1Name">배곧점</dt>
+            <dd lang="ko">경기 시흥시 서울대학로278번길 19-13 A동 244호</dd>
+          </div>
+          <div class="branch">
+            <dt data-i18n="branch2Name">강남점</dt>
+            <dd lang="ko">서울 강남구 테헤란로13길 8-3 3층</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span class="foot__b">ADDYOON</span>
+    <span class="foot__t" data-i18n="footTag">반영구화장 · 아카데미</span>
+  </div>
+  <div class="foot__bar">
+    <div class="foot__in"><span>© ADDYOON</span><span>BAEGOT · GANGNAM</span></div>
+  </div>
+</footer>
+
+<noscript>
+  <p style="padding:1.5rem;font:14px/1.6 sans-serif">이 페이지는 JavaScript가 필요합니다. / JavaScript is required.</p>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  var LANGS = ["ko","en","zh","ja"];
+  var DOCLANG = { ko:"ko", en:"en", zh:"zh-Hans", ja:"ja" };
+
+  /* ── 번역 사전 ─────────────────────────────────────────── */
+  var UI = {
+    ko:{
+      heroTitle:"시술 메뉴",
+      heroSub:"배곧 · 강남 | 반영구화장 · 아카데미",
+      retouchTitle:"리터치 안내",
+      retouchText:"리터치는 1회 무료, 2회부터는 유료이며 시술일로부터 6개월 이내까지만 가능합니다.",
+      branchTitle:"지점 안내",
+      branch1Name:"배곧점",
+      branch2Name:"강남점",
+      footTag:"반영구화장 · 아카데미",
+      specDur:"소요시간",
+      specHold:"유지",
+      fine:"소요 시간과 유지는 개인차가 있으며, 상담 시 확정됩니다.",
+      cash:"현금",
+      varies:"범위에 따라 상이",
+      noteCash:"* 눈썹 시술은 현금 결제 시 할인가가 적용됩니다.",
+      noteRange:"* 헤어라인 · 두피문신은 시술 범위에 따라 금액과 시간이 달라지며, 상담 후 확정됩니다.",
+      title:"ADDYOON MENU — 시술 메뉴"
+    },
+    en:{
+      heroTitle:"Treatment Menu",
+      heroSub:"Baegot · Gangnam | Semi-permanent Makeup & Academy",
+      retouchTitle:"Retouch",
+      retouchText:"The first touch-up is complimentary. From the second touch-up onward a fee applies, and touch-ups are available only within 6 months of the treatment date.",
+      branchTitle:"Locations",
+      branch1Name:"Baegot",
+      branch2Name:"Gangnam",
+      footTag:"Semi-permanent Makeup · Academy",
+      specDur:"Duration",
+      specHold:"Lasts",
+      fine:"Duration and longevity vary by individual and are confirmed at consultation.",
+      cash:"Cash",
+      varies:"Varies by area",
+      noteCash:"* Cash price applies to eyebrow treatments when paid in cash.",
+      noteRange:"* For hairline and scalp treatments, time and price depend on the area covered and are confirmed after consultation.",
+      title:"ADDYOON MENU — Treatment Menu"
+    },
+    zh:{
+      heroTitle:"施术项目",
+      heroSub:"培骨 · 江南 | 半永久化妆 · 学院",
+      retouchTitle:"补色说明",
+      retouchText:"补色第一次免费，第二次起收费，且仅限施术后6个月内进行。",
+      branchTitle:"门店地址",
+      branch1Name:"培骨店",
+      branch2Name:"江南店",
+      footTag:"半永久化妆 · 学院",
+      specDur:"施术时间",
+      specHold:"维持",
+      fine:"施术时间与维持时间因人而异，咨询时确定。",
+      cash:"现金",
+      varies:"视范围而定",
+      noteCash:"* 眉部项目现金支付可享优惠价。",
+      noteRange:"* 发际线与头皮纹发的费用及时间视施术范围而定，咨询后确定。",
+      title:"ADDYOON MENU — 施术项目"
+    },
+    ja:{
+      heroTitle:"施術メニュー",
+      heroSub:"ペゴッ・江南 | アートメイク・アカデミー",
+      retouchTitle:"リタッチについて",
+      retouchText:"リタッチは1回目無料、2回目以降は有料となり、施術日から6か月以内のみ承ります。",
+      branchTitle:"店舗",
+      branch1Name:"ペゴッ店",
+      branch2Name:"江南店",
+      footTag:"アートメイク・アカデミー",
+      specDur:"所要時間",
+      specHold:"持続",
+      fine:"所要時間と持続期間には個人差があり、カウンセリング時に確定します。",
+      cash:"現金",
+      varies:"範囲により異なる",
+      noteCash:"* 眉の施術は現金お支払いの場合に割引価格が適用されます。",
+      noteRange:"* ヘアライン・頭皮の施術は範囲により料金と時間が変わり、カウンセリング後に確定します。",
+      title:"ADDYOON MENU — 施術メニュー"
+    }
+  };
+
+  /* ── 메뉴 데이터 ───────────────────────────────────────── */
+  var CATS = [
+    {
+      no:"01", latin:"EYEBROW",
+      title:{ ko:"눈썹", en:"Eyebrow", zh:"眉毛", ja:"眉" },
+      note:{ ko:UI.ko.noteCash, en:UI.en.noteCash, zh:UI.zh.noteCash, ja:UI.ja.noteCash },
+      items:[
+        {
+          id:"brow-shadow",
+          name:{ ko:"섀도우 눈썹", en:"Shadow Brow", zh:"雾眉", ja:"シャドウブロウ" },
+          price:{ list:[{kind:"regular",amount:280000},{kind:"cash",amount:250000}] },
+          desc:{
+            ko:"미세한 음영을 여러 겹 쌓아, 가루를 얹은 듯 부드럽고 또렷한 눈썹을 만듭니다. 이전 눈썹문신의 잔흔이 남아 있거나, 화장한 듯 정돈된 메이크업 룩을 좋아하시는 분께 추천합니다. 눈썹 전체를 균일하게 채워 얼굴 인상을 차분하게 잡아 줍니다.",
+            en:"Fine layers of soft shading create a powdered, softly defined brow. Recommended for covering the remnants of a previous brow tattoo, or for anyone who likes a polished, make-up-like look. Even coverage through the whole brow gives the face a calmer, more refined impression.",
+            zh:"以细腻的雾感层层叠加，呈现如扫过眉粉般柔和而清晰的眉形。适合遮盖以往纹眉留下的痕迹，或喜欢精致妆感的顾客。整体均匀上色，让面部印象更显沉稳。",
+            ja:"繊細な陰影を幾重にも重ね、パウダーをのせたような柔らかく整った眉に仕上げます。以前の眉アートの残りをカバーしたい方、メイクしたような洗練された印象をお好みの方に。眉全体を均一に埋めることで、顔の印象が落ち着きます。"
+          },
+          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
+        },
+        {
+          id:"brow-combo",
+          name:{ ko:"콤보 눈썹", en:"Combo Brow", zh:"丝雾眉", ja:"コンボブロウ" },
+          price:{ list:[{kind:"regular",amount:240000},{kind:"cash",amount:220000}] },
+          desc:{
+            ko:"눈썹 앞머리의 결을 한 올씩 그리고 뒤쪽은 부드러운 음영으로 마무리해, 자연스러움과 선명함을 동시에 잡습니다. 앞머리 결과 전체 음영을 한 번에 원하시는 분께 추천합니다.",
+            en:"Hair-stroke detail through the front of the brow, finished with soft shading toward the tail — natural texture and clear definition at once. For anyone who wants both hair strokes and full shading in a single session.",
+            zh:"眉头以一根一根的线条勾勒，眉尾以柔和雾感收尾，同时呈现自然与清晰。适合希望一次完成线条与雾眉两种效果的顾客。",
+            ja:"眉頭は一本ずつの毛並み、眉尻は柔らかな陰影で仕上げ、自然さと鮮明さを同時に。2つの技法を一度にご希望の方に。"
+          },
+          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
+        },
+        {
+          id:"brow-natural",
+          name:{ ko:"자연 눈썹", en:"Natural Brow", zh:"自然线条眉", ja:"ナチュラルブロウ" },
+          price:{ list:[{kind:"regular",amount:200000},{kind:"cash",amount:180000}] },
+          desc:{
+            ko:"눈썹 결을 한 올 한 올 살려, 민낯에도 티 나지 않는 자연스러운 눈썹을 만듭니다. 화장을 거의 하지 않으시거나, 본래 눈썹처럼 보이는 느낌을 원하시는 분께 추천합니다.",
+            en:"Individual strokes follow the direction of your own hair, for a brow that looks untouched even without make-up. Best for those who rarely wear make-up, or who want a completely natural result.",
+            zh:"一根一根还原毛流方向，素颜也自然不突兀。适合平时很少化妆、追求原生感的顾客。",
+            ja:"毛の流れに沿って一本ずつ描き、すっぴんでも自然になじむ眉に。メイクをあまりされない方、本来の眉のような質感をお求めの方に。"
+          },
+          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
+        }
+      ]
+    },
+    {
+      no:"02", latin:"LIP",
+      title:{ ko:"립", en:"Lip", zh:"唇", ja:"リップ" },
+      note:null,
+      items:[
+        {
+          id:"lip-tint",
+          name:{ ko:"틴트립", en:"Tint Lip", zh:"唇部润色", ja:"ティントリップ" },
+          price:{ list:[{kind:"regular",amount:250000}] },
+          desc:{
+            ko:"립밤만 발라도 생기 있는 혈색이 도는 톤 보정 시술입니다. 창백하거나 어두운 입술 톤을 화사하고 맑게 정돈하고 싶으실 때 추천합니다. 입술 전체에 은은하게 발색해, 화장기 없는 날에도 얼굴이 생기 있어 보입니다.",
+            en:"A tone-correcting tint, so a bare lip with nothing but balm still has a healthy flush. Ideal when pale or dull lip tone needs to read brighter and clearer. Soft, even colour keeps the face fresh on no-make-up days.",
+            zh:"仅涂润唇膏也能透出好血色的唇色矫正。适合唇色偏白或暗沉、想让唇色更明亮干净的顾客。整体柔和上色，素颜日也显得有精神。",
+            ja:"リップクリームだけでも血色感がよみがえるトーン補正。白っぽい・くすんだ唇を、明るく澄んだ印象に整えたい方に。全体に柔らかく発色し、すっぴんの日も顔色が明るく見えます。"
+          },
+          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
+        },
+        {
+          id:"lip-line",
+          name:{ ko:"립라인 교정", en:"Lip Line Correction", zh:"唇线矫正", ja:"リップライン補正" },
+          price:{ list:[{kind:"regular",amount:250000}] },
+          desc:{
+            ko:"흐릿하거나 비대칭인 입술 경계를 정돈해, 입술이 또렷하고 입체적으로 보이게 합니다. 입술 라인이 번지거나 좌우 모양이 다른 경우, 립스틱 없이도 단정한 입술을 원하실 때 추천합니다.",
+            en:"Tidies a blurred or asymmetric lip border so the lips read clearly and three-dimensionally. Recommended when the lip line bleeds, the two sides differ, or you want a neat lip without lipstick.",
+            zh:"整理模糊或不对称的唇缘，让唇形清晰立体。适合唇线晕开、左右形状不同，或希望不涂口红也显得端正的顾客。",
+            ja:"ぼやけた・左右差のある唇の輪郭を整え、明確で立体的な唇に。唇のラインがにじむ方、左右の形が異なる方、口紅なしでも整った唇をご希望の方に。"
+          },
+          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
+        },
+        {
+          id:"lip-full",
+          name:{ ko:"립라인 + 틴트", en:"Lip Line + Tint", zh:"唇线＋唇部润色", ja:"リップライン＋ティント" },
+          price:{ list:[{kind:"regular",amount:450000}] },
+          desc:{
+            ko:"라인 교정과 전체 발색을 한 번에 진행하는 풀 케어입니다. 입술 모양과 색을 함께 정돈하고 싶으시거나, 입술 전체를 또렷하게 완성하고 싶으실 때 추천합니다.",
+            en:"Line correction and full colour in one session — the complete lip treatment. For when you want both shape and colour refined, and a fully finished lip.",
+            zh:"唇线矫正与整体上色一次完成的全方位护理。适合同时改善唇形与唇色、想要完整唇妆效果的顾客。",
+            ja:"輪郭補正と全体の発色を一度に行うフルケア。唇の形と色をまとめて整えたい方、唇全体をしっかり仕上げたい方に。"
+          },
+          dur:{ ko:"약 2시간 30분", en:"approx. 2.5 hrs", zh:"约2小时30分", ja:"約2時間30分" },
+          hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
+        }
+      ]
+    },
+    {
+      no:"03", latin:"EYELINER · HAIRLINE · SCALP",
+      title:{ ko:"아이라인 · 헤어라인 · 두피문신", en:"Eyeliner · Hairline · Scalp", zh:"眼线 · 发际线 · 头皮纹发", ja:"アイライン・ヘアライン・頭皮" },
+      note:{ ko:UI.ko.noteRange, en:UI.en.noteRange, zh:UI.zh.noteRange, ja:UI.ja.noteRange },
+      items:[
+        {
+          id:"eyeliner",
+          name:{ ko:"아이라인", en:"Eyeliner", zh:"眼线", ja:"アイライン" },
+          price:{ list:[{kind:"regular",amount:150000}] },
+          desc:{
+            ko:"점막을 촘촘히 채워 또렷하고 깔끔한 눈매를 만듭니다. 아이라인을 매일 그리는 번거로움을 덜고 싶으시거나, 눈매를 선명하게 정돈하고 싶으실 때 추천합니다. 눈의 형태에 맞춰 라인의 두께와 길이를 조정합니다.",
+            en:"Densely filled along the lash line for a clean, clearly defined eye. Recommended if you want to skip daily eyeliner, or simply sharpen the eye shape. Line thickness and length are adjusted to your eye.",
+            zh:"沿睫毛根部细致填补，打造清晰干净的眼型。适合想省去每天画眼线，或希望眼型更利落的顾客。线条的粗细与长度会依眼型调整。",
+            ja:"粘膜を丁寧に埋め、はっきりと清潔感のある目元に。毎日のアイラインを省きたい方、目元を引き締めたい方に。ラインの太さと長さは目の形に合わせて調整します。"
+          },
+          dur:{ ko:"약 1시간", en:"approx. 1 hr", zh:"约1小时", ja:"約1時間" },
+          hold:{ ko:"2–3년", en:"2–3 yrs", zh:"2–3年", ja:"2〜3年" }
+        },
+        {
+          id:"hairline",
+          name:{ ko:"헤어라인", en:"Hairline", zh:"发际线", ja:"ヘアライン" },
+          price:{ list:[{kind:"regular",amount:350000}], from:true },
+          desc:{
+            ko:"M자로 비거나 이마 라인이 비어 보이는 부분을 자연스러운 잔머리 결로 채워, 얼굴선과 이마 비율을 정돈합니다. 앞머리를 올리기 어렵거나 헤어라인이 신경 쓰이실 때 추천합니다. 범위에 따라 소요 시간과 금액이 달라지며, 상담 후 확정합니다.",
+            en:"Natural fine-hair strokes fill an M-shaped or sparse forehead line, balancing the face and forehead proportions. Recommended if you avoid pulling your hair back, or feel conscious of your hairline. Time and price depend on the area covered and are confirmed after consultation.",
+            zh:"以自然的碎发线条填补M字形或稀疏的发际线，修饰脸部与额头比例。适合不便露出额头、或在意发际线的顾客。施术范围不同，时间与费用在咨询后确定。",
+            ja:"M字や薄くなった生え際を自然な産毛の流れで埋め、顔と額のバランスを整えます。前髪を上げにくい方、生え際が気になる方に。範囲により所要時間と料金が変わり、カウンセリング後に確定します。"
+          },
+          dur:{ ko:"2–3시간", en:"2–3 hrs", zh:"2–3小时", ja:"2〜3時間" },
+          hold:{ ko:"2–3년", en:"2–3 yrs", zh:"2–3年", ja:"2〜3年" }
+        },
+        {
+          id:"scalp",
+          name:{ ko:"두피문신", en:"Scalp Micropigmentation", zh:"头皮纹发", ja:"頭皮アートメイク" },
+          price:{ list:[{kind:"regular",amount:200000}], from:true },
+          desc:{
+            ko:"가르마나 정수리가 비어 보이는 부위에 도트 기법으로 모근의 밀도를 표현합니다. 헤어 커버나 볼륨 시술만으로 부족하게 느껴지실 때, 두피 라인을 자연스럽게 정돈하고 싶으실 때 추천합니다. 범위에 따라 소요 시간과 금액이 달라지며, 상담 후 확정합니다.",
+            en:"A dot-work technique recreates the density of hair follicles where the parting or crown looks thin. Recommended when hair cover or volume styling no longer feels enough, or to tidy the scalp line naturally. Time and price depend on the area covered and are confirmed after consultation.",
+            zh:"以点刺技法在分缝与头顶稀疏处营造毛囊密度感。适合单靠发片或蓬松造型仍显不足、希望自然修饰头皮线条的顾客。施术范围不同，时间与费用在咨询后确定。",
+            ja:"分け目や頭頂部の薄さにドット技法で毛根の密度感を表現します。ヘアカバーやボリュームスタイリングだけでは物足りない方、頭皮のラインを自然に整えたい方に。範囲により所要時間と料金が変わり、カウンセリング後に確定します。"
+          },
+          dur:{ ko:"2–3시간", en:"2–3 hrs", zh:"2–3小时", ja:"2〜3時間" },
+          hold:{ ko:"2–4년", en:"2–4 yrs", zh:"2–4年", ja:"2〜4年" }
+        }
+      ]
+    }
+  ];
+
+  /* ── 유틸 ─────────────────────────────────────────────── */
+  var menuEl = document.getElementById("menu");
+  var openId = null;
+  var current = "ko";
+
+  function comma(n){
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  function money(n, lang){
+    return (lang === "ko" ? comma(n) + "원" : "₩" + comma(n));
+  }
+  function priceLines(item, lang){
+    var ui = UI[lang];
+    var out = [];
+    item.price.list.forEach(function(p){
+      if (p.kind === "cash") out.push({ main:false, text: ui.cash + " " + money(p.amount, lang) });
+      else out.push({ main:true, text: money(p.amount, lang) + (item.price.from ? "~" : "") });
+    });
+    if (item.price.from) out.push({ main:false, text: ui.varies });
+    return out;
+  }
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  /* ── 렌더 ─────────────────────────────────────────────── */
+  function render(lang){
+    var ui = UI[lang];
+    var html = "";
+
+    CATS.forEach(function(cat){
+      html += '<section class="cat">';
+      html += '<div class="cat__head">' +
+                '<p class="cat__meta"><span class="cat__no">' + cat.no + '</span>' +
+                '<span class="cat__lat" lang="en">' + cat.latin + '</span></p>' +
+                '<h2 class="cat__t">' + esc(cat.title[lang]) + '</h2>' +
+              '</div>';
+      if (cat.note){
+        html += '<p class="cat__note">' + esc(cat.note[lang]) + '</p>';
+      }
+      cat.items.forEach(function(it){
+        var lines = priceLines(it, lang);
+        var priceHtml = lines.map(function(l){
+          return '<span class="' + (l.main ? "p-main" : "p-sub") + '">' + esc(l.text) + '</span>';
+        }).join("");
+        var open = openId === it.id;
+        html +=
+          '<div class="item' + (open ? " is-open" : "") + '" data-id="' + it.id + '">' +
+            '<button type="button" class="item__head" aria-expanded="' + (open ? "true" : "false") + '"' +
+              ' aria-controls="panel-' + it.id + '" id="btn-' + it.id + '">' +
+              '<span class="item__name">' + esc(it.name[lang]) + '</span>' +
+              '<span class="item__price">' + priceHtml + '</span>' +
+              '<span class="item__ico" aria-hidden="true"></span>' +
+            '</button>' +
+            '<div class="item__panel" id="panel-' + it.id + '" role="region" aria-labelledby="btn-' + it.id + '">' +
+              '<div class="item__in"><div class="item__body">' +
+                '<p class="item__desc">' + esc(it.desc[lang]) + '</p>' +
+                '<div class="specs">' +
+                  '<span><em>' + esc(ui.specDur) + '</em><b>' + esc(it.dur[lang]) + '</b></span>' +
+                  '<span><em>' + esc(ui.specHold) + '</em><b>' + esc(it.hold[lang]) + '</b></span>' +
+                '</div>' +
+                '<p class="item__fine">' + esc(ui.fine) + '</p>' +
+              '</div></div>' +
+            '</div>' +
+          '</div>';
+      });
+      html += '</section>';
+    });
+
+    menuEl.innerHTML = html;
+
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var k = el.getAttribute("data-i18n");
+      if (ui[k] != null) el.textContent = ui[k];
+    });
+    document.title = ui.title;
+  }
+
+  /* ── 아코디언 ─────────────────────────────────────────── */
+  function toggle(id){
+    if (openId === id){
+      openId = null;
+    } else {
+      openId = id;
+    }
+    document.querySelectorAll(".item").forEach(function(el){
+      var on = el.getAttribute("data-id") === openId;
+      el.classList.toggle("is-open", on);
+      var btn = el.querySelector(".item__head");
+      if (btn) btn.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+  }
+
+  menuEl.addEventListener("click", function(e){
+    var btn = e.target.closest(".item__head");
+    if (!btn) return;
+    var item = btn.closest(".item");
+    if (item) toggle(item.getAttribute("data-id"));
+  });
+
+  /* ── 언어 ─────────────────────────────────────────────── */
+  function setLang(lang){
+    if (LANGS.indexOf(lang) < 0) lang = "ko";
+    current = lang;
+    document.documentElement.lang = DOCLANG[lang];
+    document.querySelectorAll(".lang").forEach(function(b){
+      b.setAttribute("aria-pressed", b.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    render(lang);
+    try { localStorage.setItem("addyoon-menu-lang", lang); } catch (err) {}
+  }
+
+  var saved = null;
+  try { saved = localStorage.getItem("addyoon-menu-lang"); } catch (err) {}
+  var start = (saved && LANGS.indexOf(saved) >= 0) ? saved : "ko";
+
+  document.querySelectorAll(".lang").forEach(function(b){
+    b.addEventListener("click", function(){ setLang(b.getAttribute("data-lang")); });
+  });
+
+  setLang(start);
+})();
+</script>
+</body>
+</html>
