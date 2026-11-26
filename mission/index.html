@@ -885,8 +885,9 @@
   var RING = 339.292;      // 2πr, r = 54
   var HOLD_MS = 1000;
   var holding = false, holdDone = false, holdStart = 0, holdRaf = null, holdTick = -1;
-  // 확인 직후 오는 터치 클릭(손을 느게 떼면 완료 화면의 버튼을 누를 수 있음) 잠급 방지
-  var guardUntil = 0;
+  // 확인 직후 오는 터치 클릭 방지 — 꾸 누른 순가락을 완료 화면이 뜬 뒤에 떼면
+  // 그 클리이 완료 화면의 버튼(닫기·처음으로)을 잘못 눌러 화면이 닫혀 버린다.
+  var swallowClick = false, swallowTimer = null;
 
   function setRing(p){
     if(p <= 0) p = 0;
@@ -954,7 +955,9 @@
 
   function holdComplete(){
     holding = false; holdDone = true;
-    guardUntil = performance.now() + 900;
+    swallowClick = true;
+    clearTimeout(swallowTimer);
+    swallowTimer = setTimeout(function(){ swallowClick = false; }, 1600);
     if(holdRaf){ cancelAnimationFrame(holdRaf); holdRaf = null; }
     ringFg.style.transition = "stroke-dashoffset .12s ease";
     setRing(1);
@@ -1186,7 +1189,14 @@
   document.getElementById("resetBtn").addEventListener("click", reset);
   document.getElementById("resetBig").addEventListener("click", reset);
   overlay.addEventListener("click", function(e){
-    if(performance.now() < guardUntil){ e.preventDefault(); e.stopPropagation(); }
+    if(!swallowClick) return;
+    swallowClick = false;
+    e.preventDefault(); e.stopPropagation();
+  }, true);
+  // 새로 누르는 순가락은 정상 동작하게
+  document.addEventListener("pointerdown", function(){
+    if(!swallowClick) return;
+    swallowClick = false;
   }, true);
   document.getElementById("closeOverlay").addEventListener("click", hideAllClear);
   document.addEventListener("keydown", function(e){
