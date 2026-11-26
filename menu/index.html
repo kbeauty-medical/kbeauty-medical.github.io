@@ -122,7 +122,6 @@
   .hero__note{
     margin-top:.8rem;
     font-size:.72rem; line-height:1.65; color:var(--ink-3); letter-spacing:0;
-    word-break:keep-all;
   }
 
   /* ── 카테고리 ───────────────────────────────────────────── */
@@ -151,13 +150,18 @@
     margin-top:.5rem;
     font-size:clamp(1.16rem, 4.4vw, 1.4rem);
     font-weight:400; letter-spacing:-0.025em; line-height:1.4;
-    word-break:keep-all;
   }
+  /* 한국어는 어절 단위로 끊고, 중국어 · 일본어는 기본 줄바꿈 규칙을 따른다 */
+  html[lang="ko"] .cat__t,
+  html[lang="ko"] .item__name,
+  html[lang="ko"] .item__desc,
+  html[lang="ko"] .cat__note,
+  html[lang="ko"] .hero__note,
+  html[lang="ko"] .note__p{ word-break:keep-all; }
   .cat__note{
     padding-top:.75rem;
     font-size:.72rem; line-height:1.65; color:var(--ink-3);
     letter-spacing:0;
-    word-break:keep-all;
   }
 
   /* ── 아이템(아코디언) ──────────────────────────────────── */
@@ -176,7 +180,6 @@
   .item__name{
     font-size:clamp(1rem, 2.9vw, 1.1rem);
     font-weight:500; letter-spacing:-0.02em; line-height:1.45;
-    word-break:keep-all;
     transition:color .18s ease;
   }
   .item__price{
@@ -222,7 +225,6 @@
   .item__desc{
     font-size:.9rem; line-height:1.82; color:var(--ink-2);
     letter-spacing:-0.005em;
-    word-break:keep-all;
     overflow-wrap:break-word;
   }
   .specs{
@@ -269,7 +271,6 @@
   .note__p{
     margin-top:.6rem;
     font-size:.86rem; line-height:1.8; color:var(--ink-2);
-    word-break:keep-all;
   }
   .branches{ margin-top:.9rem; display:grid; gap:.9rem; }
   .branch{ display:grid; grid-template-columns:5.6rem minmax(0,1fr); gap:.5rem; align-items:baseline; }
