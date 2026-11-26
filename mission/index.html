@@ -428,8 +428,9 @@
   .toast{
     position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom)); z-index:95;
     transform:translate(-50%, 24px); opacity:0; pointer-events:none;
-    padding:.7rem 1.1rem; border-radius:999px;
-    background:var(--ink); color:#FFF6E9; font-size:.88rem; font-weight:800;
+    padding:.7rem 1.1rem; border-radius:20px;
+    max-width:min(88vw, 420px); text-align:center; word-break:keep-all;
+    background:var(--ink); color:#FFF6E9; font-size:.88rem; font-weight:800; line-height:1.35;
     box-shadow:0 10px 24px rgba(36,35,33,.25);
     transition:transform .28s cubic-bezier(.2,1.4,.5,1), opacity .28s;
   }
@@ -889,6 +890,7 @@
     if(p <= 0) p = 0;
     if(p >= 1) p = 1;
     ringFg.style.strokeDashoffset = (RING * (1 - p)).toFixed(2);
+    ringFg.style.opacity = p > 0 ? "1" : "0";
   }
 
   function resetHold(){
