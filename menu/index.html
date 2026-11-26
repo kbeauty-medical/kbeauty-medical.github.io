@@ -285,16 +285,6 @@
     font-size:.57rem; letter-spacing:.04em; color:var(--ink-3);
     font-variant-numeric:tabular-nums lining-nums; white-space:nowrap;
   }
-  .gal__toggle{
-    display:inline-flex; align-items:center;
-    min-height:1.62rem; padding:0 .4rem;
-    border:1px solid var(--line);
-    font-size:.58rem; letter-spacing:.01em; color:var(--ink-2);
-    white-space:nowrap;
-    transition:color .18s ease, border-color .18s ease;
-  }
-  .gal__toggle:hover{ color:var(--ink); border-color:var(--ink); }
-  .gal__toggle:active{ color:var(--ink); }
   .galrow{
     display:flex; align-items:flex-start; gap:1rem;
     margin:0 0 1.15rem;
@@ -499,8 +489,6 @@
       specDur:"소요시간",
       specHold:"유지",
       forwho:"추천 대상",
-      galPause:"⏸ 멈춤",
-      galPlay:"▶ 재생",
       fine:"소요 시간과 유지는 개인차가 있으며, 상담 시 확정됩니다.",
       cash:"현금",
       varies:"범위에 따라 상이",
@@ -520,8 +508,6 @@
       specDur:"Duration",
       specHold:"Lasts",
       forwho:"Best for those who",
-      galPause:"⏸ Pause",
-      galPlay:"▶ Play",
       fine:"Duration and longevity vary by individual and are confirmed at consultation.",
       cash:"Cash",
       varies:"Varies by area",
@@ -541,8 +527,6 @@
       specDur:"施术时间",
       specHold:"维持",
       forwho:"适合人群",
-      galPause:"⏸ 暂停",
-      galPlay:"▶ 播放",
       fine:"施术时间与维持时间因人而异，咨询时确定。",
       cash:"现金",
       varies:"视范围而定",
@@ -562,8 +546,6 @@
       specDur:"所要時間",
       specHold:"持続",
       forwho:"こんな方におすすめ",
-      galPause:"⏸ 一時停止",
-      galPlay:"▶ 再生",
       fine:"所要時間と持続期間には個人差があり、カウンセリング時に確定します。",
       cash:"現金",
       varies:"範囲により異なる",
@@ -619,7 +601,7 @@
             zh:["日常喜欢化妆、追求精致妆感的人","希望眉形轮廓清晰、干净利落的人","眉毛本身较杂乱、希望整体均匀修饰的人"],
             ja:["普段からメイクをしていて、より華やかな印象を求める方","眉の輪郭をきちんと整えて、くっきり見せたい方","毛並みが不揃いで、均一な仕上がりを希望する方"]
           },
-          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          dur:{ ko:"약 1시간", en:"approx. 1 hr", zh:"约1小时", ja:"約1時間" },
           hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
         },
         {
@@ -639,7 +621,7 @@
             zh:["想要兼具自然感和立体效果的人","眉毛前端较稀疏、需要更清晰轮廓的人","觉得单一线条眉或雾眉不够满意，希望两者结合的人"],
             ja:["自然さと立体感の両方を求める方","眉頭が薄く、全体の輪郭をはっきりさせたい方","ナチュラルブロウやシェーディングだけでは物足りないと感じる方"]
           },
-          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          dur:{ ko:"약 1시간", en:"approx. 1 hr", zh:"约1小时", ja:"約1時間" },
           hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
         },
         {
@@ -659,7 +641,7 @@
             zh:["几乎没有眉毛或眉毛稀少的人","即使不化妆也希望看起来自然的人","喜欢柔和、低调眉形而不是浓重或生硬线条的人"],
             ja:["眉毛がほとんど、または全くない方","メイクをしなくても自然な印象を求める方","はっきりしたラインより、柔らかく控えめな眉を好む方"]
           },
-          dur:{ ko:"약 2시간", en:"approx. 2 hrs", zh:"约2小时", ja:"約2時間" },
+          dur:{ ko:"약 40분", en:"approx. 40 min", zh:"约40分钟", ja:"約40分" },
           hold:{ ko:"1–2년", en:"1–2 yrs", zh:"1–2年", ja:"1〜2年" }
         }
       ]
@@ -832,7 +814,6 @@
               '<div class="gal__bar">' +
                 '<div class="gal__dots">' + dotsHtml + '</div>' +
                 '<span class="gal__count num">1 / ' + it.photos.length + '</span>' +
-                '<button type="button" class="gal__toggle" aria-pressed="false">' + esc(ui.galPause) + '</button>' +
               '</div>' +
             '</div>';
           galHtml = forwhoSide
@@ -918,24 +899,23 @@
   }
 
   /* ── 사진 슬라이드쇼 ──────────────────────────────────── */
-  var GAL_MS = 1500;
+  var GAL_MS = 2000;
   var gId = null, gRoot = null, gImgs = null, gPhotos = null;
-  var gI = 0, gLayer = 0, gPaused = false, gTimer = null;
+  var gI = 0, gLayer = 0, gTimer = null;
 
   function galTimerOff(){
     if (gTimer){ clearInterval(gTimer); gTimer = null; }
   }
   function galTimerOn(){
     galTimerOff();
-    if (!gRoot || gPaused) return;
+    if (!gRoot) return;
     gTimer = setInterval(function(){
-      if (!gRoot || gPaused || !gPhotos) return;
+      if (!gRoot || !gPhotos) return;
       galTo((gI + 1) % gPhotos.length);
     }, GAL_MS);
   }
   function galPaint(){
     if (!gRoot || !gImgs) return;
-    var ui = UI[current];
     var it = itemById(gId);
     gImgs[0].classList.toggle("is-on", gLayer === 0);
     gImgs[1].classList.toggle("is-on", gLayer === 1);
@@ -946,9 +926,6 @@
       dots[k].setAttribute("aria-current", k === gI ? "true" : "false");
     }
     gRoot.querySelector(".gal__count").textContent = (gI + 1) + " / " + gPhotos.length;
-    var tb = gRoot.querySelector(".gal__toggle");
-    tb.textContent = ui[gPaused ? "galPlay" : "galPause"];
-    tb.setAttribute("aria-pressed", gPaused ? "true" : "false");
   }
   function galTo(i){
     if (!gRoot || !gPhotos || i === gI) return;
@@ -958,7 +935,7 @@
     galPaint();
   }
   function galStart(id){
-    var prev = (gId === id) ? { i: gI, paused: gPaused } : null;
+    var prev = (gId === id) ? { i: gI } : null;
     var it = itemById(id);
     var root = menuEl.querySelector('.gal[data-gal="' + id + '"]');
     galStop();
@@ -966,7 +943,6 @@
     gId = id; gRoot = root; gPhotos = it.photos;
     gImgs = root.querySelectorAll(".gal__img");
     gI = prev ? (prev.i % gPhotos.length) : 0;
-    gPaused = prev ? prev.paused : false;
     gLayer = 0;
     gImgs[0].src = gPhotos[gI];
     gImgs[1].src = gPhotos[(gI + 1) % gPhotos.length];
@@ -983,13 +959,6 @@
   });
 
   menuEl.addEventListener("click", function(e){
-    var tb = e.target.closest(".gal__toggle");
-    if (tb){
-      gPaused = !gPaused;
-      if (gPaused) galTimerOff(); else galTimerOn();
-      galPaint();
-      return;
-    }
     var dt = e.target.closest(".gal__dot");
     if (dt){
       galTo(parseInt(dt.getAttribute("data-i"), 10));
