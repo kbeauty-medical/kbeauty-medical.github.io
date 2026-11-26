@@ -225,6 +225,31 @@
   .clear:active{ transform:translateY(4px); border-bottom-width:0; box-shadow:0 3px 8px rgba(36,35,33,.10); }
   .card.is-clear .clear{ background:#fff; color:var(--accent-d); border-bottom-color:var(--accent-soft); box-shadow:none; }
 
+  /* 잠금 — 열기 버튼을 누르기 전에는 클리어 불가 */
+  .clear.is-locked{
+    background:var(--cream-2); color:var(--ink-3);
+    border-bottom-color:#E3D9C6; box-shadow:none;
+    font-size:.82rem; letter-spacing:-.01em; gap:.32rem;
+  }
+  .clear.is-locked:active{ transform:none; border-bottom-width:4px; }
+  .card .mini{ position:relative; }
+  .card:not(.is-opened):not(.is-clear) .mini{
+    border-color:#E3B75A; background:var(--butter-soft); color:#7A5A12;
+    animation:miniPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes miniPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(239,179,46,.0); }
+    50%{ box-shadow:0 0 0 5px rgba(239,179,46,.20); }
+  }
+  .card.shake{ animation:shakeX .4s ease; }
+  @keyframes shakeX{
+    0%,100%{ transform:translateX(0); }
+    18%{ transform:translateX(-6px); }
+    38%{ transform:translateX(5px); }
+    58%{ transform:translateX(-4px); }
+    78%{ transform:translateX(3px); }
+  }
+
   /* CLEAR 도장 */
   .stamp{
     position:absolute; right:.35rem; top:.15rem;
@@ -266,14 +291,16 @@
   /* ── ALL CLEAR 오버레이 ─────────────────────────── */
   .overlay{
     position:fixed; inset:0; z-index:80;
-    display:grid; place-items:center; padding:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    display:flex; align-items:flex-start; justify-content:center;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
     background:radial-gradient(120% 90% at 50% 0%, rgba(255,246,216,.92), rgba(251,246,236,.94));
     -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
     opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s;
   }
   .overlay.show{ opacity:1; visibility:visible; }
   .board{
-    position:relative; z-index:2; width:min(100%, 540px); text-align:center;
+    position:relative; z-index:2; width:min(100%, 540px); text-align:center; margin:auto 0;
     padding:clamp(20px,3.4vw,34px) clamp(18px,3.4vw,32px) clamp(18px,3vw,26px);
     background:var(--paper); border:3px solid var(--ink); border-radius:32px;
     box-shadow:0 20px 0 rgba(36,35,33,.10), 0 30px 60px rgba(36,35,33,.18);
@@ -321,6 +348,81 @@
   }
   .board__reset:active{ transform:translateY(5px); border-bottom-width:0; }
   .board__close{ min-height:2.5rem; font-size:.84rem; font-weight:800; color:var(--ink-3); }
+
+  /* ── 원장님 확인 ─────────────────────────────────── */
+  .board__flag--wait{ background:var(--butter-soft); color:#8A6415; border-color:var(--butter); }
+  .cklabel{ margin-top:1rem; font-size:.76rem; font-weight:900; letter-spacing:.08em; color:var(--ink-3); }
+  .checklist{ list-style:none; margin:.45rem 0 0; padding:0; display:grid; gap:.4rem; text-align:left; }
+  .checklist li{
+    display:flex; align-items:center; gap:.55rem;
+    padding:.55rem .7rem; border-radius:14px;
+    background:var(--cream); border:1.5px solid var(--line);
+    font-size:.9rem; font-weight:800; color:var(--ink-2); line-height:1.25;
+  }
+  .checklist .ck{
+    flex:0 0 auto; display:grid; place-items:center;
+    width:1.5rem; height:1.5rem; border-radius:999px;
+    background:var(--mint-soft); border:1.5px solid var(--mint); color:var(--mint-d);
+    font-size:.74rem; font-weight:900;
+  }
+  .checklist b{ color:var(--ink); font-weight:900; }
+
+  .holdwrap{ margin-top:1.15rem; display:grid; justify-items:center; gap:.72rem; }
+  .holdbtn{
+    position:relative; width:clamp(150px, 42vw, 178px); aspect-ratio:1; border-radius:50%;
+    display:grid; place-items:center; background:var(--paper);
+    box-shadow:0 12px 26px rgba(36,35,33,.16);
+    touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
+    transition:transform .12s ease, box-shadow .2s ease;
+  }
+  .holdbtn:active{ transform:scale(.972); }
+  .holdinner{
+    width:calc(100% - 20px); aspect-ratio:1; border-radius:50%;
+    display:grid; place-items:center; align-content:center; gap:.1rem;
+    background:var(--coral); color:#fff;
+    box-shadow:inset 0 -5px 0 var(--coral-d);
+    transition:background .25s ease, box-shadow .25s ease;
+  }
+  .holdico{ font-size:1.5rem; line-height:1.1; }
+  .holdlabel{ font-size:.96rem; font-weight:900; letter-spacing:-.02em; }
+  .holdsub{ font-size:.72rem; font-weight:800; opacity:.92; }
+  .holdring{
+    position:absolute; inset:-8px; width:calc(100% + 16px); height:calc(100% + 16px);
+    transform:rotate(-90deg); pointer-events:none;
+  }
+  .holdring .rb{ fill:none; stroke:var(--cream-2); stroke-width:6; }
+  .holdring .rf{
+    fill:none; stroke:var(--mint); stroke-width:6; stroke-linecap:round;
+    stroke-dasharray:339.292; stroke-dashoffset:339.292;
+  }
+  .holdbtn.is-holding .holdinner{ background:var(--coral-d); }
+  .holdbtn.is-done .holdinner{ background:var(--mint-d); box-shadow:inset 0 -5px 0 #1F8460; }
+  .holdbtn.is-done .holdring .rf{ stroke:var(--mint-d); }
+  .holdhint{ margin:0; font-size:.78rem; font-weight:800; color:var(--ink-3); }
+
+  @media (max-height:680px){
+    .board{ padding-top:16px; padding-bottom:16px; }
+    .board__title{ font-size:clamp(1.4rem, 4.6vw, 2rem); }
+    .cklabel{ margin-top:.7rem; }
+    .checklist li{ padding:.45rem .6rem; font-size:.85rem; }
+    .holdwrap{ margin-top:.8rem; gap:.5rem; }
+    .holdbtn{ width:clamp(122px, 33vw, 148px); }
+    .holdico{ font-size:1.25rem; }
+  }
+
+  /* 3/3 완료 후 확인 단계로 들어가는 버튼 */
+  .finalcta{
+    display:none; width:min(100%, 520px); margin:clamp(14px,2vh,20px) auto 0;
+    align-items:center; justify-content:center; gap:.45rem;
+    min-height:3.3rem; padding:0 1.1rem; border-radius:18px;
+    background:var(--ink); color:#FFF6E9; border-bottom:5px solid #000;
+    font-size:.96rem; font-weight:900; letter-spacing:.01em;
+    box-shadow:0 10px 22px rgba(36,35,33,.18);
+    transition:transform .1s, border-bottom-width .1s, background .25s;
+  }
+  .finalcta.show{ display:flex; }
+  .finalcta.done{ background:var(--mint-d); border-bottom-color:#1F8460; }
+  .finalcta:active{ transform:translateY(4px); border-bottom-width:1px; }
 
   /* ── 토스트 ─────────────────────────────────────── */
   .toast{
@@ -452,7 +554,41 @@
   </section>
 
   <p class="note">미션은 순서 상관없이 · 하나씩 클리어!</p>
+
+  <button class="finalcta" id="finalCta" type="button" aria-hidden="true">원장님 확인 받으러 가기 →</button>
 </main>
+
+<div class="overlay" id="checkOverlay" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+  <div class="board">
+    <div class="board__dots"><i></i><i></i><i></i></div>
+    <span class="board__flag board__flag--wait">✓ 3 / 3 CLEAR · 마지막 확인</span>
+    <h2 class="board__title" id="ckTitle">원장님 확인</h2>
+    <p class="board__ask">이 화면을 원장님께 보여주세요 💗</p>
+    <p class="cklabel">원장님께 확인받을 것</p>
+    <ul class="checklist">
+      <li><span class="ck" aria-hidden="true">✓</span><span>네이버 플레이스 <b>저장 + 알림받기</b></span></li>
+      <li><span class="ck" aria-hidden="true">✓</span><span>인스타그램 <b>@add.y__ 팔로우</b></span></li>
+      <li><span class="ck" aria-hidden="true">✓</span><span>네이버 <b>리뷰 작성</b></span></li>
+    </ul>
+    <div class="holdwrap">
+      <button class="holdbtn" id="holdBtn" type="button" aria-label="원장님 확인. 1초 동안 꾹 누르면 완료됩니다.">
+        <svg class="holdring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="rb" cx="60" cy="60" r="54"></circle>
+          <circle class="rf" id="ringFg" cx="60" cy="60" r="54"></circle>
+        </svg>
+        <span class="holdinner">
+          <span class="holdico" aria-hidden="true">👆</span>
+          <span class="holdlabel" id="holdLabel">원장님 확인</span>
+          <span class="holdsub" id="holdSub">1초 꾹 누르기</span>
+        </span>
+      </button>
+      <p class="holdhint" id="holdHint">원장님만 · 1초 동안 꾹 눌러주세요</p>
+    </div>
+    <div class="board__btns">
+      <button class="board__close" id="closeCheck">닫기</button>
+    </div>
+  </div>
+</div>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="acTitle">
   <canvas id="confetti" aria-hidden="true"></canvas>
@@ -461,7 +597,7 @@
     <span class="board__flag">✓ 3 / 3 CLEAR</span>
     <h2 class="board__title" id="acTitle">MISSION<br>ALL CLEAR!</h2>
     <p class="board__benefit">미션 클리어 할인 적용 완료</p>
-    <p class="board__ask">이 화면을 원장님께 보여주세요 💗</p>
+    <p class="board__ask">원장님 확인 완료 · 계산할 때 보여주세요 💗</p>
     <div class="board__btns">
       <button class="board__reset" id="resetBig">다음 손님 · 처음으로</button>
       <button class="board__close" id="closeOverlay">닫기</button>
@@ -475,14 +611,24 @@
 (function(){
   "use strict";
 
-  var KEY = "adyoon-mission-v2";
-  var state = { cleared: [], sound: true };
+  var KEY = "adyoon-mission-v3";
+  var state = { opened: [], cleared: [], confirmed: false, sound: true };
 
+  function onlyMissions(a){
+    return (Array.isArray(a) ? a : []).filter(function(n){ return n >= 1 && n <= 3; });
+  }
   try{
     var saved = JSON.parse(localStorage.getItem(KEY) || "null");
-    if(saved && Array.isArray(saved.cleared)) state.cleared = saved.cleared.filter(function(n){ return n>=1 && n<=3; });
-    if(saved && typeof saved.sound === "boolean") state.sound = saved.sound;
+    if(saved){
+      state.opened  = onlyMissions(saved.opened);
+      state.cleared = onlyMissions(saved.cleared);
+      if(typeof saved.confirmed === "boolean") state.confirmed = saved.confirmed;
+      if(typeof saved.sound === "boolean") state.sound = saved.sound;
+    }
   }catch(e){}
+  // 클리어한 단계는 이미 열었던 것으로 본다
+  state.cleared.forEach(function(n){ if(state.opened.indexOf(n) === -1) state.opened.push(n); });
+  if(state.cleared.length < 3) state.confirmed = false;
 
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
@@ -610,16 +756,39 @@
       bell(2093 * Math.pow(2, i/12), 0.50 + i * 0.052, 0.34, 0.020);
     }
   }
+  // 열기 버튼 눌렀을 때 · 잠금 해제 "찰칵"
+  function sfxUnlock(){
+    marimba(659.25, 0.00, 0.22, 0.15);
+    marimba(987.77, 0.085, 0.40, 0.13);
+    bell(1318.51, 0.085, 0.42, 0.035);
+    noise(0.02, 0.04, 2600, 0.03);
+  }
+  // 3/3 달성 · 확인 단계로 넘어가는 짧은 상승
+  function sfxToCheck(){
+    [783.99, 987.77, 1174.66].forEach(function(f, i){ marimba(f, i * 0.075, 0.5, 0.19); });
+    bell(1567.98, 0.16, 0.62, 0.04);
+  }
 
   /* ── 상태 렌더 ──────────────────────────────────── */
   var countEl = document.getElementById("countNow");
   var countBox = document.querySelector(".count");
   var fillEl = document.getElementById("fill");
-  var segs = [].slice.call(document.querySelectorAll(".seg"));
   var cards = [].slice.call(document.querySelectorAll(".card"));
   var overlay = document.getElementById("overlay");
+  var checkOverlay = document.getElementById("checkOverlay");
+  var cta = document.getElementById("finalCta");
 
   function isCleared(n){ return state.cleared.indexOf(n) !== -1; }
+  function isOpened(n){ return state.opened.indexOf(n) !== -1 || isCleared(n); }
+
+  function paintCta(n){
+    var full = n >= 3;
+    var done = full && state.confirmed;
+    cta.classList.toggle("show", full);
+    cta.classList.toggle("done", done);
+    cta.setAttribute("aria-hidden", full ? "false" : "true");
+    cta.textContent = done ? "✓ 할인 적용 완료 · 확인 화면 보기" : "원장님 확인 받으러 가기 →";
+  }
 
   function render(){
     var n = state.cleared.length;
@@ -633,12 +802,24 @@
     if(n > 0) countBox.classList.add("bump");
     cards.forEach(function(card){
       var m = Number(card.getAttribute("data-m"));
-      var on = isCleared(m);
+      var on = isCleared(m), open = isOpened(m);
+      var locked = !on && !open;
       card.classList.toggle("is-clear", on);
+      card.classList.toggle("is-opened", open);
       var btn = card.querySelector(".clear");
+      btn.classList.toggle("is-locked", locked);
+      btn.setAttribute("aria-disabled", locked ? "true" : "false");
       btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.querySelector("span").textContent = on ? "✓ 클리어 완료" : "클리어!";
+      var sp = btn.querySelector("span");
+      if(on){
+        sp.textContent = "✓ 클리어 완료";
+      }else if(locked){
+        sp.textContent = "🔒 먼저 열기 버튼을 눌러주세요";
+      }else{
+        sp.textContent = "클리어!";
+      }
     });
+    paintCta(n);
   }
 
   function cardFor(n){
@@ -670,11 +851,143 @@
     try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
   }
 
-  function showOverlay(){
+  function showAllClear(){
     if(toastEl){ toastEl.classList.remove("show"); clearTimeout(toastTimer); }
     overlay.classList.add("show");
+    setTimeout(burst, 60);
   }
-  function hideOverlay(){ overlay.classList.remove("show"); }
+  function hideAllClear(){ overlay.classList.remove("show"); }
+
+  function showCheck(){
+    resetHold();
+    if(toastEl){ toastEl.classList.remove("show"); clearTimeout(toastTimer); }
+    checkOverlay.classList.add("show");
+  }
+  function hideCheck(){ checkOverlay.classList.remove("show"); resetHold(); }
+
+  function hideAll(){ hideAllClear(); hideCheck(); }
+
+  /* 마지막 CTA · 확인 화면 열기 */
+  cta.addEventListener("click", function(){
+    if(state.sound) audio();
+    if(state.confirmed) showAllClear();
+    else showCheck();
+  });
+  document.getElementById("closeCheck").addEventListener("click", hideCheck);
+
+  /* ── 원장님 확인 · 1초 꾹 누르기 ────────────────── */
+  var holdBtn = document.getElementById("holdBtn");
+  var ringFg = document.getElementById("ringFg");
+  var holdLabel = document.getElementById("holdLabel");
+  var holdSub = document.getElementById("holdSub");
+  var holdHint = document.getElementById("holdHint");
+  var RING = 339.292;      // 2πr, r = 54
+  var HOLD_MS = 1000;
+  var holding = false, holdDone = false, holdStart = 0, holdRaf = null, holdTick = -1;
+
+  function setRing(p){
+    if(p <= 0) p = 0;
+    if(p >= 1) p = 1;
+    ringFg.style.strokeDashoffset = (RING * (1 - p)).toFixed(2);
+  }
+
+  function resetHold(){
+    holding = false; holdDone = false;
+    if(holdRaf){ cancelAnimationFrame(holdRaf); holdRaf = null; }
+    holdTick = -1;
+    holdBtn.classList.remove("is-holding", "is-done");
+    ringFg.style.transition = "stroke-dashoffset .26s ease";
+    setRing(0);
+    holdLabel.textContent = "원장님 확인";
+    holdSub.textContent = "1초 꾹 누르기";
+    holdHint.textContent = "원장님만 · 1초 동안 꾹 눌러주세요";
+  }
+
+  function holdBegin(){
+    if(holdDone || holding) return;
+    holding = true;
+    holdStart = performance.now();
+    holdTick = -1;
+    ringFg.style.transition = "none";
+    setRing(0);
+    holdBtn.classList.remove("is-done");
+    holdBtn.classList.add("is-holding");
+    holdSub.textContent = "계속 누르고 있어요…";
+    if(state.sound){ audio(); marimba(523.25, 0, 0.16, 0.10); }
+    buzz([10]);
+    holdRaf = requestAnimationFrame(holdLoop);
+  }
+
+  function holdLoop(){
+    if(!holding) return;
+    var p = (performance.now() - holdStart) / HOLD_MS;
+    if(p > 1) p = 1;
+    setRing(p);
+    var step = Math.floor(p * 4);
+    if(step > holdTick){
+      holdTick = step;
+      if(step > 0 && step < 4){
+        if(state.sound) marimba(659.25 * Math.pow(1.2, step), 0, 0.14, 0.08);
+        buzz([6]);
+      }
+    }
+    if(p >= 1){ holdComplete(); return; }
+    holdRaf = requestAnimationFrame(holdLoop);
+  }
+
+  function holdEnd(){
+    if(!holding) return;
+    holding = false;
+    if(holdRaf){ cancelAnimationFrame(holdRaf); holdRaf = null; }
+    if(holdDone) return;
+    holdBtn.classList.remove("is-holding");
+    holdSub.textContent = "1초 꾹 누르기";
+    ringFg.style.transition = "stroke-dashoffset .26s ease";
+    setRing(0);
+    if(state.sound) marimba(311.13, 0, 0.16, 0.08);
+    toast("조금만 더! 1초 동안 꾹 눌러주세요 💪");
+  }
+
+  function holdComplete(){
+    holding = false; holdDone = true;
+    if(holdRaf){ cancelAnimationFrame(holdRaf); holdRaf = null; }
+    ringFg.style.transition = "stroke-dashoffset .12s ease";
+    setRing(1);
+    holdBtn.classList.remove("is-holding");
+    holdBtn.classList.add("is-done");
+    holdLabel.textContent = "확인 완료";
+    holdSub.textContent = "감사합니다 💗";
+    holdHint.textContent = "미션 클리어 할인 적용 완료";
+    buzz([0, 45, 55, 45, 55, 130]);
+    if(state.sound) sfxFanfare();
+    state.confirmed = true;
+    save();
+    paintCta(state.cleared.length);
+    setTimeout(function(){
+      checkOverlay.classList.remove("show");
+      showAllClear();
+    }, 460);
+  }
+
+  if(window.PointerEvent){
+    holdBtn.addEventListener("pointerdown", function(e){ if(e.cancelable) e.preventDefault(); holdBegin(); });
+    holdBtn.addEventListener("pointerup", holdEnd);
+    holdBtn.addEventListener("pointercancel", holdEnd);
+    holdBtn.addEventListener("pointerleave", holdEnd);
+    holdBtn.addEventListener("pointermove", function(e){
+      if(!holding) return;
+      var r = holdBtn.getBoundingClientRect();
+      if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) holdEnd();
+    });
+  }else{
+    holdBtn.addEventListener("touchstart", function(e){ if(e.cancelable) e.preventDefault(); holdBegin(); }, { passive:false });
+    holdBtn.addEventListener("touchend", holdEnd);
+    holdBtn.addEventListener("touchcancel", holdEnd);
+    holdBtn.addEventListener("mousedown", function(e){ e.preventDefault(); holdBegin(); });
+    window.addEventListener("mouseup", holdEnd);
+  }
+  holdBtn.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
 
   /* ── 컨페티 ─────────────────────────────────────── */
   var cv = document.getElementById("confetti");
@@ -756,10 +1069,40 @@
     toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 1800);
   }
 
+  /* ── 열기(잠금 해제) ─────────────────────────────── */
+  function lockWarn(card){
+    if(card){
+      card.classList.remove("shake");
+      void card.offsetWidth;
+      card.classList.add("shake");
+      setTimeout(function(){ card.classList.remove("shake"); }, 460);
+    }
+    buzz([18, 40, 18]);
+    if(state.sound) marimba(261.63, 0, 0.18, 0.10);
+    toast("먼저 열기 버튼을 눌러주세요 🔒");
+  }
+
+  function markOpened(n){
+    if(isOpened(n)) return;
+    state.opened.push(n);
+    save(); render();
+    var card = cardFor(n);
+    if(card){
+      card.classList.remove("pop");
+      void card.offsetWidth;
+      card.classList.add("pop");
+      sparks(card);
+    }
+    buzz([12, 30, 14]);
+    if(state.sound) sfxUnlock();
+    toast("열렸어요! 이제 클리어 버튼을 눌러주세요 ✨");
+  }
+
   /* ── 클리어 토글 ────────────────────────────────── */
   function toggle(n){
     var i = state.cleared.indexOf(n);
     if(i === -1){
+      if(!isOpened(n)){ lockWarn(cardFor(n)); return; }
       state.cleared.push(n);
       state.cleared.sort();
       render(); save();
@@ -777,17 +1120,19 @@
       if(state.sound){
         if(c === 1) sfxDing();
         else if(c === 2) sfxLevelUp();
-        else sfxFanfare();
+        else sfxToCheck();
       }
       if(c === 3){
-        setTimeout(function(){ burst(); showOverlay(); }, 320);
+        toast("3/3 클리어! 원장님 확인만 남았어요");
+        setTimeout(showCheck, 520);
       }else{
         toast(c + "/3 클리어!");
       }
     }else{
       state.cleared.splice(i, 1);
+      state.confirmed = false;
       render(); save();
-      hideOverlay();
+      hideAll();
       buzz([10]);
       if(state.sound) marimba(392.00, 0, 0.22, 0.12);
     }
@@ -795,9 +1140,18 @@
 
   document.getElementById("grid").addEventListener("click", function(e){
     var btn = e.target.closest("[data-clear]");
-    if(!btn) return;
-    if(state.sound) audio();
-    toggle(Number(btn.getAttribute("data-clear")));
+    if(btn){
+      if(state.sound) audio();
+      toggle(Number(btn.getAttribute("data-clear")));
+      return;
+    }
+    var open = e.target.closest(".mini");
+    if(open){
+      var cardEl = open.closest(".card");
+      if(!cardEl) return;
+      if(state.sound) audio();
+      markOpened(Number(cardEl.getAttribute("data-m")));
+    }
   });
 
   /* ── 사운드 토글 / 리셋 ─────────────────────────── */
@@ -815,23 +1169,32 @@
   });
 
   function reset(){
+    state.opened = [];
     state.cleared = [];
+    state.confirmed = false;
     render(); save();
-    hideOverlay();
+    hideAll();
     buzz([10]);
     if(state.sound){ marimba(523.25, 0, 0.22, 0.12); marimba(783.99, 0.07, 0.3, 0.10); }
     toast("처음으로 리셋!");
   }
   document.getElementById("resetBtn").addEventListener("click", reset);
   document.getElementById("resetBig").addEventListener("click", reset);
-  document.getElementById("closeOverlay").addEventListener("click", hideOverlay);
-  document.addEventListener("keydown", function(e){ if(e.key === "Escape") hideOverlay(); });
+  document.getElementById("closeOverlay").addEventListener("click", hideAllClear);
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    if(holding) holdEnd();
+    hideAll();
+  });
 
-  /* ── 시작 ───────────────────────────────────────── */
+  /* ── 시작 ──────────────────────────────────────── */
   paintSound();
   render();
   sizeCanvas();
-  if(state.cleared.length === 3) showOverlay();
+  if(state.cleared.length === 3){
+    if(state.confirmed) showAllClear();
+    else showCheck();
+  }
 })();
 </script>
 </body>
