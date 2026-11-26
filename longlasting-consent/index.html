@@ -1,0 +1,3064 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>롱래스팅 센터 · 고객 시술 동의서 &amp; 영수증</title>
+<meta name="theme-color" content="#F7F5F0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="format-detection" content="telephone=no" />
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<!--
+  K-BEAUTY × MEDICAL · 롱래스팅 센터 — 패드용 고객 시술 동의서 & 영수증 (공동 버전)
+  ─────────────────────────────────────────────────────────────────────────────
+  · 한지윤 · 송지원 대표원장 공동 운영 버전. 이 파일 하나만 태블릿 브라우저에서 열면 바로 사용합니다.
+  · 구글 시트 자동 저장 + 고객 이메일 영수증은 `롱래스팅-동의서-AppsScript.gs`를
+    스프레드시트 `롱래스팅센터_고객동의서_영수증_DB`에 붙여넣고 웹 앱으로 배포한 뒤,
+    우측 상단 `연동 설정 ⚙️`에 주소(/exec)를 넣으면 작동합니다.
+  · 메뉴·가격은 `시술메뉴설정` 탭(시술명 | 정가 | 현금할인가 | 비고)에서 읽어옵니다.
+  · 언어: 한국어 · EN · 中文 · 日本語 (상단 우측 버튼). 시술명은 시트의 한국어 이름을 기준으로 번역 표시합니다.
+  · 지점: 강남점(기본) / 배곧점 · 담당 원장: 한지윤 원장 / 송지원 원장 → 시트 `담당원장` 열에 기록.
+-->
+<style>
+  :root{
+    --paper:#F7F5F0;
+    --paper-2:#FBF9F5;
+    --sand:#DAD4CC;
+    --ink:#242321;
+    --muted:#6E6A63;
+    --faint:#9A948B;
+    --line:rgba(36,35,33,0.16);
+    --line-soft:rgba(36,35,33,0.08);
+    --rust:#6E3B2C;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Noto Sans CJK KR","PingFang SC","Hiragino Sans","Noto Sans CJK SC","Noto Sans CJK JP","Microsoft YaHei","Malgun Gothic",sans-serif;
+    --font-serif:ui-serif,"AppleMyungjo","Nanum Myeongjo","Noto Serif CJK KR","Songti SC","Hiragino Mincho ProN","Times New Roman",serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html[lang="ko"] body{word-break:keep-all;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-sans);font-size:17px;line-height:1.6;letter-spacing:-0.01em;
+    padding-bottom:calc(104px + env(safe-area-inset-bottom));
+    word-break:normal;overflow-wrap:break-word;
+  }
+  h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-0.02em;}
+  p{margin:0;}
+  button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink);}
+  ::placeholder{color:var(--faint);opacity:1;}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 clamp(16px,3.2vw,40px);}
+  .wrap > main{padding-top:clamp(18px,2.4vw,26px);}
+
+  /* ───────── top bar ───────── */
+  .topbar{
+    position:sticky;top:0;z-index:30;background:rgba(247,245,240,.94);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;flex-wrap:wrap;padding-top:6px;padding-bottom:6px;}
+  .brand{display:flex;align-items:baseline;gap:9px;min-width:0;}
+  .brand-mark{font-family:var(--font-serif);font-size:15px;letter-spacing:.20em;font-weight:600;white-space:nowrap;}
+  .brand-dot{font-size:11px;color:var(--faint);}
+  .brand-sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;}
+  .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;}
+  .langbar{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:#fff;}
+  .langbar button{border:0;background:transparent;padding:7px 10px;font-size:12px;color:var(--muted);letter-spacing:.01em;white-space:nowrap;}
+  .langbar button + button{border-left:1px solid var(--line);}
+  .langbar button[aria-pressed="true"]{background:var(--ink);color:var(--paper);font-weight:600;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    padding:15px 26px;border-radius:2px;font-size:16px;font-weight:600;
+    letter-spacing:.01em;touch-action:manipulation;transition:opacity .15s,transform .1s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.45;}
+  .btn--ghost{background:transparent;color:var(--ink);border-color:var(--line);font-weight:500;padding:10px 14px;font-size:13.5px;}
+  .btn--ghost:hover{border-color:rgba(36,35,33,.4);}
+  .btn--sm{padding:10px 13px;font-size:13px;}
+  .btn--topbar{background:transparent;color:var(--muted);border-color:var(--line);padding:8px 12px;font-size:12.5px;font-weight:500;white-space:nowrap;}
+  .btn--topbar:hover{border-color:rgba(36,35,33,.4);color:var(--ink);}
+  .btn--wide{width:100%;padding:20px;font-size:18px;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap;background:var(--paper-2);}
+  .badge i{width:6px;height:6px;border-radius:50%;background:var(--faint);display:block;}
+  .badge.is-on{color:var(--ink);border-color:rgba(36,35,33,.34);}
+  .badge.is-on i{background:var(--ink);}
+  .sync-btn.is-busy{opacity:.6;pointer-events:none;}
+
+  /* ───────── cards ───────── */
+  .card{background:var(--paper-2);border:1px solid var(--line);padding:clamp(20px,2.8vw,34px);margin-bottom:16px;}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:clamp(16px,2vw,22px);}
+  .sec-num{font-family:var(--font-serif);font-size:13px;letter-spacing:.18em;color:var(--muted);padding-top:6px;flex-shrink:0;}
+  .sec-head h2{font-family:var(--font-serif);font-size:clamp(21px,2.6vw,26px);letter-spacing:-0.02em;}
+
+  /* ───────── form ───────── */
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 22px;}
+  .field{display:flex;flex-direction:column;gap:9px;min-width:0;}
+  .field--full{grid-column:1 / -1;}
+  .label{font-size:13px;letter-spacing:.02em;color:var(--muted);display:flex;align-items:center;gap:7px;}
+  .input{
+    width:100%;min-height:58px;padding:16px;background:#fff;border:1px solid var(--line);
+    border-radius:2px;transition:border-color .15s,box-shadow .15s;appearance:none;
+  }
+  .input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(36,35,33,.06);}
+  .input.is-bad{border-color:#A2402F;background:#FDF6F4;}
+  textarea.input{min-height:104px;resize:vertical;line-height:1.65;}
+  .hint{font-size:12.5px;color:var(--faint);line-height:1.5;}
+  .field-err{font-size:12.5px;color:#A2402F;display:none;}
+  .field.is-bad .field-err{display:block;}
+
+  .seg{display:inline-flex;align-self:flex-start;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:#fff;max-width:100%;}
+  .seg button{border:0;background:transparent;padding:11px 18px;font-size:14px;color:var(--muted);transition:background .15s,color .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .seg button + button{border-left:1px solid var(--line);}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    border:1px solid var(--line);background:#fff;border-radius:999px;padding:12px 18px;
+    font-size:14.5px;color:var(--muted);transition:.15s;touch-action:manipulation;
+  }
+  .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500;}
+
+  /* menu cards */
+  .menu-grid{display:block;}
+  .menu-group + .menu-group{margin-top:20px;}
+  .mg-label{
+    display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;letter-spacing:.02em;
+    color:var(--ink);margin-bottom:9px;pointer-events:none;user-select:none;-webkit-user-select:none;
+  }
+  .mg-label::after{content:"";flex:1;height:1px;background:var(--line);}
+  .mg-label .mg-count{font-size:10.5px;font-weight:500;letter-spacing:.08em;color:var(--faint);}
+  .mg-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+  .menu{
+    position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-radius:2px;
+    padding:15px 15px 13px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;
+    transition:border-color .12s,background .12s,box-shadow .12s,transform .08s,color .12s;
+    cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none;
+  }
+  .menu:active{transform:scale(.975);}
+  .menu:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .menu .m-name{font-size:16.5px;font-weight:600;letter-spacing:-0.02em;padding-right:22px;line-height:1.3;}
+  .menu .m-prices{display:flex;flex-direction:column;gap:1px;}
+  .menu .m-price{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .menu .m-cash{font-size:12.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
+  .menu .m-tag{font-size:11.5px;color:var(--faint);line-height:1.4;}
+  .menu .m-check{
+    position:absolute;top:12px;right:12px;width:20px;height:20px;border:1px solid var(--line);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;background:#fff;transition:.15s;
+  }
+  .menu[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);box-shadow:0 10px 22px rgba(36,35,33,.22);}
+  .menu[aria-pressed="true"] .m-name{color:#fff;}
+  .menu[aria-pressed="true"] .m-check{background:#fff;border-color:#fff;color:var(--ink);font-weight:700;}
+  .menu[aria-pressed="true"] .m-price,
+  .menu-grid.cash-on .menu[aria-pressed="true"] .m-price{color:#EFEBE3;}
+  .menu[aria-pressed="true"] .m-cash{color:#B9B4AA;}
+  .menu[aria-pressed="true"] .m-tag{color:#B9B4AA;}
+  .menu-grid.cash-on .menu .m-price{color:var(--faint);}
+  .menu-grid.cash-on .menu .m-cash{color:var(--ink);font-weight:600;font-size:13px;}
+  .menu-grid.cash-on .menu[aria-pressed="true"] .m-cash{color:#fff;font-size:13.5px;}
+  .menu[aria-pressed="true"] .m-edit{display:flex;}
+  .menu .m-edit{display:none;align-items:center;gap:6px;margin-top:2px;}
+  .m-edit input{
+    width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:2px;background:#fff;
+    font-size:15px;text-align:right;font-variant-numeric:tabular-nums;
+  }
+  .m-edit span{font-size:13px;color:var(--muted);}
+  .custom-item{display:grid;grid-template-columns:1fr 148px 44px;gap:8px;align-items:center;margin-top:10px;}
+  .custom-item input{padding:14px;border:1px solid var(--line);border-radius:2px;background:#fff;min-width:0;}
+  .custom-item button{width:44px;height:52px;border:1px solid var(--line);background:#fff;border-radius:2px;color:var(--muted);font-size:18px;}
+  .add-custom{margin-top:12px;border:1px dashed rgba(36,35,33,.3);background:transparent;color:var(--muted);padding:14px 18px;border-radius:2px;font-size:14.5px;width:100%;text-align:left;}
+  .add-custom:active{background:#F4F1EA;}
+  .menu-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--faint);}
+  .menu-status .dot{width:5px;height:5px;border-radius:50%;background:var(--sand);}
+
+  /* 선택된 시술 목록 */
+  .sel-list{display:none;margin-top:14px;border:1px solid var(--ink);background:#FBF9F5;padding:13px 15px;}
+  .sel-list.is-on{display:block;animation:selIn .18s ease-out;}
+  @keyframes selIn{from{opacity:.35;transform:translateY(-3px);}to{opacity:1;transform:none;}}
+  .sel-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .sel-head .sel-cap{font-size:11.5px;letter-spacing:.12em;color:var(--faint);}
+  .sel-head .sel-sum{font-size:15px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .sel-chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .sel-chip{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ink);background:var(--ink);
+    color:#fff;border-radius:999px;padding:7px 7px 7px 13px;font-size:13.5px;letter-spacing:-0.01em;
+  }
+  .sel-chip b{font-weight:600;}
+  .sel-chip .amt{color:#B9B4AA;font-variant-numeric:tabular-nums;font-size:12.5px;}
+  .sel-chip .x{
+    width:22px;height:22px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#F2EFE9;
+    font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .sel-chip .x:active{background:rgba(255,255,255,.32);}
+
+  /* blocks */
+  .sub-block{margin-top:clamp(22px,3vw,32px);padding-top:clamp(20px,2.6vw,28px);border-top:1px solid var(--line-soft);}
+  .sub-title{font-size:13px;letter-spacing:.14em;color:var(--faint);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sub-title .tag-inline{font-size:11px;letter-spacing:.02em;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);}
+
+  /* discount */
+  .disc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px;}
+  .disc{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;
+    background:#fff;border:1px solid var(--line);border-radius:2px;padding:16px;
+  }
+  .disc .d-label{font-size:15px;}
+  .disc .d-sub{font-size:12.5px;color:var(--faint);}
+  .disc .d-amount{font-size:12.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .disc[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;box-shadow:inset 0 0 0 1px var(--ink);}
+  .disc[aria-pressed="true"] .d-amount{color:var(--ink);}
+
+  .kiosk{
+    margin-top:14px;border:1px solid var(--line);background:#fff;padding:clamp(14px,2.2vw,20px);
+  }
+  .kiosk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .kiosk-head strong{font-size:14px;font-weight:600;}
+  .kiosk-head span{font-size:11.5px;color:var(--faint);letter-spacing:.06em;}
+  .kiosk-input{display:none;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .kiosk-input.is-open{display:flex;}
+  .kiosk-input input{
+    flex:1;min-width:120px;padding:15px;border:1px solid var(--line);border-radius:2px;background:#FBF9F5;
+    text-align:right;font-size:19px;font-variant-numeric:tabular-nums;font-weight:600;
+  }
+  .kiosk-input .unit{font-size:15px;color:var(--muted);}
+  .kiosk-hint{font-size:12.5px;color:var(--muted);margin-top:9px;line-height:1.5;display:none;}
+  .kiosk-hint.is-on{display:block;}
+  .manual-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .manual-grid .chip{padding:11px 3px;font-size:13px;border-radius:2px;text-align:center;display:inline-flex;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sync-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+
+  /* payment + cash toggle */
+  .pay-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .toggle{
+    display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;
+    border-radius:999px;padding:10px 16px 10px 12px;font-size:13.5px;color:var(--muted);
+  }
+  .toggle .switch{
+    width:34px;height:19px;border-radius:999px;background:#DAD4CC;position:relative;transition:background .18s;flex-shrink:0;
+  }
+  .toggle .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;
+    transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.18);
+  }
+  .toggle[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);}
+  .toggle[aria-pressed="true"] .switch{background:var(--ink);}
+  .toggle[aria-pressed="true"] .switch::after{transform:translateX(15px);}
+
+  /* summary */
+  .summary{margin-top:clamp(22px,3vw,32px);border:1px solid var(--ink);background:#F4F1EA;}
+  .summary-lines{padding:18px clamp(16px,2.6vw,26px);display:grid;gap:7px;border-bottom:1px solid var(--line);}
+  .summary-lines > div{display:flex;align-items:baseline;justify-content:space-between;gap:14px;font-size:14px;color:var(--muted);}
+  .summary-lines b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;font-size:15px;}
+  .summary-lines > div[hidden]{display:none;}
+  .summary-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px clamp(16px,2.6vw,26px) 20px;}
+  .summary-total .t-label{font-size:14px;letter-spacing:.04em;color:var(--muted);}
+  .summary-total .t-value{
+    font-family:var(--font-serif);font-size:clamp(28px,4.4vw,38px);font-weight:600;letter-spacing:-0.02em;
+    font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap;
+  }
+  .summary-total .t-value small{font-family:var(--font-sans);font-size:16px;font-weight:500;margin-left:3px;letter-spacing:0;}
+
+  /* health / consent */
+  .health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:9px;}
+  .check-row{
+    display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;background:#fff;
+    border:1px solid var(--line);border-radius:2px;padding:15px 16px;font-size:15px;line-height:1.45;transition:.15s;
+  }
+  .check-row .box{
+    flex-shrink:0;width:22px;height:22px;border:1px solid rgba(36,35,33,.35);border-radius:2px;
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;background:#fff;margin-top:1px;
+  }
+  .check-row[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;}
+  .check-row[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .check-row--none{grid-column:1 / -1;}
+  .health-note{
+    display:none;margin-top:12px;padding:14px 16px;border-left:2px solid var(--rust);background:#FBF3EF;
+    font-size:13.5px;color:#5C3327;line-height:1.6;
+  }
+  .health-note.is-on{display:block;}
+
+  .consent-box{margin-top:clamp(22px,3vw,30px);border:1px solid var(--line);background:#fff;}
+  .consent-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px clamp(16px,2.4vw,24px);border-bottom:1px solid var(--line-soft);}
+  .consent-head h3{font-family:var(--font-serif);font-size:17px;letter-spacing:-0.01em;}
+  .consent-head span{font-size:12px;color:var(--faint);}
+  .consent-body{padding:clamp(16px,2.4vw,24px);display:grid;gap:16px;}
+  .c-item{display:flex;gap:12px;font-size:14.5px;line-height:1.7;color:#3A3833;}
+  .c-item .c-num{font-family:var(--font-serif);font-size:12px;color:var(--faint);padding-top:3px;flex-shrink:0;}
+  .c-item b{font-weight:600;color:var(--ink);}
+  .consent-more{border-top:1px solid var(--line-soft);}
+  .consent-more summary{list-style:none;padding:15px clamp(16px,2.4vw,24px);font-size:13.5px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:12px;}
+  .consent-more summary::-webkit-details-marker{display:none;}
+  .consent-more summary::after{content:"＋";color:var(--faint);}
+  .consent-more[open] summary::after{content:"−";}
+  .consent-more .more-body{padding:0 clamp(16px,2.4vw,24px) 20px;font-size:14px;color:#3A3833;line-height:1.75;display:grid;gap:10px;}
+  .more-note{color:var(--muted);}
+
+  .agree-list{margin-top:18px;display:grid;gap:9px;}
+  .agree{
+    display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:#fff;
+    border:1px solid var(--line);border-radius:2px;padding:17px 18px;font-size:15.5px;
+  }
+  .agree .box{
+    flex-shrink:0;width:24px;height:24px;border:1px solid rgba(36,35,33,.35);border-radius:2px;
+    display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent;background:#fff;
+  }
+  .agree[aria-pressed="true"]{border-color:var(--ink);background:#F4F1EA;font-weight:500;}
+  .agree[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+
+  /* signature */
+  .sig-block{margin-top:clamp(22px,3vw,30px);}
+  .sig-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .sig-head h3{font-size:14px;letter-spacing:.02em;color:var(--muted);font-weight:500;}
+  .sig-clear{border:0;background:transparent;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:6px;}
+  .sig-pad{position:relative;background:#fff;border:1px solid var(--line);height:clamp(190px,26vw,240px);touch-action:none;overflow:hidden;border-radius:2px;}
+  .sig-pad canvas{display:block;width:100%;height:100%;touch-action:none;}
+  .sig-pad .sig-guide{position:absolute;inset:16px;border-bottom:1px dashed rgba(36,35,33,.18);pointer-events:none;}
+  .sig-pad .sig-placeholder{
+    position:absolute;left:0;right:0;bottom:26px;text-align:center;color:var(--faint);font-size:13.5px;
+    pointer-events:none;transition:opacity .2s;padding:0 14px;
+  }
+  .sig-pad.has-ink .sig-placeholder{opacity:0;}
+  .sig-pad.is-bad{border-color:#A2402F;}
+  .sig-meta{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:12px;color:var(--faint);}
+
+  /* review */
+  .review{border:1px solid var(--line);background:#fff;}
+  .review-row{display:flex;justify-content:space-between;gap:16px;padding:11px clamp(14px,2.4vw,22px);font-size:14.5px;border-bottom:1px solid var(--line-soft);}
+  .review-row:last-child{border-bottom:0;}
+  .review-row dt{color:var(--muted);font-size:14px;flex-shrink:0;margin:0;}
+  .review-row dd{margin:0;text-align:right;font-weight:500;word-break:keep-all;}
+  .req-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px 14px;margin-top:15px;}
+  .req-item{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--faint);}
+  .req-item .dot{width:15px;height:15px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;}
+  .req-item.is-done{color:var(--ink);}
+  .req-item.is-done .dot{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .submit-row{margin-top:22px;display:grid;gap:10px;}
+  .submit-note{font-size:12.5px;color:var(--faint);text-align:center;line-height:1.6;}
+  .send-state{font-size:13px;color:var(--muted);text-align:center;display:none;}
+  .send-state.is-on{display:block;}
+  .link-btn{
+    justify-self:center;border:0;background:transparent;color:var(--muted);font-size:12.5px;
+    text-decoration:underline;text-underline-offset:3px;padding:6px 10px;
+  }
+  .link-btn.is-armed{color:#A2402F;}
+
+  .foot{padding:26px 0 10px;color:var(--faint);font-size:12px;line-height:1.7;}
+  .foot b{color:var(--muted);font-weight:500;}
+
+  /* sticky bar */
+  .stickybar{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(251,249,245,.96);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+    padding:12px clamp(14px,3vw,34px) calc(12px + env(safe-area-inset-bottom));
+  }
+  .stickybar .inner{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:16px;}
+  .sticky-total{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .sticky-total span{font-size:11.5px;letter-spacing:.08em;color:var(--faint);}
+  .sticky-total strong{font-family:var(--font-serif);font-size:clamp(20px,3vw,26px);font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .sticky-total em{font-style:normal;font-size:11.5px;color:var(--muted);margin-left:8px;letter-spacing:0;}
+  .stickybar .btn{margin-left:auto;white-space:nowrap;}
+  .sticky-total strong.is-bump{animation:bump .42s ease-out;}
+  @keyframes bump{0%{transform:scale(1);}28%{transform:scale(1.14);color:#7A5B2E;}100%{transform:scale(1);}}
+
+  /* modal */
+  .modal{
+    position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;
+    background:rgba(36,35,33,.42);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  }
+  .modal[hidden]{display:none;}
+  .modal-sheet{
+    position:relative;width:100%;max-width:560px;max-height:calc(100vh - 32px);overflow:auto;
+    background:var(--paper-2);border:1px solid var(--line);box-shadow:0 24px 80px rgba(36,35,33,.22);
+    -webkit-overflow-scrolling:touch;
+  }
+  .modal--receipt .modal-sheet{max-width:600px;padding:clamp(16px,3vw,26px);}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:clamp(20px,3vw,28px) clamp(20px,3vw,28px) 0;}
+  .modal-head h2{font-family:var(--font-serif);font-size:21px;}
+  .modal-head p{font-size:13px;color:var(--muted);margin-top:5px;}
+  .modal-close{border:1px solid var(--line);background:transparent;border-radius:50%;width:36px;height:36px;font-size:16px;color:var(--muted);flex-shrink:0;}
+  .modal-body{padding:clamp(18px,3vw,26px) clamp(20px,3vw,28px) clamp(22px,3vw,28px);display:grid;gap:16px;}
+  .steps{display:grid;gap:9px;counter-reset:s;}
+  .step{display:flex;gap:10px;font-size:13.5px;line-height:1.6;color:#3A3833;}
+  .step > span{flex:1;min-width:0;}
+  .step::before{
+    counter-increment:s;content:counter(s);flex-shrink:0;width:19px;height:19px;border-radius:50%;
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);margin-top:2px;
+  }
+  .note-box{border-left:2px solid var(--sand);background:#F4F1EA;padding:13px 15px;font-size:13px;color:#4A4740;line-height:1.65;}
+  .inline-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:#EFEBE3;padding:2px 5px;border-radius:2px;word-break:break-word;overflow-wrap:anywhere;}
+  .status-line{font-size:13px;line-height:1.6;padding:11px 13px;border:1px solid var(--line);background:#fff;display:none;}
+  .status-line.is-on{display:block;}
+  .status-line.is-ok{border-color:rgba(36,35,33,.4);background:#F2F0E8;}
+  .status-line.is-bad{border-color:#A2402F;color:#7A2F22;background:#FDF6F4;}
+
+  /* receipt */
+  .receipt{background:#fff;border:1px solid var(--line);padding:clamp(20px,3.4vw,34px);color:var(--ink);}
+  .r-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .r-brand{font-family:var(--font-serif);font-size:12.5px;letter-spacing:.20em;font-weight:600;}
+  .r-kind{font-size:10px;letter-spacing:.24em;color:var(--faint);}
+  .r-title{font-family:var(--font-serif);font-size:clamp(21px,3.2vw,26px);margin-top:14px;letter-spacing:-0.02em;}
+  .r-addr{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5;}
+  .r-rule{border-top:1px dashed rgba(36,35,33,.28);margin:16px 0;}
+  .r-meta{display:grid;gap:7px;margin:0;}
+  .r-meta > div{display:flex;justify-content:space-between;gap:14px;font-size:13px;}
+  .r-meta dt{color:var(--muted);margin:0;}
+  .r-meta dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;}
+  .r-items{display:grid;gap:3px;}
+  .r-item{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.55;}
+  .r-item .n{color:#3A3833;}
+  .r-item .n small{color:var(--faint);font-size:11px;margin-left:5px;}
+  .r-item .p{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .r-sum{display:grid;gap:5px;margin-top:16px;font-size:13.5px;}
+  .r-sum > div{display:flex;justify-content:space-between;gap:14px;color:var(--muted);}
+  .r-sum b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums;}
+  .r-total{margin-top:14px;padding-top:14px;border-top:1px solid var(--ink);display:flex;align-items:flex-end;justify-content:space-between;gap:14px;}
+  .r-total span{font-size:13px;letter-spacing:.04em;}
+  .r-total strong{font-family:var(--font-serif);font-size:clamp(26px,4.4vw,34px);letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap;}
+  .r-total strong small{font-family:var(--font-sans);font-size:14px;margin-left:2px;font-weight:500;}
+  .r-pay{display:flex;justify-content:space-between;gap:14px;margin-top:14px;font-size:13px;color:var(--muted);}
+  .r-sign{margin-top:18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;}
+  .r-sign .lbl{font-size:11.5px;color:var(--muted);}
+  .r-sign img{height:56px;max-width:190px;object-fit:contain;object-position:right bottom;}
+  .r-sign .empty{font-size:12px;color:var(--faint);border-bottom:1px solid var(--line);padding:0 30px 4px;}
+  .r-foot{margin-top:18px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:10.5px;color:var(--faint);line-height:1.65;}
+  .r-stamp{margin-top:14px;text-align:right;font-family:var(--font-serif);font-size:12px;letter-spacing:.08em;color:var(--muted);}
+
+  .receipt-actions{display:grid;gap:9px;margin-top:16px;}
+  .receipt-actions .row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .receipt-actions button{
+    border:1px solid var(--line);background:#fff;padding:15px 12px;font-size:14px;border-radius:2px;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .receipt-actions button:active{background:#F4F1EA;}
+  .receipt-actions .primary{grid-column:1 / -1;background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600;font-size:15.5px;padding:18px;}
+  #pngPreviewBox{display:none;margin-top:12px;border:1px dashed var(--line);padding:10px;background:#FBF9F5;}
+  #pngPreviewBox.is-on{display:block;}
+  #pngPreviewBox img{display:block;width:100%;height:auto;border:1px solid var(--line);}
+  #pngPreviewBox p{font-size:11.5px;color:var(--muted);margin-top:8px;text-align:center;}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translate(-50%,12px);
+    background:var(--ink);color:var(--paper);padding:13px 20px;border-radius:2px;font-size:14px;
+    max-width:min(90vw,440px);text-align:center;line-height:1.5;z-index:200;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  }
+  .toast.is-on{opacity:1;transform:translate(-50%,0);}
+
+  @media (max-width:720px){
+    body{font-size:16px;}
+    .grid{grid-template-columns:1fr;}
+    .btn--ghost{padding:9px 11px;font-size:12.5px;}
+    .mg-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .manual-grid .chip{font-size:11.5px;letter-spacing:-.04em;padding:10px 1px;}
+    .menu{min-height:92px;padding:14px;}
+    .menu .m-name{font-size:15.5px;}
+    .summary-total{flex-direction:column;align-items:flex-start;gap:4px;}
+    .sticky-total strong{font-size:21px;}
+    .stickybar .btn{padding:14px 18px;font-size:15px;}
+    .health-grid{grid-template-columns:1fr;}
+    .disc-grid{grid-template-columns:1fr;}
+    .custom-item{grid-template-columns:1fr 112px 44px;}
+    .seg{width:100%;}
+    .seg button{flex:1;padding:14px 8px;}
+    .receipt-actions .row{grid-template-columns:1fr;}
+    .r-sign img{height:48px;}
+    .req-list{grid-template-columns:1fr 1fr;}
+    .brand-mark{font-size:13.5px;letter-spacing:.14em;}
+    .brand-sub{font-size:11.5px;}
+    .langbar button{padding:7px 9px;font-size:11.5px;}
+    .btn--topbar{padding:7px 9px;font-size:11.5px;}
+  }
+  @media (max-width:600px){
+    .sec-head{gap:12px;}
+    .topbar .wrap{gap:6px;}
+    .topbar-right{width:100%;justify-content:space-between;}
+  }
+  @media (min-width:1024px) and (orientation:landscape){
+    .mg-row{grid-template-columns:repeat(3,minmax(0,1fr));}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+
+  @page{size:A5;margin:10mm;}
+  @media print{
+    body{background:#fff;padding:0;font-size:12px;}
+    body > *:not(#receiptModal){display:none !important;}
+    #receiptModal{position:static;display:block !important;background:#fff;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none;}
+    #receiptModal .modal-sheet{max-width:none;max-height:none;box-shadow:none;border:0;padding:0;overflow:visible;background:#fff;}
+    .no-print{display:none !important;}
+    .receipt{border:0;padding:0;}
+    .r-title{font-size:22px;}
+    .r-total strong{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="brand-mark">K-BEAUTY × MEDICAL</span>
+      <span class="brand-dot">·</span>
+      <span class="brand-sub" data-i18n="brandSub">고객 시술 동의서</span>
+    </div>
+    <div class="topbar-right">
+      <div class="langbar" id="langBar" role="group" aria-label="Language">
+        <button type="button" data-lang="ko" aria-pressed="true">한국어</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        <button type="button" data-lang="zh" aria-pressed="false">中文</button>
+        <button type="button" data-lang="ja" aria-pressed="false">日本語</button>
+      </div>
+      <button type="button" class="btn btn--topbar" id="btnSettings"><span data-i18n="settings">연동 설정</span> ⚙️</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <main>
+    <!-- 01 -->
+    <section class="card" id="sec1">
+      <div class="sec-head">
+        <div class="sec-num">01</div>
+        <h2 data-i18n="s1">고객 정보</h2>
+      </div>
+
+      <div class="grid">
+        <div class="field field--full">
+          <span class="label" data-i18n="lblBranch">지점</span>
+          <div class="seg" id="branchSeg" role="group" aria-label="Branch">
+            <button type="button" data-branch="강남점" aria-pressed="true">강남점</button>
+            <button type="button" data-branch="배곧점" aria-pressed="false">배곧점</button>
+          </div>
+          <span class="hint" id="branchAddr">서울 강남구 테헤란로13길 8-3 3층</span>
+        </div>
+
+        <div class="field field--full">
+          <span class="label" data-i18n="lblDirector">담당 원장</span>
+          <div class="seg" id="directorSeg" role="group" aria-label="Director">
+            <button type="button" data-director="한지윤 원장" aria-pressed="true">한지윤 원장</button>
+            <button type="button" data-director="송지원 원장" aria-pressed="false">송지원 원장</button>
+          </div>
+        </div>
+
+        <div class="field" id="fName">
+          <label class="label" for="name" data-i18n="lblName">성함</label>
+          <input class="input" id="name" type="text" autocomplete="name" placeholder="예) 김지수" data-i18n-ph="phName" enterkeyhint="next" />
+          <span class="field-err" data-i18n="errName">성함을 입력해 주세요.</span>
+        </div>
+
+        <div class="field" id="fPhone">
+          <label class="label" for="phone" data-i18n="lblPhone">연락처</label>
+          <input class="input" id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" enterkeyhint="next" />
+          <span class="field-err" data-i18n="errPhone">연락처를 정확히 입력해 주세요.</span>
+        </div>
+
+        <div class="field field--full" id="fEmail">
+          <label class="label" for="email" data-i18n="lblEmail">이메일</label>
+          <input class="input" id="email" type="email" inputmode="email" autocomplete="email" placeholder="example@email.com" enterkeyhint="next" />
+          <span class="field-err" data-i18n="errEmail">이메일 형식을 확인해 주세요.</span>
+        </div>
+
+        <div class="field">
+          <label class="label" for="birth" data-i18n="lblBirth">생년월일</label>
+          <input class="input" id="birth" type="date" />
+        </div>
+
+        <div class="field">
+          <span class="label" data-i18n="lblSource">방문경로</span>
+          <div class="chips" id="sourceChips">
+            <button type="button" class="chip" data-source="네이버 예약" aria-pressed="false" data-i18n="source.naver">네이버 예약</button>
+            <button type="button" class="chip" data-source="인스타그램" aria-pressed="false" data-i18n="source.insta">인스타그램</button>
+            <button type="button" class="chip" data-source="샤오홍슈" aria-pressed="false" data-i18n="source.xhs">샤오홍슈</button>
+            <button type="button" class="chip" data-source="지인 소개" aria-pressed="false" data-i18n="source.referral">지인 소개</button>
+            <button type="button" class="chip" data-source="기타" aria-pressed="false" data-i18n="source.other">기타</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="card" id="sec2">
+      <div class="sec-head">
+        <div class="sec-num">02</div>
+        <h2 data-i18n="s2">시술 타입 &amp; 금액</h2>
+      </div>
+
+      <div class="menu-grid" id="menuGrid"></div>
+      <div class="sel-list" id="selList" aria-live="polite"></div>
+      <div class="menu-status" id="menuStatus"></div>
+      <div id="customList"></div>
+      <button type="button" class="add-custom" id="btnAddCustom" data-i18n="customAdd">＋ 직접 추가 / 커스텀 금액</button>
+
+      <div class="sub-block" id="discountBlock">
+        <div class="sub-title" data-i18n="discTitle">이벤트 · 할인</div>
+        <div class="disc-grid" id="discGrid"></div>
+
+        <div class="kiosk">
+          <div class="kiosk-head">
+            <strong data-i18n="kioskTitle">현장 즉시 할인</strong>
+            <span>KIOSK MODE</span>
+          </div>
+          <div class="manual-grid" id="manualChips">
+            <button type="button" class="chip" data-mode="amount" aria-pressed="false" data-i18n="mode.amount">원 정액 할인</button>
+            <button type="button" class="chip" data-mode="percent" aria-pressed="false" data-i18n="mode.percent">% 정률 할인</button>
+            <button type="button" class="chip" data-mode="final" aria-pressed="false" data-i18n="mode.final">최종금액 지정</button>
+          </div>
+          <div class="kiosk-input" id="kioskInput">
+            <input id="discValue" type="tel" inputmode="numeric" placeholder="0" aria-label="Discount" />
+            <span class="unit" id="discUnit">원</span>
+          </div>
+          <div class="kiosk-hint" id="kioskHint"></div>
+        </div>
+      </div>
+
+      <div class="sub-block">
+        <div class="sub-title" data-i18n="payTitle">결제수단</div>
+        <div class="pay-row">
+          <div class="chips" id="payChips">
+            <button type="button" class="chip" data-pay="카드" aria-pressed="true" data-i18n="pay.card">카드</button>
+            <button type="button" class="chip" data-pay="계좌이체" aria-pressed="false" data-i18n="pay.transfer">계좌이체 (현금할인가)</button>
+            <button type="button" class="chip" data-pay="현금" aria-pressed="false" data-i18n="pay.cash">현금</button>
+          </div>
+          <button type="button" class="toggle" id="cashToggle" aria-pressed="false">
+            <span class="switch"></span> <span data-i18n="cashToggle">현금할인가 적용</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="summary" aria-live="polite">
+        <div class="summary-lines">
+          <div><span data-i18n="sumSubtotal">원금액</span><b id="sumSubtotal">0원</b></div>
+          <div id="sumCashRow" hidden><span data-i18n="sumCash">현금할인가 적용</span><b id="sumCash">-0원</b></div>
+          <div id="sumDiscRow" hidden><span id="sumDiscLabel">이벤트 할인</span><b id="sumDiscount">-0원</b></div>
+        </div>
+        <div class="summary-total">
+          <span class="t-label" data-i18n="sumTotal">최종 총 결제금액</span>
+          <span class="t-value" id="sumTotal">0<small>원</small></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="card" id="sec3">
+      <div class="sec-head">
+        <div class="sec-num">03</div>
+        <h2 data-i18n="s3">건강 체크 &amp; 시술 동의</h2>
+      </div>
+
+      <div class="sub-title" data-i18n="healthTitle">시술 전 건강·금기사항</div>
+      <div class="health-grid" id="healthGrid"></div>
+      <div class="health-note" id="healthNote" data-i18n="healthNote">선택하신 항목은 시술 전 원장님과 상담 후 진행 여부를 결정합니다. 임신·수유 중이거나 혈액응고 관련 약을 복용 중인 경우 반드시 말씀해 주세요.</div>
+
+      <div class="consent-box">
+        <div class="consent-head">
+          <h3 data-i18n="consentTitle">반영구 시술 표준 동의 내용</h3>
+        </div>
+        <div class="consent-body" id="consentBody"></div>
+        <details class="consent-more">
+          <summary data-i18n="moreSummary">리터치·예약 변경 및 개인정보 보유 기준 자세히 보기</summary>
+          <div class="more-body" id="moreBody"></div>
+        </details>
+      </div>
+
+      <div class="agree-list">
+        <button type="button" class="agree" data-agree="care" aria-pressed="false">
+          <span class="box">✓</span>
+          <span data-i18n="agree.care">[필수] 시술 안내 및 주의사항을 확인했으며 이에 동의합니다.</span>
+        </button>
+        <button type="button" class="agree" data-agree="privacy" aria-pressed="false">
+          <span class="box">✓</span>
+          <span data-i18n="agree.privacy">[필수] 개인정보 수집·이용에 동의합니다.</span>
+        </button>
+      </div>
+
+      <div class="sub-block">
+        <div class="field">
+          <label class="label" for="memo" data-i18n="memoLabel">특이사항 메모</label>
+          <textarea class="input" id="memo" placeholder="피부 상태, 이전 시술 이력, 요청 사항 등을 자유롭게 적어 주세요." data-i18n-ph="memoPh"></textarea>
+        </div>
+      </div>
+
+      <div class="sig-block">
+        <div class="sig-head">
+          <h3 data-i18n="sigTitle">전자서명</h3>
+          <button type="button" class="sig-clear" id="btnSigClear" data-i18n="sigClear">지우기</button>
+        </div>
+        <div class="sig-pad" id="sigPad">
+          <canvas id="sigCanvas" aria-label="Signature"></canvas>
+          <div class="sig-guide"></div>
+          <div class="sig-placeholder" data-i18n="sigPh">손가락 또는 애플펜슬로 아래에 서명해 주세요</div>
+        </div>
+        <div class="sig-meta">
+          <span></span>
+          <span id="sigState" data-i18n="sigNone">서명 전</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="card" id="sec4">
+      <div class="sec-head">
+        <div class="sec-num">04</div>
+        <h2 data-i18n="s4">확인 및 발급</h2>
+      </div>
+
+      <dl class="review">
+        <div class="review-row"><dt data-i18n="rvName">고객명</dt><dd id="rvName">—</dd></div>
+        <div class="review-row"><dt data-i18n="rvDirector">담당 원장</dt><dd id="rvDirector">—</dd></div>
+        <div class="review-row"><dt data-i18n="rvBranch">지점</dt><dd id="rvBranch">—</dd></div>
+        <div class="review-row"><dt data-i18n="rvItems">시술내역</dt><dd id="rvItems">—</dd></div>
+        <div class="review-row"><dt data-i18n="sumSubtotal">원금액</dt><dd id="rvSubtotal">0원</dd></div>
+        <div class="review-row"><dt data-i18n="rvDiscount">할인</dt><dd id="rvDiscount">—</dd></div>
+        <div class="review-row"><dt data-i18n="sumTotal">최종 총 결제금액</dt><dd id="rvTotal">0원</dd></div>
+        <div class="review-row"><dt data-i18n="payTitle">결제수단</dt><dd id="rvPay">카드</dd></div>
+        <div class="review-row"><dt data-i18n="rvEmail">이메일 영수증</dt><dd id="rvEmail">받지 않음</dd></div>
+      </dl>
+
+      <div class="req-list" id="reqList">
+        <div class="req-item" data-req="name"><span class="dot">✓</span><span data-i18n="req.name">성함</span></div>
+        <div class="req-item" data-req="phone"><span class="dot">✓</span><span data-i18n="req.phone">연락처</span></div>
+        <div class="req-item" data-req="items"><span class="dot">✓</span><span data-i18n="req.items">시술 메뉴 1개 이상</span></div>
+        <div class="req-item" data-req="health"><span class="dot">✓</span><span data-i18n="req.health">건강 체크</span></div>
+        <div class="req-item" data-req="care"><span class="dot">✓</span><span data-i18n="req.care">주의사항 동의</span></div>
+        <div class="req-item" data-req="privacy"><span class="dot">✓</span><span data-i18n="req.privacy">개인정보 동의</span></div>
+        <div class="req-item" data-req="sig"><span class="dot">✓</span><span data-i18n="req.sig">전자서명</span></div>
+      </div>
+
+      <div class="submit-row">
+        <button type="button" class="btn btn--wide" id="btnSubmit" data-i18n="submitBtn">동의서 저장 및 영수증 발급</button>
+        <div class="send-state" id="sendState"></div>
+        <p class="submit-note" id="submitNote">저장하면 구글 시트에 기록되고, 이메일을 입력한 경우 영수증 메일이 자동 발송됩니다.</p>
+        <button type="button" class="link-btn" id="btnReset" data-i18n="resetBtn">입력 전체 초기화</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot" id="pageFoot"></footer>
+</div>
+
+<div class="stickybar">
+  <div class="inner">
+    <div class="sticky-total">
+      <span data-i18n="sumTotal">최종 총 결제금액</span>
+      <strong id="stickyTotal">0원</strong><em id="stickyHint"></em>
+    </div>
+    <button type="button" class="btn" id="btnSubmitTop" data-i18n="stickyBtn">영수증 발급</button>
+  </div>
+</div>
+
+<!-- ⚙️ 연동 설정 -->
+<div class="modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal-sheet">
+    <div class="modal-head">
+      <div>
+        <h2 id="settingsTitle" data-i18n="setTitle">연동 설정</h2>
+        <p data-i18n="setDesc">구글 시트 저장·메뉴 동기화·이메일 영수증을 연결합니다.</p>
+      </div>
+      <button type="button" class="modal-close" data-close="settingsModal" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step"><span data-i18n-html="setStep1">스프레드시트 <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>확장 프로그램 → Apps Script</b>를 엽니다.</span></div>
+        <div class="step"><span data-i18n-html="setStep2"><span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> 내용을 전부 붙여넣고 저장합니다.</span></div>
+        <div class="step"><span data-i18n-html="setStep3"><b>배포 → 새 배포 → 웹 앱</b> · 실행: <b>나</b> / 액세스: <b>모든 사용자</b>로 배포합니다.</span></div>
+        <div class="step"><span data-i18n-html="setStep4">나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.</span></div>
+      </div>
+      <div class="sync-row">
+        <span class="badge badge-lite" id="syncBadge"><i></i><span id="syncBadgeText">테스트 모드</span></span>
+        <button type="button" class="btn btn--ghost btn--sm sync-btn" id="btnSync"><span class="btn-label" data-i18n="syncBtn">시트 동기화</span> ↻</button>
+      </div>
+      <div class="field">
+        <label class="label" for="webappUrl" data-i18n="urlLabel">Apps Script 웹 앱 URL</label>
+        <input class="input" id="webappUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocapitalize="off" spellcheck="false" />
+        <span class="hint" data-i18n="urlHint">이 기기에만 저장됩니다. 비워 두면 테스트 모드로 동작해 시트에는 기록되지 않습니다.</span>
+      </div>
+      <div class="status-line" id="connStatus"></div>
+      <div class="note-box" data-i18n="testNote">테스트 모드 안내 — 주소가 없어도 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동합니다. 다만 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <button type="button" class="btn" id="btnSaveUrl" data-i18n="save">저장</button>
+        <button type="button" class="btn btn--ghost" id="btnTestConn" data-i18n="testConn">연결 테스트</button>
+      </div>
+      <button type="button" class="btn btn--ghost btn--sm" id="btnClearUrl" style="justify-self:center" data-i18n="clearUrl">주소 삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🧾 영수증 -->
+<div class="modal modal--receipt" id="receiptModal" hidden role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
+  <div class="modal-sheet">
+    <div class="no-print" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
+      <div>
+        <h2 id="receiptTitle" style="font-family:var(--font-serif);font-size:20px" data-i18n="rcTitle">영수증이 발급되었습니다</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:4px" id="receiptSub" data-i18n="rcSub">아래에서 이미지 저장·인쇄가 가능합니다.</p>
+      </div>
+      <button type="button" class="modal-close" data-close="receiptModal" aria-label="Close">✕</button>
+    </div>
+
+    <div class="status-line no-print" id="receiptStatus"></div>
+
+    <div class="receipt" id="receiptDoc" style="margin-top:14px">
+      <div class="r-top">
+        <div class="r-brand">K-BEAUTY × MEDICAL</div>
+        <div class="r-kind">RECEIPT</div>
+      </div>
+      <h3 class="r-title" id="rTitle">롱래스팅 센터 시술 영수증</h3>
+      <p class="r-addr" id="rAddr">서울 강남구 테헤란로13길 8-3 3층</p>
+      <div class="r-rule"></div>
+      <dl class="r-meta">
+        <div><dt data-i18n="rcNo">영수증번호</dt><dd id="rNo">—</dd></div>
+        <div><dt data-i18n="rcDate">발급일시</dt><dd id="rDate">—</dd></div>
+        <div><dt data-i18n="rvBranch">지점</dt><dd id="rBranch">강남점</dd></div>
+        <div><dt data-i18n="lblDirector">담당 원장</dt><dd id="rDirector">—</dd></div>
+        <div><dt data-i18n="rvName">고객명</dt><dd id="rName">—</dd></div>
+        <div><dt data-i18n="lblPhone">연락처</dt><dd id="rPhone">—</dd></div>
+      </dl>
+      <div class="r-rule"></div>
+      <div class="r-items" id="rItems"></div>
+      <div class="r-sum" id="rSum"></div>
+      <div class="r-total">
+        <span data-i18n="rcTotal">총 결제금액</span>
+        <strong id="rTotal">0<small>원</small></strong>
+      </div>
+      <div class="r-pay"><span data-i18n="payTitle">결제수단</span><span id="rPay">카드</span></div>
+      <div class="r-sign">
+        <span class="lbl" data-i18n="rcSig">고객 서명</span>
+        <img id="rSig" alt="signature" hidden />
+        <span class="empty" id="rSigEmpty" data-i18n="rcSigEmpty">서명</span>
+      </div>
+      <div class="r-stamp" id="rStamp">롱래스팅 센터 드림</div>
+      <div class="r-foot" id="rFoot">
+        본 영수증은 K-BEAUTY × MEDICAL 롱래스팅 센터에서 발급한 시술 확인용 영수증이며, 세금계산서·현금영수증과는 별개입니다.<br />
+        문의 및 리터치 예약은 담당 원장에게 문의해 주세요. 감사합니다.
+      </div>
+    </div>
+
+    <div id="pngPreviewBox">
+      <img id="pngPreview" alt="receipt" />
+      <p data-i18n="pngHint">이미지를 길게 눌러 ‘사진에 저장’하면 바로 보낼 수 있습니다.</p>
+    </div>
+
+    <div class="receipt-actions no-print">
+      <button type="button" class="primary" id="btnSavePng" data-i18n="btnPng">🖼️ 영수증 이미지(PNG) 저장</button>
+      <div class="row">
+        <button type="button" id="btnPrint" data-i18n="btnPrint">🖨️ 인쇄 / PDF 저장</button>
+        <button type="button" id="btnNew" data-i18n="btnNew">새 고객 작성하기</button>
+      </div>
+      <button type="button" id="btnRetry" style="display:none" data-i18n="btnRetry">↻ 시트에 다시 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ══════════════════════════════════════════════════════════
+     저장 키 — 같은 도메인(kbeauty-medical.github.io)의 애드윤 페이지와
+     localStorage가 섞이지 않도록 llc_ 접두사를 씁니다.
+     ══════════════════════════════════════════════════════════ */
+  const STORE = {
+    config: 'llc_consent_config_v1',
+    seqPrefix: 'llc_receipt_seq_',
+    issued: 'llc_issued_v1',
+    pending: 'llc_pending_v1',
+    branch: 'llc_last_branch_v1',
+    director: 'llc_last_director_v1',
+    lang: 'llc_lang_v1',
+    menuCache: 'llc_menu_cache_v1',
+    draft: 'llc_draft_v1'
+  };
+
+  const CENTER = {
+    brand: 'K-BEAUTY × MEDICAL',
+    nameKo: '롱래스팅 센터',
+    branches: ['강남점', '배곧점'],
+    defaultBranch: '강남점',
+    directors: ['한지윤 원장', '송지원 원장'],
+    defaultDirector: '한지윤 원장',
+    address: {
+      '강남점': {
+        ko: '서울 강남구 테헤란로13길 8-3 3층',
+        en: '3F, 8-3 Teheran-ro 13-gil, Gangnam-gu, Seoul',
+        zh: '首尔 江南区 德黑兰路13街 8-3 3层',
+        ja: 'ソウル 江南区 テヘラン路13キル 8-3 3階'
+      },
+      '배곧점': {
+        ko: '경기 시흥시 서울대학로278번길 19-13 A동 244호',
+        en: 'A-244, 19-13 Seouldaehak-ro 278beon-gil, Siheung-si, Gyeonggi-do',
+        zh: '京畿道 始兴市 首尔大学路278番街 19-13 A栋 244号',
+        ja: '京畿道 始興市 ソウル大学路278番キル 19-13 A棟 244号'
+      }
+    }
+  };
+
+  /* 시트를 못 읽을 때 쓰는 기본 메뉴 (애드윤 최신 10개와 동일) */
+  const DEFAULT_MENU = [
+    { name: '섀도우 눈썹', price: 280000, cashPrice: 250000, note: '기법별 가격' },
+    { name: '콤보 눈썹',   price: 240000, cashPrice: 220000, note: '기법별 가격' },
+    { name: '자연 눈썹',   price: 200000, cashPrice: 180000, note: '기법별 가격' },
+    { name: '틴트립',      price: 280000, cashPrice: 250000, note: '립 시술' },
+    { name: '립라인 교정', price: 280000, cashPrice: 250000, note: '립 시술' },
+    { name: '립라인+틴트', price: 500000, cashPrice: 450000, note: '립 시술' },
+    { name: '아이라인',    price: 170000, cashPrice: 150000, note: '기본 시술' },
+    { name: '헤어라인',    price: 350000, cashPrice: null,   note: '범위에 따라 다름 (직접 수정 가능)' },
+    { name: '두피문신',    price: 200000, cashPrice: null,   note: '범위에 따라 다름 (직접 수정 가능)' },
+    { name: '리터치',      price: 0,      cashPrice: null,   note: '1회 무료 · 2회 유료' }
+  ];
+
+  /* 시트의 한국어 시술명을 기준으로 번역 (시트를 고쳐도 코드 수정 없이 매핑) */
+  const MENU_I18N = {
+    '섀도우 눈썹':  { en: 'Shadow Brows',        zh: '雾眉',          ja: 'シャドー眉' },
+    '콤보 눈썹':    { en: 'Combo Brows',         zh: '丝雾眉',        ja: 'コンボ眉' },
+    '자연 눈썹':    { en: 'Natural Brows',       zh: '线条眉',        ja: 'ナチュラル眉' },
+    '틴트립':       { en: 'Tint Lip',            zh: '漂唇(Tint唇)',  ja: 'ティントリップ' },
+    '립라인 교정':  { en: 'Lip Line Correction', zh: '唇线矫正',      ja: 'リップライン補正' },
+    '립라인+틴트':  { en: 'Lip Line + Tint',     zh: '唇线+漂唇',     ja: 'リップライン+ティント' },
+    '아이라인':     { en: 'Eyeliner',            zh: '美瞳线',        ja: 'アイライン' },
+    '헤어라인':     { en: 'Hairline',            zh: '发际线',        ja: 'ヘアライン' },
+    '두피문신':     { en: 'Scalp Micropigmentation', zh: '头皮纹身(SMP)', ja: '頭皮SMP' },
+    '리터치':       { en: 'Touch-up',            zh: '补色',          ja: 'リタッチ' }
+  };
+
+  const NOTE_I18N = {
+    '기법별 가격': { en: 'Varies by technique', zh: '按技法定价', ja: '技法により異なります' },
+    '립 시술': { en: 'Lip treatment', zh: '唇部项目', ja: 'リップ施術' },
+    '기본 시술': { en: 'Basic treatment', zh: '基础项目', ja: '基本施術' },
+    '범위에 따라 다름': { en: 'Depends on the area', zh: '视范围而定', ja: '範囲により異なります' },
+    '1회 무료 · 2회 유료': { en: '1st free · 2nd onwards paid', zh: '第1次免费 · 第2次起收费', ja: '1回無料・2回目以降有料' }
+  };
+
+  const DIRECTOR_I18N = {
+    '한지윤 원장': { ko: '한지윤 원장', en: 'Dr. Jiyoon Han', zh: '韩智允 院长', ja: 'ハン・ジユン 院長' },
+    '송지원 원장': { ko: '송지원 원장', en: 'Dr. Jiwon Song', zh: '宋智元 院长', ja: 'ソン・ジウォン 院長' }
+  };
+
+  const LANG_ATTR = { ko: 'ko', en: 'en', zh: 'zh-CN', ja: 'ja' };
+  const LOCALE = { ko: 'ko-KR', en: 'en-US', zh: 'zh-CN', ja: 'ja-JP' };
+
+  /* ─────────────── 문구 사전 ─────────────── */
+  const DICT = {
+    ko: {
+      docTitle: '롱래스팅 센터 · 고객 시술 동의서 & 영수증',
+      brandSub: '고객 시술 동의서',
+      settings: '연동 설정',
+      s1: '고객 정보', s2: '시술 타입 & 금액', s3: '건강 체크 & 시술 동의', s4: '확인 및 발급',
+      lblBranch: '지점', lblDirector: '담당 원장', lblName: '성함', lblPhone: '연락처', lblEmail: '이메일',
+      lblBirth: '생년월일', lblSource: '방문경로',
+      phName: '예) 김지수',
+      errName: '성함을 입력해 주세요.', errPhone: '연락처를 정확히 입력해 주세요.', errEmail: '이메일 형식을 확인해 주세요.',
+      'source.naver': '네이버 예약', 'source.insta': '인스타그램', 'source.xhs': '샤오홍슈', 'source.referral': '지인 소개', 'source.other': '기타',
+      'branch.강남점': '강남점', 'branch.배곧점': '배곧점',
+      'dir.한지윤 원장': '한지윤 원장', 'dir.송지원 원장': '송지원 원장',
+      customAdd: '＋ 직접 추가 / 커스텀 금액',
+      customNamePh: '시술명 (예: 수강·상담)', customAmountPh: '금액', customMax: '커스텀 항목은 최대 5개까지 추가할 수 있어요.',
+      discTitle: '이벤트 · 할인',
+      kioskTitle: '현장 즉시 할인',
+      'mode.amount': '원 정액 할인', 'mode.percent': '% 정률 할인', 'mode.final': '최종금액 지정',
+      'kiosk.phAmount': '예: 20000', 'kiosk.phPercent': '예: 10', 'kiosk.phFinal': '예: 350000',
+      'kiosk.percent': '{p}% = {d} 할인 · 최종 {t}',
+      'kiosk.finalOver': '총액({a})보다 큰 금액이에요. 최종 금액을 다시 확인해 주세요.',
+      'kiosk.final': '최종 {v}으로 지정 · 할인 {d}',
+      'kiosk.finalEmpty': '결제할 최종 금액을 입력하면 할인이 자동 계산됩니다.',
+      'kiosk.amount': '{d} 할인 · 최종 {t}',
+      payTitle: '결제수단', 'pay.card': '카드', 'pay.transfer': '계좌이체 (현금할인가)', 'pay.cash': '현금',
+      cashToggle: '현금할인가 적용',
+      sumSubtotal: '원금액', sumCash: '현금할인가 적용', sumTotal: '최종 총 결제금액',
+      'disc.event': '이벤트 할인', 'disc.cash': '현금할인가', 'disc.none': '정가 적용',
+      'preset.none': '정가 적용', 'preset.noneSub': '할인 없음',
+      'preset.first': '첫 방문 할인', 'preset.firstSub': '-30,000원',
+      'preset.return': '재방문 할인', 'preset.returnSub': '-50,000원',
+      'preset.sale30': '12월 연말 30% OFF', 'preset.sale30Sub': '원금액의 30%',
+      'label.amount': '현장 정액 할인', 'label.percent': '현장 {p}% 할인', 'label.final': '최종금액 지정',
+      'menu.cap': '선택한 시술 {n}개', 'menu.status': '메뉴 {n}개 · {src}{time} · 가격은 시술메뉴설정 탭에서 수정',
+      'src.sheet': '시트', 'src.cache': '저장된 시트', 'src.default': '기본값',
+      'menu.syncedAt': ' ({time} 동기화)', free: '무료', perItem: '금액',
+      'group.눈썹': '눈썹', 'group.립': '립', 'group.기타 부위': '기타 부위', 'group.count': '{n}개',
+      healthTitle: '시술 전 건강·금기사항',
+      'h.1': '켈로이드·비후성 반흔 체질',
+      'h.2': '혈액응고장애·아스피린 등 복용',
+      'h.3': '임신·수유 중',
+      'h.4': '최근 2주 내 피부과 시술·필링',
+      'h.5': '마취크림·금속 알레르기',
+      'h.none': '해당 사항 없음', 'h.noneSub': '위 항목에 해당하지 않습니다',
+      healthNote: '선택하신 항목은 시술 전 원장님과 상담 후 진행 여부를 결정합니다. 임신·수유 중이거나 혈액응고 관련 약을 복용 중인 경우 반드시 말씀해 주세요.',
+      consentTitle: '반영구 시술 표준 동의 내용',
+      'c.1': '<b>개인차 안내</b> — 피부 타입, 생활 습관, 기존 시술 이력, 호르몬 변화에 따라 착색 정도와 유지 기간에 개인차가 있습니다. 1회 시술로 완전한 결과를 보장하지 않으며, 자연스러운 결과를 위해 <b>1~2회 리터치</b>를 권장합니다.',
+      'c.2': '<b>시술 직후 안내</b> — 시술 직후에는 색이 진하게 보이고 붓기·홍조가 있을 수 있으며, 3~7일 안에 각질(탈각) 과정을 거치며 색이 옅어집니다. <b>당일 음주·사우나·찜질방·격한 운동·물 접촉</b>은 피해 주세요.',
+      'c.3': '<b>리터치 안내</b> — 리터치는 1회 무료, 2회부터는 유료이며 시술일로부터 6개월 이내까지만 가능합니다.',
+      'c.4': '<b>개인정보 수집·이용</b> — 성함, 연락처, 이메일, 생년월일, 건강 체크 및 시술 기록, 전자서명을 <b>시술 차트 관리·경과 확인·영수증 발급</b> 목적으로 수집합니다.',
+      moreSummary: '리터치·예약 변경 및 개인정보 보유 기준 자세히 보기',
+      'm.1': '<b>리터치</b> · 1회는 무료로 진행되며, 2회부터는 유료입니다. 리터치는 시술일로부터 6개월 이내까지만 가능하고, 그 이후는 별도 상담 후 진행합니다. 색 보완 범위를 넘는 추가 시술은 별도 비용이 발생할 수 있습니다.',
+      'm.2': '<b>예약 변경</b> · 일정 변경은 시술일 하루 전까지 미리 알려 주세요.',
+      'm.3': '<b>개인정보 보유·이용 기간</b> · 시술일로부터 5년 또는 동의 철회 시까지 보관하며, 목적을 달성하면 지체 없이 파기합니다. 동의를 거부하실 수 있으나, 이 경우 시술 진행과 영수증 발급이 제한될 수 있습니다.',
+      'm.note': '※ 세부 기준은 K-BEAUTY × MEDICAL 롱래스팅 센터 정책을 따릅니다.',
+      'agree.care': '[필수] 시술 안내 및 주의사항을 확인했으며 이에 동의합니다.',
+      'agree.privacy': '[필수] 개인정보 수집·이용에 동의합니다.',
+      memoLabel: '특이사항 메모',
+      memoPh: '피부 상태, 이전 시술 이력, 요청 사항 등을 자유롭게 적어 주세요.',
+      sigTitle: '전자서명', sigClear: '지우기',
+      sigPh: '손가락 또는 애플펜슬로 아래에 서명해 주세요',
+      sigNone: '서명 전', sigDone: '서명됨',
+      rvName: '고객명', rvDirector: '담당 원장', rvBranch: '지점', rvItems: '시술내역', rvDiscount: '할인', rvEmail: '이메일 영수증',
+      'rv.noEmail': '받지 않음',
+      'req.name': '성함', 'req.phone': '연락처', 'req.items': '시술 메뉴 1개 이상', 'req.health': '건강 체크',
+      'req.care': '주의사항 동의', 'req.privacy': '개인정보 동의', 'req.sig': '전자서명',
+      submitBtn: '동의서 저장 및 영수증 발급', stickyBtn: '영수증 발급',
+      submitNoteLinked: '저장하면 구글 시트에 기록되고, 이메일을 입력한 경우 영수증 메일이 자동 발송됩니다.',
+      submitNoteTest: '테스트 모드입니다. 지금은 시트 저장·메일 발송 없이 영수증만 발급됩니다. (⚙️ 연동 설정에서 주소 입력)',
+      saving: '저장 중…', savingSheet: '구글 시트에 저장하고 있어요…', makingReceipt: '영수증을 만들고 있어요…',
+      resetBtn: '입력 전체 초기화', resetArmed: '한 번 더 누르면 모두 지워집니다',
+      'toast.reset': '입력한 내용을 모두 지웠어요.',
+      'toast.newCustomer': '새 고객 작성 화면으로 돌아왔습니다.',
+      'toast.needName': '성함을 입력해 주세요.',
+      'toast.needPhone': '연락처를 정확히 입력해 주세요.',
+      'toast.badEmail': '이메일 형식을 확인해 주세요.',
+      'toast.needItems': '시술 메뉴를 1개 이상 선택해 주세요.',
+      'toast.needHealth': "건강 체크를 선택해 주세요. (없으면 '해당 사항 없음')",
+      'toast.needAgree': '필수 동의 2가지에 체크해 주세요.',
+      'toast.needSign': '전자서명을 해 주세요.',
+      'toast.already': '이미 발급된 영수증이 있어요. 새 고객으로 시작해 주세요.',
+      'toast.syncNeed': '⚙️ 연동 설정에서 웹 앱 URL을 먼저 입력해 주세요.',
+      'toast.synced': '시트에서 메뉴 {n}개를 불러왔어요.',
+      'toast.syncFail': '시트에서 메뉴를 불러오지 못했어요. 저장된 메뉴로 표시합니다.',
+      'toast.urlSaved': '연동 주소를 저장했어요.',
+      'toast.urlCleared': '연동 주소를 비웠어요. (테스트 모드)',
+      'toast.urlBad': 'Apps Script 웹 앱 주소(https://script.google.com/macros/s/…/exec)를 붙여넣어 주세요.',
+      'toast.urlSavedMsg': '저장했어요. 이제 시트 저장·메뉴 동기화·이메일 발송이 함께 작동합니다.',
+      'toast.testMode': '테스트 모드로 전환했어요.',
+      'toast.pngSaved': '영수증 이미지를 저장했어요. (저장되지 않으면 아래 이미지를 길게 눌러 주세요)',
+      'toast.pngFail': '이미지를 만들지 못했어요. 인쇄/PDF를 사용해 주세요.',
+      'toast.pendingSent': '이전에 저장하지 못한 동의서 {n}건을 시트로 보냈어요.',
+      'toast.pendingNone': '주소를 먼저 입력해 주세요. (테스트 모드로는 연결 테스트를 할 수 없어요)',
+      'toast.connOk': '연결 성공 · 서비스: {s}{menus}',
+      'toast.connMenu': ' · 시트 메뉴 {n}개',
+      'toast.connBad': '응답을 확인했지만 형식이 달라요. 배포 설정(액세스: 모든 사용자)을 확인해 주세요.',
+      'toast.connFail': '연결하지 못했어요. 배포 주소와 ‘액세스: 모든 사용자’ 설정을 확인해 주세요.',
+      'toast.connChecking': '연결을 확인하고 있어요…',
+      setTitle: '연동 설정', setDesc: '구글 시트 저장·메뉴 동기화·이메일 영수증을 연결합니다.',
+      setStep1: '스프레드시트 <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>확장 프로그램 → Apps Script</b>를 엽니다.',
+      setStep2: '<span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> 내용을 전부 붙여넣고 저장합니다.',
+      setStep3: '<b>배포 → 새 배포 → 웹 앱</b> · 실행: <b>나</b> / 액세스: <b>모든 사용자</b>로 배포합니다.',
+      setStep4: '나온 <b>웹 앱 URL</b>(/exec로 끝나는 주소)을 아래에 붙여넣고 저장합니다.',
+      syncBtn: '시트 동기화', badgeOn: '시트 연동됨', badgeTest: '테스트 모드',
+      urlLabel: 'Apps Script 웹 앱 URL',
+      urlHint: '이 기기에만 저장됩니다. 비워 두면 테스트 모드로 동작해 시트에는 기록되지 않습니다.',
+      testNote: '테스트 모드 안내 — 주소가 없어도 동의서 작성·금액 계산·서명·영수증 이미지 저장은 모두 정상 작동합니다. 다만 구글 시트 기록·메뉴 동기화·이메일 발송만 되지 않습니다.',
+      save: '저장', testConn: '연결 테스트', clearUrl: '주소 삭제',
+      'toast.clearedUrl': '주소를 삭제했어요. 테스트 모드로 동작합니다.',
+      rcTitle: '영수증이 발급되었습니다', rcSub: '아래에서 이미지 저장·인쇄가 가능합니다.',
+      rcDocTitle: '롱래스팅 센터 시술 영수증',
+      rcNo: '영수증번호', rcDate: '발급일시', rcTotal: '총 결제금액', rcSig: '고객 서명', rcSigEmpty: '서명',
+      rcStamp: '롱래스팅 센터 드림',
+      rcFoot1: '본 영수증은 K-BEAUTY × MEDICAL 롱래스팅 센터에서 발급한 시술 확인용 영수증이며, 세금계산서·현금영수증과는 별개입니다.',
+      rcFoot2: '문의 및 리터치 예약은 담당 원장에게 문의해 주세요. 감사합니다.',
+      pngHint: '이미지를 길게 눌러 ‘사진에 저장’하면 바로 보낼 수 있습니다.',
+      btnPng: '🖼️ 영수증 이미지(PNG) 저장', btnPrint: '🖨️ 인쇄 / PDF 저장', btnNew: '새 고객 작성하기', btnRetry: '↻ 시트에 다시 저장',
+      'st.sent': '✅ {msg}', 'st.dup': '이미 저장된 영수증이에요. (중복 저장 없음)', 'st.saved': '구글 시트에 저장했어요.',
+      'st.emailSent': ' · 이메일 영수증 발송완료', 'st.emailNone': ' · 이메일 미입력 (화면·이미지로 전달)', 'st.emailFail': ' · 이메일 발송은 실패했어요. 화면 영수증을 사용해 주세요.',
+      'st.test': '🧪 테스트 모드 — 시트에 저장되지 않았습니다. ⚙️ 연동 설정에서 웹 앱 URL을 넣으면 자동 저장됩니다.',
+      'st.unverified': '⚠️ {msg}', 'st.error': '❌ {msg}',
+      'st.failDefault': '저장하지 못했어요.',
+      'st.savingAgain': '저장 중…',
+      'pay.withCash': '{p} · 현금할인가',
+      itemCashTag: '현금할인가',
+      footTitle: 'K-BEAUTY × MEDICAL · 롱래스팅 센터',
+      footNote: '이 화면의 동의서와 영수증은 매장 시술 기록용으로 발급됩니다. 세금계산서·현금영수증과는 별개입니다.',
+      'msg.unverified': '전송은 되었지만 응답을 확인하지 못했어요. 시트를 확인해 주세요.',
+      'msg.network': '전송을 보냈어요. 네트워크 환경상 결과 확인은 되지 않았습니다.',
+      'sheet.itemCash': ' (현금할인가)'
+    },
+    en: {
+      docTitle: 'Long-Lasting Center · Treatment Consent & Receipt',
+      brandSub: 'Treatment Consent',
+      settings: 'Settings',
+      s1: 'Customer', s2: 'Treatment & Price', s3: 'Health & Consent', s4: 'Review & Issue',
+      lblBranch: 'Branch', lblDirector: 'Director', lblName: 'Name', lblPhone: 'Phone', lblEmail: 'Email',
+      lblBirth: 'Date of birth', lblSource: 'How did you find us',
+      phName: 'e.g. Jisoo Kim',
+      errName: 'Please enter your name.', errPhone: 'Please enter a valid phone number.', errEmail: 'Please check your email address.',
+      'source.naver': 'Naver Booking', 'source.insta': 'Instagram', 'source.xhs': 'Xiaohongshu', 'source.referral': 'Referral', 'source.other': 'Other',
+      'branch.강남점': 'Gangnam', 'branch.배곧점': 'Baegot',
+      'dir.한지윤 원장': 'Dr. Jiyoon Han', 'dir.송지원 원장': 'Dr. Jiwon Song',
+      customAdd: '＋ Add custom item / amount',
+      customNamePh: 'Treatment (e.g. class, consultation)', customAmountPh: 'Amount', customMax: 'You can add up to 5 custom items.',
+      discTitle: 'Event & discount',
+      kioskTitle: 'On-site discount',
+      'mode.amount': 'Fixed amount off', 'mode.percent': 'Percent off', 'mode.final': 'Set final price',
+      'kiosk.phAmount': 'e.g. 20000', 'kiosk.phPercent': 'e.g. 10', 'kiosk.phFinal': 'e.g. 350000',
+      'kiosk.percent': '{p}% = {d} off · final {t}',
+      'kiosk.finalOver': 'That is more than the total ({a}). Please check the final amount.',
+      'kiosk.final': 'Final {v} · discount {d}',
+      'kiosk.finalEmpty': 'Enter the amount to pay and the discount is calculated.',
+      'kiosk.amount': '{d} off · final {t}',
+      payTitle: 'Payment', 'pay.card': 'Card', 'pay.transfer': 'Bank transfer (cash price)', 'pay.cash': 'Cash',
+      cashToggle: 'Apply cash price',
+      sumSubtotal: 'Subtotal', sumCash: 'Cash price applied', sumTotal: 'Total to pay',
+      'disc.event': 'Event discount', 'disc.cash': 'Cash price', 'disc.none': 'No discount',
+      'preset.none': 'No discount', 'preset.noneSub': 'Regular price',
+      'preset.first': 'First visit', 'preset.firstSub': '-₩30,000',
+      'preset.return': 'Returning visit', 'preset.returnSub': '-₩50,000',
+      'preset.sale30': 'Year-end 30% OFF', 'preset.sale30Sub': '30% of subtotal',
+      'label.amount': 'On-site amount discount', 'label.percent': 'On-site {p}% off', 'label.final': 'Final price set',
+      'menu.cap': '{n} selected', 'menu.status': '{n} menus · {src}{time} · edit prices in the 시술메뉴설정 tab',
+      'src.sheet': 'sheet', 'src.cache': 'saved sheet', 'src.default': 'defaults',
+      'menu.syncedAt': ' (synced {time})', free: 'Free', perItem: 'Amount',
+      'group.눈썹': 'Eyebrows', 'group.립': 'Lips', 'group.기타 부위': 'Other areas', 'group.count': '{n}',
+      healthTitle: 'Health check before treatment',
+      'h.1': 'Keloid or hypertrophic scarring',
+      'h.2': 'Bleeding disorder / taking aspirin etc.',
+      'h.3': 'Pregnant or breastfeeding',
+      'h.4': 'Dermatology treatment or peeling in the last 2 weeks',
+      'h.5': 'Allergy to numbing cream or metals',
+      'h.none': 'None of the above', 'h.noneSub': 'I have none of these conditions',
+      healthNote: 'Selected items are discussed with your director before treatment. Please tell us if you are pregnant, breastfeeding or taking blood-thinning medication.',
+      consentTitle: 'Standard treatment consent',
+      'c.1': '<b>Individual results</b> — Colour intensity and lasting time vary with skin type, lifestyle, previous treatments and hormonal changes. One session does not guarantee a complete result; <b>1–2 touch-ups</b> are recommended for a natural finish.',
+      'c.2': '<b>Right after treatment</b> — Colour looks darker at first, with possible swelling or redness, and softens over 3–7 days as the skin flakes. On the same day <b>avoid alcohol, sauna, jjimjilbang, intense exercise and contact with water</b>.',
+      'c.3': '<b>Touch-up</b> — The <b>1st touch-up is free, from the 2nd a fee applies</b>, and touch-ups are available <b>within 6 months</b> of the treatment date.',
+      'c.4': '<b>Personal information</b> — Name, phone, email, date of birth, health check, treatment records and e-signature are collected to <b>keep your treatment chart, follow your progress and issue the receipt</b>.',
+      moreSummary: 'Touch-up, rescheduling and data retention details',
+      'm.1': '<b>Touch-up</b> · The first is free and from the second a fee applies. Touch-ups are possible only within 6 months of the treatment date; later ones need a separate consultation. Additional work beyond colour correction may cost extra.',
+      'm.2': '<b>Rescheduling</b> · Please let us know at least one day before your appointment.',
+      'm.3': '<b>Data retention</b> · Kept for 5 years from the treatment date or until you withdraw consent, and destroyed without delay once the purpose is met. You may refuse consent, but treatment and receipt issuance may then be limited.',
+      'm.note': '※ Details follow K-BEAUTY × MEDICAL Long-Lasting Center policy.',
+      'agree.care': '[Required] I have read the treatment guide and precautions and agree to them.',
+      'agree.privacy': '[Required] I agree to the collection and use of my personal information.',
+      memoLabel: 'Notes',
+      memoPh: 'Skin condition, previous treatments, requests — anything we should know.',
+      sigTitle: 'Signature', sigClear: 'Clear',
+      sigPh: 'Please sign below with your finger or Apple Pencil',
+      sigNone: 'Not signed', sigDone: 'Signed',
+      rvName: 'Name', rvDirector: 'Director', rvBranch: 'Branch', rvItems: 'Treatments', rvDiscount: 'Discount', rvEmail: 'Email receipt',
+      'rv.noEmail': 'Not requested',
+      'req.name': 'Name', 'req.phone': 'Phone', 'req.items': 'At least one treatment', 'req.health': 'Health check',
+      'req.care': 'Precautions agreed', 'req.privacy': 'Privacy agreed', 'req.sig': 'Signature',
+      submitBtn: 'Save consent & issue receipt', stickyBtn: 'Issue receipt',
+      submitNoteLinked: 'Saving records this in Google Sheets and emails the receipt when an email is entered.',
+      submitNoteTest: 'Test mode — the receipt is issued without saving to the sheet or sending email. (Set the URL in ⚙️ Settings)',
+      saving: 'Saving…', savingSheet: 'Saving to Google Sheets…', makingReceipt: 'Preparing the receipt…',
+      resetBtn: 'Clear everything', resetArmed: 'Tap again to clear everything',
+      'toast.reset': 'All entries cleared.',
+      'toast.newCustomer': 'Back to a new customer form.',
+      'toast.needName': 'Please enter your name.',
+      'toast.needPhone': 'Please enter a valid phone number.',
+      'toast.badEmail': 'Please check your email address.',
+      'toast.needItems': 'Please choose at least one treatment.',
+      'toast.needHealth': 'Please complete the health check. (Choose "None of the above" if none apply)',
+      'toast.needAgree': 'Please tick both required consents.',
+      'toast.needSign': 'Please sign in the signature box.',
+      'toast.already': 'A receipt was already issued. Please start a new customer.',
+      'toast.syncNeed': 'Please enter the web app URL in ⚙️ Settings first.',
+      'toast.synced': 'Loaded {n} menus from the sheet.',
+      'toast.syncFail': 'Could not load menus from the sheet. Showing saved menus.',
+      'toast.urlSaved': 'Connection URL saved.',
+      'toast.urlCleared': 'Connection URL cleared. (Test mode)',
+      'toast.urlBad': 'Paste the Apps Script web app URL (https://script.google.com/macros/s/…/exec).',
+      'toast.urlSavedMsg': 'Saved. Sheet saving, menu sync and email receipts are now active.',
+      'toast.testMode': 'Switched to test mode.',
+      'toast.pngSaved': 'Receipt image saved. (If it did not save, press and hold the image below)',
+      'toast.pngFail': 'Could not create the image. Please use print/PDF.',
+      'toast.pendingSent': 'Sent {n} previously unsaved consent(s) to the sheet.',
+      'toast.pendingNone': 'Please enter the URL first. (Test mode cannot test the connection)',
+      'toast.connOk': 'Connected · service: {s}{menus}',
+      'toast.connMenu': ' · {n} menus in the sheet',
+      'toast.connBad': 'A response arrived but in an unexpected format. Check the deployment access (Anyone).',
+      'toast.connFail': 'Could not connect. Check the deployment URL and "Anyone" access.',
+      'toast.connChecking': 'Checking the connection…',
+      setTitle: 'Connection settings', setDesc: 'Connect Google Sheets, menu sync and email receipts.',
+      setStep1: 'Open the spreadsheet <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>Extensions → Apps Script</b>.',
+      setStep2: 'Paste the whole <span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> and save.',
+      setStep3: '<b>Deploy → New deployment → Web app</b> · Execute as <b>Me</b> / Access <b>Anyone</b>.',
+      setStep4: 'Paste the <b>web app URL</b> (ending in /exec) below and save.',
+      syncBtn: 'Sync menu', badgeOn: 'Sheet connected', badgeTest: 'Test mode',
+      urlLabel: 'Apps Script web app URL',
+      urlHint: 'Stored on this device only. If empty, it runs in test mode without recording to the sheet.',
+      testNote: 'Test mode — consent, pricing, signature and receipt images all work. Only sheet saving, menu sync and email are inactive.',
+      save: 'Save', testConn: 'Test connection', clearUrl: 'Delete URL',
+      'toast.clearedUrl': 'URL deleted. Running in test mode.',
+      rcTitle: 'Receipt issued', rcSub: 'You can save the image or print below.',
+      rcDocTitle: 'Long-Lasting Center Treatment Receipt',
+      rcNo: 'Receipt no.', rcDate: 'Issued', rcTotal: 'Total paid', rcSig: 'Customer signature', rcSigEmpty: 'Signature',
+      rcStamp: 'K-BEAUTY × MEDICAL',
+      rcFoot1: 'This receipt is issued by K-BEAUTY × MEDICAL Long-Lasting Center for treatment confirmation and is separate from a tax invoice.',
+      rcFoot2: 'For questions or touch-up bookings, please contact your director. Thank you.',
+      pngHint: 'Press and hold the image to save it to your photos.',
+      btnPng: '🖼️ Save receipt image (PNG)', btnPrint: '🖨️ Print / save PDF', btnNew: 'New customer', btnRetry: '↻ Retry saving to sheet',
+      'st.sent': '✅ {msg}', 'st.dup': 'This receipt was already saved. (No duplicate)', 'st.saved': 'Saved to Google Sheets.',
+      'st.emailSent': ' · Receipt email sent', 'st.emailNone': ' · No email — shown on screen and image', 'st.emailFail': ' · Email failed. Please use the on-screen receipt.',
+      'st.test': '🧪 Test mode — not saved to the sheet. Add the web app URL in ⚙️ Settings to save automatically.',
+      'st.unverified': '⚠️ {msg}', 'st.error': '❌ {msg}',
+      'st.failDefault': 'Could not save.',
+      'st.savingAgain': 'Saving…',
+      'pay.withCash': '{p} · cash price',
+      itemCashTag: 'cash price',
+      footTitle: 'K-BEAUTY × MEDICAL · Long-Lasting Center',
+      footNote: 'The consent and receipt on this screen are issued for in-store treatment records and are separate from a tax invoice.',
+      'msg.unverified': 'Sent, but the response could not be confirmed. Please check the sheet.',
+      'msg.network': 'Sent. The result could not be confirmed on this network.',
+      'sheet.itemCash': ' (cash price)'
+    },
+    zh: {
+      docTitle: '长期化妆中心 · 客户施术同意书与收据',
+      brandSub: '客户施术同意书',
+      settings: '联动设置',
+      s1: '客户信息', s2: '施术项目与金额', s3: '健康检查与施术同意', s4: '确认与开具',
+      lblBranch: '分店', lblDirector: '担当院长', lblName: '姓名', lblPhone: '联系电话', lblEmail: '邮箱',
+      lblBirth: '出生日期', lblSource: '到店渠道',
+      phName: '例）金智秀',
+      errName: '请输入姓名。', errPhone: '请准确填写联系电话。', errEmail: '请确认邮箱格式。',
+      'source.naver': 'Naver预约', 'source.insta': 'Instagram', 'source.xhs': '小红书', 'source.referral': '熟人介绍', 'source.other': '其他',
+      'branch.강남점': '江南店', 'branch.배곧점': '培谷店',
+      'dir.한지윤 원장': '韩智允 院长', 'dir.송지원 원장': '宋智元 院长',
+      customAdd: '＋ 手动添加 / 自定义金额',
+      customNamePh: '项目名称（例：课程·咨询）', customAmountPh: '金额', customMax: '最多可添加5个项目。',
+      discTitle: '活动 · 折扣',
+      kioskTitle: '现场即时折扣',
+      'mode.amount': '定额折扣', 'mode.percent': '比例折扣', 'mode.final': '指定最终金额',
+      'kiosk.phAmount': '例：20000', 'kiosk.phPercent': '例：10', 'kiosk.phFinal': '例：350000',
+      'kiosk.percent': '{p}% = 优惠 {d} · 最终 {t}',
+      'kiosk.finalOver': '金额超过合计（{a}），请重新确认最终金额。',
+      'kiosk.final': '最终 {v} · 优惠 {d}',
+      'kiosk.finalEmpty': '输入应付金额后会自动计算折扣。',
+      'kiosk.amount': '优惠 {d} · 最终 {t}',
+      payTitle: '支付方式', 'pay.card': '银行卡', 'pay.transfer': '转账（现金价）', 'pay.cash': '现金',
+      cashToggle: '适用现金价',
+      sumSubtotal: '原价合计', sumCash: '适用现金价', sumTotal: '最终结算金额',
+      'disc.event': '活动折扣', 'disc.cash': '现金价', 'disc.none': '按原价',
+      'preset.none': '按原价', 'preset.noneSub': '无折扣',
+      'preset.first': '首次到访优惠', 'preset.firstSub': '-30,000韩元',
+      'preset.return': '再次到访优惠', 'preset.returnSub': '-50,000韩元',
+      'preset.sale30': '年末30%折扣', 'preset.sale30Sub': '原价的30%',
+      'label.amount': '现场定额折扣', 'label.percent': '现场{p}%折扣', 'label.final': '指定最终金额',
+      'menu.cap': '已选 {n} 项', 'menu.status': '共 {n} 个项目 · {src}{time} · 价格在“施术菜单设置”标签页修改',
+      'src.sheet': '表格', 'src.cache': '已保存的表格', 'src.default': '默认值',
+      'menu.syncedAt': '（{time} 已同步）', free: '免费', perItem: '金额',
+      'group.눈썹': '眉毛', 'group.립': '唇部', 'group.기타 부위': '其他部位', 'group.count': '{n}个',
+      healthTitle: '施术前健康·禁忌事项',
+      'h.1': '疤痕体质（蟹足肿·增生性疤痕）',
+      'h.2': '凝血障碍或正在服用阿司匹林等',
+      'h.3': '怀孕或哺乳期',
+      'h.4': '两周内做过皮肤科项目或焕肤',
+      'h.5': '麻醉膏或金属过敏',
+      'h.none': '以上均无', 'h.noneSub': '没有以上情况',
+      healthNote: '所选项目将由院长在施术前商谈后决定是否进行。如怀孕、哺乳或正在服用凝血相关药物，请务必告知。',
+      consentTitle: '半永久施术标准同意内容',
+      'c.1': '<b>个体差异</b> — 因肤质、生活习惯、既往施术经历及荷尔蒙变化，上色程度与维持时间存在个体差异。一次施术无法保证完全效果，为获得自然效果建议<b>补色1~2次</b>。',
+      'c.2': '<b>施术后注意事项</b> — 施术后颜色会显得较深，可能出现肿胀·泛红，3~7天内经过角质脱落（脱皮）后颜色会变淡。当天<b>请避免饮酒、桑拿、汗蒸、剧烈运动及碰水</b>。',
+      'c.3': '<b>补色说明</b> — <b>第1次补色免费，第2次起收费</b>，且仅限施术日起<b>6个月内</b>。',
+      'c.4': '<b>个人信息收集·使用</b> — 为<b>管理施术档案、确认恢复情况及开具收据</b>，收集姓名、联系电话、邮箱、出生日期、健康检查及施术记录、电子签名。',
+      moreSummary: '补色·预约变更及个人信息保存标准详情',
+      'm.1': '<b>补色</b> · 第1次免费，第2次起收费。补色仅限施术日起6个月内，之后需另行商谈。超出颜色修补范围的追加施术可能产生额外费用。',
+      'm.2': '<b>预约变更</b> · 请在施术日前一天之前通知我们。',
+      'm.3': '<b>个人信息保存·使用期限</b> · 自施术日起保存5年或至撤回同意为止，达成目的后立即销毁。您可以拒绝同意，但此时施术与收据开具可能受限。',
+      'm.note': '※ 具体标准遵循 K-BEAUTY × MEDICAL 长期化妆中心政策。',
+      'agree.care': '[必需] 我已确认施术说明及注意事项并同意。',
+      'agree.privacy': '[必需] 我同意收集·使用个人信息。',
+      memoLabel: '特殊事项备注',
+      memoPh: '请自由填写肤质状况、既往施术经历、需求等。',
+      sigTitle: '电子签名', sigClear: '清除',
+      sigPh: '请用手指或触控笔在下方签名',
+      sigNone: '未签名', sigDone: '已签名',
+      rvName: '客户姓名', rvDirector: '担当院长', rvBranch: '分店', rvItems: '施术内容', rvDiscount: '折扣', rvEmail: '邮箱收据',
+      'rv.noEmail': '不需要',
+      'req.name': '姓名', 'req.phone': '联系电话', 'req.items': '至少1个施术项目', 'req.health': '健康检查',
+      'req.care': '注意事项同意', 'req.privacy': '个人信息同意', 'req.sig': '电子签名',
+      submitBtn: '保存同意书并开具收据', stickyBtn: '开具收据',
+      submitNoteLinked: '保存后将记录到 Google 表格，填写邮箱时会自动发送收据邮件。',
+      submitNoteTest: '当前为测试模式，仅开具收据，不保存到表格也不发送邮件。（在 ⚙️ 联动设置中输入地址）',
+      saving: '保存中…', savingSheet: '正在保存到 Google 表格…', makingReceipt: '正在生成收据…',
+      resetBtn: '全部清除', resetArmed: '再按一次将全部清除',
+      'toast.reset': '已清除全部填写内容。',
+      'toast.newCustomer': '已返回新客户填写页面。',
+      'toast.needName': '请输入姓名。',
+      'toast.needPhone': '请准确填写联系电话。',
+      'toast.badEmail': '请确认邮箱格式。',
+      'toast.needItems': '请至少选择1个施术项目。',
+      'toast.needHealth': '请完成健康检查。（如无，请选择“以上均无”）',
+      'toast.needAgree': '请勾选两项必需同意。',
+      'toast.needSign': '请进行电子签名。',
+      'toast.already': '已开具收据，请开始新的客户。',
+      'toast.syncNeed': '请先在 ⚙️ 联动设置中输入 Web 应用 URL。',
+      'toast.synced': '已从表格加载 {n} 个项目。',
+      'toast.syncFail': '未能从表格加载项目，显示已保存的项目。',
+      'toast.urlSaved': '已保存联动地址。',
+      'toast.urlCleared': '已清空联动地址。（测试模式）',
+      'toast.urlBad': '请粘贴 Apps Script Web 应用地址（https://script.google.com/macros/s/…/exec）。',
+      'toast.urlSavedMsg': '已保存。现在表格保存、菜单同步、邮件发送将同时启用。',
+      'toast.testMode': '已切换为测试模式。',
+      'toast.pngSaved': '已保存收据图片。（如未保存，请长按下方图片）',
+      'toast.pngFail': '未能生成图片，请使用打印/PDF。',
+      'toast.pendingSent': '已向表格补发 {n} 份之前未保存的同意书。',
+      'toast.pendingNone': '请先输入地址。（测试模式无法测试连接）',
+      'toast.connOk': '连接成功 · 服务：{s}{menus}',
+      'toast.connMenu': ' · 表格项目 {n}个',
+      'toast.connBad': '已收到响应但格式不同，请确认部署设置（访问权限：所有人）。',
+      'toast.connFail': '连接失败，请确认部署地址与“所有人”访问设置。',
+      'toast.connChecking': '正在确认连接…',
+      setTitle: '联动设置', setDesc: '连接 Google 表格保存、菜单同步与邮件收据。',
+      setStep1: '打开电子表格 <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>扩展程序 → Apps Script</b>。',
+      setStep2: '将 <span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> 全部粘贴并保存。',
+      setStep3: '<b>部署 → 新建部署 → Web 应用</b> · 执行身份：<b>我</b> / 访问权限：<b>所有人</b>。',
+      setStep4: '将生成的 <b>Web 应用 URL</b>（以 /exec 结尾）粘贴到下方并保存。',
+      syncBtn: '同步表格', badgeOn: '已连接表格', badgeTest: '测试模式',
+      urlLabel: 'Apps Script Web 应用 URL',
+      urlHint: '仅保存在本设备。留空则以测试模式运行，不记录到表格。',
+      testNote: '测试模式说明 — 即使没有地址，同意书填写、金额计算、签名、收据图片保存均可正常使用，仅无法记录表格、同步菜单和发送邮件。',
+      save: '保存', testConn: '测试连接', clearUrl: '删除地址',
+      'toast.clearedUrl': '已删除地址，以测试模式运行。',
+      rcTitle: '收据已开具', rcSub: '可在下方保存图片或打印。',
+      rcDocTitle: '长期化妆中心施术收据',
+      rcNo: '收据编号', rcDate: '开具时间', rcTotal: '结算金额', rcSig: '客户签名', rcSigEmpty: '签名',
+      rcStamp: 'K-BEAUTY × MEDICAL',
+      rcFoot1: '本收据由 K-BEAUTY × MEDICAL 长期化妆中心开具，仅用于施术确认，与税务发票·现金收据无关。',
+      rcFoot2: '咨询及补色预约请联系担当院长。谢谢。',
+      pngHint: '长按图片即可保存到相册。',
+      btnPng: '🖼️ 保存收据图片（PNG）', btnPrint: '🖨️ 打印 / 保存PDF', btnNew: '新客户填写', btnRetry: '↻ 重新保存到表格',
+      'st.sent': '✅ {msg}', 'st.dup': '该收据已保存。（未重复保存）', 'st.saved': '已保存到 Google 表格。',
+      'st.emailSent': ' · 收据邮件已发送', 'st.emailNone': ' · 未填写邮箱（以画面·图片传送）', 'st.emailFail': ' · 邮件发送失败，请使用画面收据。',
+      'st.test': '🧪 测试模式 — 未保存到表格。在 ⚙️ 联动设置中输入 Web 应用 URL 后会自动保存。',
+      'st.unverified': '⚠️ {msg}', 'st.error': '❌ {msg}',
+      'st.failDefault': '保存失败。',
+      'st.savingAgain': '保存中…',
+      'pay.withCash': '{p} · 现金价',
+      itemCashTag: '现金价',
+      footTitle: 'K-BEAUTY × MEDICAL · 长期化妆中心',
+      footNote: '本页面的同意书与收据仅用于门店施术记录，与税务发票·现金收据无关。',
+      'msg.unverified': '已发送，但未能确认响应。请确认表格。',
+      'msg.network': '已发送。因网络环境未能确认结果。',
+      'sheet.itemCash': '（现金价）'
+    },
+    ja: {
+      docTitle: 'ロングラスティングセンター · 施術同意書と領収書',
+      brandSub: '施術同意書',
+      settings: '連携設定',
+      s1: 'お客様情報', s2: '施術メニュー・料金', s3: '健康チェック・施術同意', s4: '確認・発行',
+      lblBranch: '店舗', lblDirector: '担当院長', lblName: 'お名前', lblPhone: '電話番号', lblEmail: 'メール',
+      lblBirth: '生年月日', lblSource: 'ご来店経路',
+      phName: '例）キム・ジス',
+      errName: 'お名前を入力してください。', errPhone: '電話番号を正確に入力してください。', errEmail: 'メールアドレスをご確認ください。',
+      'source.naver': 'Naver予約', 'source.insta': 'Instagram', 'source.xhs': '小红书(Red)', 'source.referral': '知人の紹介', 'source.other': 'その他',
+      'branch.강남점': '江南店', 'branch.배곧점': 'ベゴッ店',
+      'dir.한지윤 원장': 'ハン・ジユン 院長', 'dir.송지원 원장': 'ソン・ジウォン 院長',
+      customAdd: '＋ 手動追加 / カスタム金額',
+      customNamePh: '施術名（例：講習・カウンセリング）', customAmountPh: '金額', customMax: 'カスタム項目は最大5件まで追加できます。',
+      discTitle: 'イベント・割引',
+      kioskTitle: '当日割引',
+      'mode.amount': '定額割引', 'mode.percent': '定率割引', 'mode.final': '最終金額指定',
+      'kiosk.phAmount': '例：20000', 'kiosk.phPercent': '例：10', 'kiosk.phFinal': '例：350000',
+      'kiosk.percent': '{p}% = {d} 割引 · 最終 {t}',
+      'kiosk.finalOver': '合計（{a}）を超えています。最終金額をご確認ください。',
+      'kiosk.final': '最終 {v} に指定 · 割引 {d}',
+      'kiosk.finalEmpty': 'お支払い金額を入力すると割引が自動計算されます。',
+      'kiosk.amount': '{d} 割引 · 最終 {t}',
+      payTitle: 'お支払い方法', 'pay.card': 'カード', 'pay.transfer': '振込（現金価格）', 'pay.cash': '現金',
+      cashToggle: '現金価格を適用',
+      sumSubtotal: '定価合計', sumCash: '現金価格適用', sumTotal: '最終お支払い金額',
+      'disc.event': 'イベント割引', 'disc.cash': '現金価格', 'disc.none': '定価適用',
+      'preset.none': '定価適用', 'preset.noneSub': '割引なし',
+      'preset.first': '初回割引', 'preset.firstSub': '-30,000ウォン',
+      'preset.return': '再来割引', 'preset.returnSub': '-50,000ウォン',
+      'preset.sale30': '年末30%OFF', 'preset.sale30Sub': '定価の30%',
+      'label.amount': '当日定額割引', 'label.percent': '当日{p}%割引', 'label.final': '最終金額指定',
+      'menu.cap': '選択した施術 {n}件', 'menu.status': 'メニュー {n}件 · {src}{time} · 価格は「施術メニュー設定」タブで編集',
+      'src.sheet': 'シート', 'src.cache': '保存済みシート', 'src.default': '初期値',
+      'menu.syncedAt': '（{time} 同期）', free: '無料', perItem: '金額',
+      'group.눈썹': '眉毛', 'group.립': 'リップ', 'group.기타 부위': 'その他の部位', 'group.count': '{n}件',
+      healthTitle: '施術前の健康・禁忌事項',
+      'h.1': 'ケロイド・肥厚性瘢痕体質',
+      'h.2': '血液凝固障害・アスピリン等の服用',
+      'h.3': '妊娠中・授乳中',
+      'h.4': '2週間以内に皮膚科施術・ピーリング',
+      'h.5': '麻酔クリーム・金属アレルギー',
+      'h.none': '該当なし', 'h.noneSub': '上記に該当しません',
+      healthNote: '選択した項目は施術前に院長とカウンセリングのうえ施術可否を決めます。妊娠・授乳中、または血液凝固に関わる薬を服用中の方は必ずお伝えください。',
+      consentTitle: '半永久施術の標準同意内容',
+      'c.1': '<b>個人差について</b> — 肌質・生活習慣・過去の施術歴・ホルモンの変化により、発色と持続期間には個人差があります。1回の施術で完全な仕上がりを保証するものではなく、自然な仕上がりのために<b>1〜2回のリタッチ</b>をおすすめします。',
+      'c.2': '<b>施術直後の注意</b> — 施術直後は色が濃く見え、腫れや赤みが出ることがあります。3〜7日で角質が取れるにつれて色が薄くなります。当日の<b>飲酒・サウナ・岩盤浴・激しい運動・水濡れ</b>は避けてください。',
+      'c.3': '<b>リタッチについて</b> — <b>リタッチは1回目無料・2回目以降は有料</b>で、施術日から<b>6か月以内</b>のみ可能です。',
+      'c.4': '<b>個人情報の収集・利用</b> — 氏名・電話番号・メール・生年月日・健康チェック・施術記録・電子署名を、<b>カルテ管理・経過確認・領収書発行</b>のために収集します。',
+      moreSummary: 'リタッチ・予約変更・個人情報の保管基準の詳細',
+      'm.1': '<b>リタッチ</b> · 1回目は無料、2回目以降は有料です。リタッチは施術日から6か月以内のみ可能で、それ以降は別途カウンセリングのうえ行います。色の補正範囲を超える追加施術は別料金となる場合があります。',
+      'm.2': '<b>予約変更</b> · 日程変更は施術日の前日までにお知らせください。',
+      'm.3': '<b>個人情報の保管期間</b> · 施術日から5年、または同意撤回まで保管し、目的達成後は遅滞なく破棄します。同意を拒否できますが、その場合施術と領収書発行が制限されることがあります。',
+      'm.note': '※ 詳細は K-BEAUTY × MEDICAL ロングラスティングセンターのポリシーに従います。',
+      'agree.care': '[必須] 施術の説明と注意事項を確認し、同意します。',
+      'agree.privacy': '[必須] 個人情報の収集・利用に同意します。',
+      memoLabel: '特記事項メモ',
+      memoPh: '肌の状態、過去の施術歴、ご要望などをご記入ください。',
+      sigTitle: '電子署名', sigClear: '消去',
+      sigPh: '指またはApple Pencilで下に署名してください',
+      sigNone: '署名前', sigDone: '署名済み',
+      rvName: 'お名前', rvDirector: '担当院長', rvBranch: '店舗', rvItems: '施術内容', rvDiscount: '割引', rvEmail: 'メール領収書',
+      'rv.noEmail': '受け取らない',
+      'req.name': 'お名前', 'req.phone': '電話番号', 'req.items': '施術メニュー1件以上', 'req.health': '健康チェック',
+      'req.care': '注意事項への同意', 'req.privacy': '個人情報への同意', 'req.sig': '電子署名',
+      submitBtn: '同意書を保存して領収書を発行', stickyBtn: '領収書発行',
+      submitNoteLinked: '保存すると Google スプレッドシートに記録され、メール入力時は領収書メールが自動送信されます。',
+      submitNoteTest: 'テストモードです。今はシート保存・メール送信なしで領収書のみ発行されます。（⚙️ 連携設定でアドレスを入力）',
+      saving: '保存中…', savingSheet: 'Google スプレッドシートに保存しています…', makingReceipt: '領収書を作成しています…',
+      resetBtn: '入力内容をすべて消去', resetArmed: 'もう一度押すとすべて消去されます',
+      'toast.reset': '入力内容をすべて消去しました。',
+      'toast.newCustomer': '新しいお客様の入力画面に戻りました。',
+      'toast.needName': 'お名前を入力してください。',
+      'toast.needPhone': '電話番号を正確に入力してください。',
+      'toast.badEmail': 'メールアドレスをご確認ください。',
+      'toast.needItems': '施術メニューを1件以上選択してください。',
+      'toast.needHealth': '健康チェックを選択してください。（該当なしの場合は「該当なし」）',
+      'toast.needAgree': '必須同意2項目にチェックしてください。',
+      'toast.needSign': '電子署名をしてください。',
+      'toast.already': 'すでに発行済みの領収書があります。新しいお客様で開始してください。',
+      'toast.syncNeed': '⚙️ 連携設定で Web アプリ URL を先に入力してください。',
+      'toast.synced': 'シートからメニュー {n}件を読み込みました。',
+      'toast.syncFail': 'シートからメニューを読み込めませんでした。保存されたメニューを表示します。',
+      'toast.urlSaved': '連携アドレスを保存しました。',
+      'toast.urlCleared': '連携アドレスを空にしました。（テストモード）',
+      'toast.urlBad': 'Apps Script Web アプリのアドレス（https://script.google.com/macros/s/…/exec）を貼り付けてください。',
+      'toast.urlSavedMsg': '保存しました。シート保存・メニュー同期・メール送信が有効になります。',
+      'toast.testMode': 'テストモードに切り替えました。',
+      'toast.pngSaved': '領収書画像を保存しました。（保存されない場合は下の画像を長押ししてください）',
+      'toast.pngFail': '画像を作成できませんでした。印刷/PDFをご利用ください。',
+      'toast.pendingSent': '以前保存できなかった同意書 {n}件をシートに送信しました。',
+      'toast.pendingNone': '先にアドレスを入力してください。（テストモードでは接続テストができません）',
+      'toast.connOk': '接続成功 · サービス：{s}{menus}',
+      'toast.connMenu': ' · シートのメニュー {n}件',
+      'toast.connBad': '応答はありましたが形式が異なります。デプロイ設定（アクセス：全員）をご確認ください。',
+      'toast.connFail': '接続できませんでした。デプロイ先と「全員」アクセス設定をご確認ください。',
+      'toast.connChecking': '接続を確認しています…',
+      setTitle: '連携設定', setDesc: 'Google スプレッドシート保存・メニュー同期・メール領収書を連携します。',
+      setStep1: 'スプレッドシート <span class="inline-code">롱래스팅센터_고객동의서_영수증_DB</span> → <b>拡張機能 → Apps Script</b> を開きます。',
+      setStep2: '<span class="inline-code">롱래스팅-동의서-AppsScript.gs</span> の内容をすべて貼り付けて保存します。',
+      setStep3: '<b>デプロイ → 新しいデプロイ → ウェブアプリ</b> · 実行：<b>自分</b> / アクセス：<b>全員</b>でデプロイします。',
+      setStep4: '表示された <b>ウェブアプリ URL</b>（/exec で終わるアドレス）を下に貼り付けて保存します。',
+      syncBtn: 'シート同期', badgeOn: 'シート連携済み', badgeTest: 'テストモード',
+      urlLabel: 'Apps Script ウェブアプリ URL',
+      urlHint: 'この端末にのみ保存されます。空欄の場合はテストモードで動作し、シートには記録されません。',
+      testNote: 'テストモードのご案内 — アドレスがなくても同意書の作成・金額計算・署名・領収書画像の保存はすべて動作します。シート記録・メニュー同期・メール送信のみ行われません。',
+      save: '保存', testConn: '接続テスト', clearUrl: 'アドレス削除',
+      'toast.clearedUrl': 'アドレスを削除しました。テストモードで動作します。',
+      rcTitle: '領収書を発行しました', rcSub: '下から画像保存・印刷ができます。',
+      rcDocTitle: 'ロングラスティングセンター 施術領収書',
+      rcNo: '領収書番号', rcDate: '発行日時', rcTotal: 'お支払い金額', rcSig: 'お客様署名', rcSigEmpty: '署名',
+      rcStamp: 'K-BEAUTY × MEDICAL',
+      rcFoot1: '本領収書は K-BEAUTY × MEDICAL ロングラスティングセンターが発行する施術確認用の領収書であり、税務書類・現金領収書とは異なります。',
+      rcFoot2: 'ご不明点やリタッチのご予約は担当院長までお問い合わせください。',
+      pngHint: '画像を長押しして写真に保存できます。',
+      btnPng: '🖼️ 領収書画像（PNG）を保存', btnPrint: '🖨️ 印刷 / PDF保存', btnNew: '新しいお客様', btnRetry: '↻ シートに再保存',
+      'st.sent': '✅ {msg}', 'st.dup': 'すでに保存済みの領収書です。（重複保存なし）', 'st.saved': 'Google スプレッドシートに保存しました。',
+      'st.emailSent': ' · 領収書メール送信済み', 'st.emailNone': ' · メール未入力（画面・画像でお渡し）', 'st.emailFail': ' · メール送信に失敗しました。画面の領収書をご利用ください。',
+      'st.test': '🧪 テストモード — シートに保存されていません。⚙️ 連携設定でウェブアプリ URL を入れると自動保存されます。',
+      'st.unverified': '⚠️ {msg}', 'st.error': '❌ {msg}',
+      'st.failDefault': '保存できませんでした。',
+      'st.savingAgain': '保存中…',
+      'pay.withCash': '{p} · 現金価格',
+      itemCashTag: '現金価格',
+      footTitle: 'K-BEAUTY × MEDICAL · ロングラスティングセンター',
+      footNote: 'この画面の同意書と領収書は店内の施術記録用に発行されます。税務書類・現金領収書とは別のものです。',
+      'msg.unverified': '送信しましたが、応答を確認できませんでした。シートをご確認ください。',
+      'msg.network': '送信しました。ネットワーク環境により結果を確認できませんでした。',
+      'sheet.itemCash': '（現金価格）'
+    }
+  };
+
+  /* ─────────────── state ─────────────── */
+  let lang = 'ko';
+
+  const state = {
+    branch: CENTER.defaultBranch,
+    director: CENTER.defaultDirector,
+    source: '',
+    payment: '카드',
+    cashMode: false,
+    menu: [],
+    menuSource: 'default',
+    menuSyncedAt: null,
+    selected: new Set(),
+    priceOverrides: {},
+    customItems: [],
+    discountMode: 'none',
+    discountValue: 0,
+    agree: { care: false, privacy: false },
+    health: new Set(),
+    hasInk: false,
+    submitted: false,
+    sending: false,
+    lastPayload: null,
+    lastResult: null
+  };
+
+  /* ─────────────── helpers ─────────────── */
+  const $  = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  function t(key, vars) {
+    const pack = DICT[lang] || DICT.ko;
+    let s = pack[key];
+    if (s == null) s = DICT.ko[key];
+    if (s == null) s = key;
+    if (vars) Object.keys(vars).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+  function won(n) { return Number(n || 0).toLocaleString(LOCALE[lang]); }
+  function money(n) {
+    const v = won(n);
+    if (lang === 'en') return '₩' + v;
+    if (lang === 'zh') return v + '韩元';
+    if (lang === 'ja') return v + 'ウォン';
+    return v + '원';
+  }
+  function moneyHTML(n) {
+    const v = won(n);
+    if (lang === 'en') return '₩' + v;
+    return v + '<small>' + (lang === 'ko' ? '원' : lang === 'zh' ? '韩元' : 'ウォン') + '</small>';
+  }
+  function wonKo(n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }
+
+  const pad = (n, len) => String(n).padStart(len, '0');
+  const digits = v => String(v == null ? '' : v).replace(/[^0-9]/g, '');
+  const num = v => Number(digits(v)) || 0;
+  const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1, 2) + '-' + pad(d.getDate(), 2); };
+  const ymd = d => String(d.getFullYear()) + pad(d.getMonth() + 1, 2) + pad(d.getDate(), 2);
+
+  function toast(msg, ms) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('is-on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('is-on'), ms || 2800);
+  }
+  function loadJSON(key, fallback) {
+    try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch (e) { return fallback; }
+  }
+  function saveJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  function getConfig() { const c = loadJSON(STORE.config, {}) || {}; return { webappUrl: (c.webappUrl || '').trim() }; }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function displayName(koName) {
+    const m = MENU_I18N[koName];
+    return (m && m[lang]) ? m[lang] : koName;
+  }
+  function displayDirector(koName) {
+    const m = DIRECTOR_I18N[koName];
+    return (m && m[lang]) ? m[lang] : koName;
+  }
+  function branchLabel(koName) { return t('branch.' + koName); }
+  function branchAddress(koName) {
+    const a = CENTER.address[koName];
+    if (!a) return '';
+    return a[lang] || a.ko;
+  }
+  function noteLabel(note) {
+    const raw = String(note || '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    const m = NOTE_I18N[raw];
+    if (m && m[lang]) return m[lang];
+    return raw;
+  }
+
+  /* ─────────────── 메뉴 정규화 ─────────────── */
+  function normalizeMenus(rows) {
+    const out = [];
+    (rows || []).forEach(r => {
+      if (!r) return;
+      const name = String(r.name || r.시술명 || '').trim();
+      if (!name) return;
+      const price = num(r.price != null ? r.price : r.정가);
+      const cashRaw = (r.cashPrice != null ? r.cashPrice : r.현금할인가);
+      const cash = (cashRaw === '' || cashRaw == null) ? null : num(cashRaw);
+      const note = String(r.note || r.비고 || '').trim();
+      const editable = /변동|수정|별도|입력|~/.test(note) || /두피|헤어|리터치/.test(name);
+      out.push({
+        name: name,
+        price: price,
+        cashPrice: (cash != null && cash > 0 && cash < price) ? cash : null,
+        note: note,
+        editable: editable
+      });
+    });
+    return out;
+  }
+
+  function applyMenu(menus, source) {
+    const list = normalizeMenus(menus);
+    if (!list.length) return false;
+    state.menu = list;
+    state.menuSource = source;
+    state.menuSyncedAt = Date.now();
+    const names = new Set(list.map(m => m.name));
+    Array.from(state.selected).forEach(n => { if (!names.has(n)) state.selected.delete(n); });
+    Object.keys(state.priceOverrides).forEach(k => { if (!names.has(k)) delete state.priceOverrides[k]; });
+    renderMenu();
+    updateMenuStatus();
+    updateTotals();
+    return true;
+  }
+
+  function menuItem(name) { return state.menu.find(m => m.name === name); }
+  function cashApplies(item) { return item && item.cashPrice != null && item.cashPrice < item.price; }
+  function listPrice(item) {
+    return (state.priceOverrides[item.name] != null) ? state.priceOverrides[item.name] : item.price;
+  }
+  function appliedPrice(item) {
+    const base = listPrice(item);
+    if (state.cashMode && cashApplies(item)) return item.cashPrice;
+    return base;
+  }
+
+  /* ─────────────── 헤더·상태 ─────────────── */
+  function initHeader() {
+    $('#birth').max = todayISO();
+    updateSyncBadge();
+  }
+
+  function updateSyncBadge() {
+    const url = getConfig().webappUrl;
+    const badge = $('#syncBadge');
+    const txt = $('#syncBadgeText');
+    if (badge && txt) {
+      if (url) { badge.classList.add('is-on'); txt.textContent = t('badgeOn'); }
+      else { badge.classList.remove('is-on'); txt.textContent = t('badgeTest'); }
+    }
+    $('#submitNote').textContent = url ? t('submitNoteLinked') : t('submitNoteTest');
+  }
+
+  function updateMenuStatus() {
+    const el = $('#menuStatus');
+    const srcText = state.menuSource === 'sheet' ? t('src.sheet') : (state.menuSource === 'cache' ? t('src.cache') : t('src.default'));
+    const time = state.menuSyncedAt ? new Date(state.menuSyncedAt) : null;
+    const timeText = time ? pad(time.getHours(), 2) + ':' + pad(time.getMinutes(), 2) : '';
+    if (!el) return;
+    el.innerHTML = '<span class="dot"></span>' + escapeHtml(t('menu.status', {
+      n: state.menu.length,
+      src: srcText,
+      time: time ? t('menu.syncedAt', { time: timeText }) : ''
+    }));
+  }
+
+  /* ─────────────── 메뉴 렌더 ─────────────── */
+  const menuEls = new Map();
+  const MENU_GROUP_ORDER = ['눈썹', '립', '기타 부위'];
+
+  function groupOf(name) {
+    if (/눈썹|brow/i.test(name)) return '눈썹';
+    if (/립|입술|lip/i.test(name)) return '립';
+    return '기타 부위';
+  }
+  function priceLabel(item) {
+    if (item.price <= 0) return t('free');
+    return money(item.price) + (item.editable ? '~' : '');
+  }
+
+  function renderMenu() {
+    const grid = $('#menuGrid');
+    grid.innerHTML = '';
+    menuEls.clear();
+    grid.classList.toggle('cash-on', state.cashMode);
+
+    const buckets = new Map();
+    state.menu.forEach(item => {
+      const g = groupOf(item.name);
+      if (!buckets.has(g)) buckets.set(g, []);
+      buckets.get(g).push(item);
+    });
+    const order = MENU_GROUP_ORDER.filter(g => buckets.has(g))
+      .concat(Array.from(buckets.keys()).filter(g => MENU_GROUP_ORDER.indexOf(g) === -1));
+
+    order.forEach(g => {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'menu-group';
+      const labelEl = document.createElement('div');
+      labelEl.className = 'mg-label';
+      labelEl.innerHTML = '<span>' + escapeHtml(t('group.' + g)) + '</span><span class="mg-count">' + escapeHtml(t('group.count', { n: buckets.get(g).length })) + '</span>';
+      const row = document.createElement('div');
+      row.className = 'mg-row';
+      groupEl.appendChild(labelEl);
+      groupEl.appendChild(row);
+
+      buckets.get(g).forEach(item => {
+        const b = document.createElement('div');
+        b.className = 'menu';
+        b.dataset.name = item.name;
+        b.setAttribute('role', 'button');
+        b.setAttribute('tabindex', '0');
+        b.setAttribute('aria-pressed', state.selected.has(item.name) ? 'true' : 'false');
+        const cashLine = cashApplies(item)
+          ? '<span class="m-cash">' + escapeHtml((lang === 'ko' ? '현금 ' : lang === 'zh' ? '现金 ' : lang === 'ja' ? '現金 ' : 'Cash ') + money(item.cashPrice)) + '</span>'
+          : '';
+        const note = noteLabel(item.note);
+        const showNote = !!note;
+        const ov = state.priceOverrides[item.name];
+        b.innerHTML =
+          '<span class="m-check">✓</span>' +
+          '<span class="m-name">' + escapeHtml(displayName(item.name)) + '</span>' +
+          '<span class="m-prices"><span class="m-price">' + escapeHtml(priceLabel(item)) + '</span>' + cashLine + '</span>' +
+          (showNote ? '<span class="m-tag">' + escapeHtml(note) + '</span>' : '') +
+          (item.editable
+            ? '<span class="m-edit"><input type="tel" inputmode="numeric" value="' + ((ov != null ? ov : item.price) > 0 ? won(ov != null ? ov : item.price) : '') + '" aria-label="' + escapeHtml(displayName(item.name)) + '"><span>' + escapeHtml(lang === 'ko' ? '원' : lang === 'zh' ? '韩元' : lang === 'ja' ? 'ウォン' : 'KRW') + '</span></span>'
+            : '');
+        b.addEventListener('click', e => {
+          if (e.target.closest('.m-edit')) return;
+          toggleMenu(item.name);
+        });
+        b.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMenu(item.name); }
+        });
+        if (item.editable) {
+          const inp = $('input', b);
+          inp.addEventListener('click', e => e.stopPropagation());
+          inp.addEventListener('input', () => {
+            state.priceOverrides[item.name] = num(inp.value);
+            if (!state.selected.has(item.name)) {
+              state.selected.add(item.name);
+              b.setAttribute('aria-pressed', 'true');
+            }
+            updateTotals();
+          });
+          inp.addEventListener('focus', () => {
+            if (!state.selected.has(item.name)) {
+              state.selected.add(item.name);
+              b.setAttribute('aria-pressed', 'true');
+              updateTotals();
+            }
+          });
+        }
+        menuEls.set(item.name, b);
+        row.appendChild(b);
+      });
+      grid.appendChild(groupEl);
+    });
+  }
+
+  function toggleMenu(name) {
+    if (state.selected.has(name)) state.selected.delete(name);
+    else state.selected.add(name);
+    const el = menuEls.get(name);
+    if (el) el.setAttribute('aria-pressed', state.selected.has(name) ? 'true' : 'false');
+    updateTotals();
+    bumpSticky();
+  }
+
+  function bumpSticky() {
+    const el = $('#stickyTotal');
+    if (!el) return;
+    el.classList.remove('is-bump');
+    void el.offsetWidth;
+    el.classList.add('is-bump');
+  }
+
+  function renderSelList() {
+    const box = $('#selList');
+    if (!box) return;
+    const chosen = state.menu.filter(m => state.selected.has(m.name));
+    Array.from(state.selected).forEach(n => { if (!menuItem(n)) chosen.push({ name: n, price: 0, cashPrice: null, editable: true }); });
+    if (!chosen.length) {
+      box.classList.remove('is-on');
+      box.innerHTML = '';
+      return;
+    }
+    box.classList.add('is-on');
+    const sum = chosen.reduce((s, it) => s + appliedPrice(it), 0);
+    box.innerHTML =
+      '<div class="sel-head"><span class="sel-cap">' + escapeHtml(t('menu.cap', { n: chosen.length })) + '</span>' +
+      '<span class="sel-sum">' + escapeHtml(money(sum)) + '</span></div>' +
+      '<div class="sel-chips">' +
+      chosen.map(it =>
+        '<span class="sel-chip"><b>' + escapeHtml(displayName(it.name)) + '</b>' +
+        '<span class="amt">' + escapeHtml(money(appliedPrice(it))) + '</span>' +
+        '<button type="button" class="x" data-remove="' + escapeHtml(it.name) + '" aria-label="remove">✕</button></span>'
+      ).join('') + '</div>';
+    $$('#selList .x').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); toggleMenu(btn.dataset.remove); });
+    });
+  }
+
+  /* ─────────────── 커스텀 항목 ─────────────── */
+  function renderCustomItems() {
+    const box = $('#customList');
+    box.innerHTML = '';
+    state.customItems.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'custom-item';
+      row.innerHTML =
+        '<input type="text" placeholder="' + escapeHtml(t('customNamePh')) + '" value="' + escapeHtml(item.name) + '" aria-label="custom name">' +
+        '<input type="tel" inputmode="numeric" placeholder="' + escapeHtml(t('customAmountPh')) + '" value="' + (item.amount ? won(item.amount) : '') + '" aria-label="custom amount">' +
+        '<button type="button" aria-label="delete">✕</button>';
+      const nameInp = $$('input', row)[0];
+      const amountInp = $$('input', row)[1];
+      nameInp.addEventListener('input', () => { state.customItems[idx].name = nameInp.value; updateTotals(); });
+      amountInp.addEventListener('input', () => {
+        state.customItems[idx].amount = num(amountInp.value);
+        const pos = amountInp.selectionStart;
+        if (amountInp.value !== '' && digits(amountInp.value) !== amountInp.value) {
+          amountInp.value = won(state.customItems[idx].amount);
+          try { amountInp.setSelectionRange(pos, pos); } catch (e) {}
+        }
+        updateTotals();
+      });
+      $('button', row).addEventListener('click', () => {
+        state.customItems.splice(idx, 1);
+        renderCustomItems();
+        updateTotals();
+      });
+      box.appendChild(row);
+    });
+  }
+
+  $('#btnAddCustom').addEventListener('click', () => {
+    if (state.customItems.length >= 5) { toast(t('customMax')); return; }
+    state.customItems.push({ name: '', amount: 0 });
+    renderCustomItems();
+    const rows = $$('.custom-item');
+    if (rows.length) $('input', rows[rows.length - 1]).focus();
+  });
+
+  /* ─────────────── 이벤트 프리셋 + 현장 할인 ─────────────── */
+  const PRESETS = [
+    { id: 'none', kind: 'fixed', value: 0 },
+    { id: 'first', kind: 'fixed', value: 30000 },
+    { id: 'return', kind: 'fixed', value: 50000 },
+    { id: 'sale30', kind: 'rate', value: 0.3 }
+  ];
+
+  function renderPresets() {
+    const grid = $('#discGrid');
+    grid.innerHTML = '';
+    PRESETS.forEach(p => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'disc';
+      b.dataset.preset = p.id;
+      b.setAttribute('aria-pressed', state.discountMode === p.id ? 'true' : 'false');
+      b.innerHTML = '<span><span class="d-label">' + escapeHtml(t('preset.' + p.id)) + '</span><br><span class="d-sub">' + escapeHtml(t('preset.' + p.id + 'Sub')) + '</span></span>' +
+        '<span class="d-amount" data-amt></span>';
+      b.addEventListener('click', () => {
+        state.discountMode = p.id;
+        state.discountValue = 0;
+        $('#discValue').value = '';
+        $('#kioskInput').classList.remove('is-open');
+        $$('#manualChips .chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+        $$('.disc', grid).forEach(x => x.setAttribute('aria-pressed', x.dataset.preset === p.id ? 'true' : 'false'));
+        updateTotals();
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  function bindManualDiscount() {
+    $('#manualChips').addEventListener('click', e => {
+      const chip = e.target.closest('[data-mode]');
+      if (!chip) return;
+      const mode = chip.dataset.mode;
+      if (state.discountMode === mode) {
+        state.discountMode = 'none';
+        state.discountValue = 0;
+        $('#discValue').value = '';
+        $('#kioskInput').classList.remove('is-open');
+      } else {
+        state.discountMode = mode;
+        state.discountValue = 0;
+        $('#discValue').value = '';
+        $('#kioskInput').classList.add('is-open');
+        $('#discUnit').textContent = mode === 'percent' ? '%' : (lang === 'ko' ? '원' : lang === 'zh' ? '韩元' : lang === 'ja' ? 'ウォン' : 'KRW');
+        $('#discValue').placeholder = t(mode === 'amount' ? 'kiosk.phAmount' : (mode === 'percent' ? 'kiosk.phPercent' : 'kiosk.phFinal'));
+        setTimeout(() => $('#discValue').focus(), 40);
+      }
+      $$('#manualChips .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.mode === state.discountMode ? 'true' : 'false'));
+      $$('#discGrid .disc').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      updateTotals();
+    });
+
+    $('#discValue').addEventListener('input', () => {
+      const raw = digits($('#discValue').value);
+      state.discountValue = Number(raw) || 0;
+      if (state.discountMode !== 'percent') {
+        $('#discValue').value = raw === '' ? '' : won(state.discountValue);
+      } else {
+        $('#discValue').value = raw;
+      }
+      updateTotals();
+    });
+  }
+
+  /* ─────────────── 결제수단 · 현금할인가 ─────────────── */
+  function setPayment(pay, autoCash) {
+    state.payment = pay;
+    $$('#payChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.pay === pay ? 'true' : 'false'));
+    if (autoCash) setCashMode(pay === '현금' || pay === '계좌이체');
+    updateTotals();
+  }
+  function setCashMode(on) {
+    state.cashMode = on;
+    $('#cashToggle').setAttribute('aria-pressed', on ? 'true' : 'false');
+    $('#menuGrid').classList.toggle('cash-on', on);
+    updateTotals();
+  }
+
+  /* ─────────────── 건강 체크 ─────────────── */
+  const HEALTH_KEYS = ['h.1', 'h.2', 'h.3', 'h.4', 'h.5'];
+  const HEALTH_KO = ['켈로이드·비후성 반흔 체질', '혈액응고장애·아스피린 등 복용', '임신·수유 중', '최근 2주 내 피부과 시술·필링', '마취크림·금속 알레르기'];
+  const HEALTH_NONE_KO = '해당 사항 없음';
+
+  function renderHealth() {
+    const grid = $('#healthGrid');
+    grid.innerHTML = '';
+    HEALTH_KO.forEach((ko, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'check-row';
+      b.dataset.health = ko;
+      b.setAttribute('aria-pressed', state.health.has(ko) ? 'true' : 'false');
+      b.innerHTML = '<span class="box">✓</span><span>' + escapeHtml(t(HEALTH_KEYS[i])) + '</span>';
+      b.addEventListener('click', () => toggleHealth(ko));
+      grid.appendChild(b);
+    });
+    const none = document.createElement('button');
+    none.type = 'button';
+    none.className = 'check-row check-row--none';
+    none.dataset.health = HEALTH_NONE_KO;
+    none.setAttribute('aria-pressed', state.health.has(HEALTH_NONE_KO) ? 'true' : 'false');
+    none.innerHTML = '<span class="box">✓</span><span><b>' + escapeHtml(t('h.none')) + '</b> · ' + escapeHtml(t('h.noneSub')) + '</span>';
+    none.addEventListener('click', () => toggleHealth(HEALTH_NONE_KO));
+    grid.appendChild(none);
+    $('#healthNote').classList.toggle('is-on', HEALTH_KO.some(h => state.health.has(h)));
+  }
+
+  function toggleHealth(item) {
+    if (item === HEALTH_NONE_KO) {
+      if (state.health.has(HEALTH_NONE_KO)) state.health.clear();
+      else { state.health.clear(); state.health.add(HEALTH_NONE_KO); }
+    } else {
+      state.health.delete(HEALTH_NONE_KO);
+      if (state.health.has(item)) state.health.delete(item);
+      else state.health.add(item);
+    }
+    $$('#healthGrid .check-row').forEach(b => b.setAttribute('aria-pressed', state.health.has(b.dataset.health) ? 'true' : 'false'));
+    $('#healthNote').classList.toggle('is-on', HEALTH_KO.some(h => state.health.has(h)));
+    updateRequirements();
+  }
+
+  /* ─────────────── 동의 내용 ─────────────── */
+  function renderConsent() {
+    $('#consentBody').innerHTML = [1, 2, 3, 4].map(i =>
+      '<div class="c-item"><span class="c-num">0' + i + '</span><p>' + t('c.' + i) + '</p></div>'
+    ).join('');
+    $('#moreBody').innerHTML =
+      '<p>' + t('m.1') + '</p>' +
+      '<p>' + t('m.2') + '</p>' +
+      '<p>' + t('m.3') + '</p>' +
+      '<p class="more-note">' + t('m.note') + '</p>';
+  }
+
+  $$('.agree').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.agree;
+      state.agree[key] = !state.agree[key];
+      btn.setAttribute('aria-pressed', state.agree[key] ? 'true' : 'false');
+      updateRequirements();
+    });
+  });
+
+  /* ─────────────── 입력 ─────────────── */
+  const phone = $('#phone');
+  phone.addEventListener('input', () => {
+    let v = phone.value.replace(/[^0-9]/g, '').slice(0, 11);
+    if (v.length > 7) v = v.slice(0, 3) + '-' + v.slice(3, v.length - 4) + '-' + v.slice(v.length - 4);
+    else if (v.length > 4) v = v.slice(0, 3) + '-' + v.slice(3, v.length - 3) + '-' + v.slice(v.length - 3);
+    else if (v.length > 3) v = v.slice(0, 3) + '-' + v.slice(3);
+    phone.value = v;
+    clearBad('#fPhone');
+    updateRequirements();
+  });
+  $('#name').addEventListener('input', () => { clearBad('#fName'); updateTotals(); });
+  $('#email').addEventListener('input', () => { clearBad('#fEmail'); updateTotals(); });
+  function clearBad(sel) { $(sel).classList.remove('is-bad'); }
+
+  /* ─────────────── 전자서명 ─────────────── */
+  const sigPad = $('#sigPad');
+  const canvas = $('#sigCanvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let lastPt = null;
+
+  function sigResize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const prev = state.hasInk ? canvas.toDataURL('image/png') : null;
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#242321'; ctx.fillStyle = '#242321';
+    if (prev) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+      img.src = prev;
+    }
+  }
+  function pt(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    drawing = true; lastPt = pt(e);
+    ctx.beginPath(); ctx.arc(lastPt.x, lastPt.y, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y);
+    setInk(true);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = pt(e);
+    const mid = { x: (lastPt.x + p.x) / 2, y: (lastPt.y + p.y) / 2 };
+    ctx.quadraticCurveTo(lastPt.x, lastPt.y, mid.x, mid.y);
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mid.x, mid.y);
+    lastPt = p;
+  });
+  function endStroke(e) {
+    if (!drawing) return;
+    drawing = false; lastPt = null;
+    try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+  }
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  canvas.addEventListener('pointerleave', e => { if (drawing) endStroke(e); });
+
+  function setInk(v) {
+    state.hasInk = v;
+    sigPad.classList.toggle('has-ink', v);
+    sigPad.classList.remove('is-bad');
+    $('#sigState').textContent = v ? t('sigDone') : t('sigNone');
+    updateRequirements();
+  }
+
+  $('#btnSigClear').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sigPad.classList.remove('has-ink');
+    setInk(false);
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(sigResize, 180); });
+  window.addEventListener('orientationchange', () => setTimeout(sigResize, 320));
+
+  function signatureDataUrl() {
+    if (!state.hasInk) return '';
+    const w = canvas.width, h = canvas.height;
+    if (!w || !h) return '';
+    let data;
+    try { data = ctx.getImageData(0, 0, w, h).data; } catch (e) { return canvas.toDataURL('image/png'); }
+    let minX = w, minY = h, maxX = -1, maxY = -1;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (data[(y * w + x) * 4 + 3] > 12) {
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return '';
+    const ratio = (w / (canvas.getBoundingClientRect().width || 1)) || 1;
+    const padPx = Math.round(12 * ratio);
+    minX = Math.max(0, minX - padPx); minY = Math.max(0, minY - padPx);
+    maxX = Math.min(w - 1, maxX + padPx); maxY = Math.min(h - 1, maxY + padPx);
+    const cw = maxX - minX + 1, ch = maxY - minY + 1;
+    const out = document.createElement('canvas');
+    out.width = cw; out.height = ch;
+    out.getContext('2d').drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch);
+    return out.toDataURL('image/png');
+  }
+
+  /* ─────────────── 금액 계산 ─────────────── */
+  function itemLines() {
+    const lines = [];
+    state.selected.forEach(name => {
+      const item = menuItem(name);
+      if (!item) return;
+      const lp = listPrice(item);
+      const ap = appliedPrice(item);
+      lines.push({ name: item.name, listPrice: lp, price: ap, cashApplied: ap < lp, editable: !!item.editable });
+    });
+    state.customItems.forEach(it => {
+      const nm = (it.name || '').trim();
+      if (nm || it.amount) lines.push({ name: nm || '기타 시술', listPrice: Number(it.amount) || 0, price: Number(it.amount) || 0, cashApplied: false, custom: true });
+    });
+    return lines;
+  }
+
+  function discountLabel() {
+    switch (state.discountMode) {
+      case 'first': case 'return': case 'sale30': case 'none': return t('preset.' + state.discountMode);
+      case 'amount': return t('label.amount');
+      case 'percent': return t('label.percent', { p: Math.min(100, state.discountValue) });
+      case 'final': return t('label.final');
+      default: return '';
+    }
+  }
+  function discountLabelKo() {
+    switch (state.discountMode) {
+      case 'first': return '첫 방문 할인';
+      case 'return': return '재방문 할인';
+      case 'sale30': return '12월 연말 30% OFF';
+      case 'amount': return '현장 정액 할인';
+      case 'percent': return '현장 ' + Math.min(100, state.discountValue) + '% 할인';
+      case 'final': return '최종금액 지정';
+      default: return '';
+    }
+  }
+
+  function calc() {
+    const lines = itemLines();
+    const regular = lines.reduce((s, l) => s + (Number(l.listPrice) || 0), 0);
+    const applied = lines.reduce((s, l) => s + (Number(l.price) || 0), 0);
+    const cashDiscount = Math.max(0, regular - applied);
+
+    let disc = 0;
+    switch (state.discountMode) {
+      case 'first':  disc = 30000; break;
+      case 'return': disc = 50000; break;
+      case 'sale30': disc = Math.round(applied * 0.3 / 10) * 10; break;
+      case 'amount': disc = state.discountValue; break;
+      case 'percent': disc = Math.round(applied * Math.min(100, state.discountValue) / 100 / 10) * 10; break;
+      case 'final': disc = state.discountValue > 0 ? applied - state.discountValue : 0; break;
+      default: disc = 0;
+    }
+    disc = Math.max(0, Math.min(disc, applied));
+    const total = Math.max(0, applied - disc);
+    return { lines, regular, applied, cashDiscount, disc, label: discountLabel(), labelKo: discountLabelKo(), total };
+  }
+
+  function discountTextDisplay() {
+    const c = calc();
+    const parts = [];
+    if (c.cashDiscount > 0) parts.push(t('disc.cash') + ' (-' + money(c.cashDiscount) + ')');
+    if (c.disc > 0) parts.push(c.label + ' (-' + money(c.disc) + ')');
+    return parts.length ? parts.join(' + ') : t('disc.none');
+  }
+  function discountTextSheet() {
+    const c = calc();
+    const parts = [];
+    if (c.cashDiscount > 0) parts.push('현금할인가 (-' + wonKo(c.cashDiscount) + ')');
+    if (c.disc > 0) parts.push((c.labelKo || '할인') + ' (-' + wonKo(c.disc) + ')');
+    return parts.length ? parts.join(' / ') : '없음';
+  }
+  function paymentLabel(ko) {
+    if (ko === '카드') return t('pay.card');
+    if (ko === '계좌이체') return t('pay.transfer');
+    return t('pay.cash');
+  }
+
+  function updateTotals() {
+    const c = calc();
+
+    $('#sumSubtotal').textContent = money(c.regular);
+    const cashRow = $('#sumCashRow');
+    cashRow.hidden = !(c.cashDiscount > 0);
+    $('#sumCash').textContent = '-' + money(c.cashDiscount);
+    const discRow = $('#sumDiscRow');
+    discRow.hidden = !(c.disc > 0);
+    $('#sumDiscLabel').textContent = c.label || t('disc.event');
+    $('#sumDiscount').textContent = '-' + money(c.disc);
+    $('#sumTotal').innerHTML = moneyHTML(c.total);
+    $('#stickyTotal').textContent = money(c.total);
+    const hintParts = [];
+    if (c.lines.length) hintParts.push(t('menu.cap', { n: c.lines.length }));
+    if (c.cashDiscount > 0 || c.disc > 0) hintParts.push('- ' + money(c.cashDiscount + c.disc));
+    $('#stickyHint').textContent = hintParts.join(' · ');
+    renderSelList();
+
+    const hint = $('#kioskHint');
+    if (state.discountMode === 'percent') {
+      hint.classList.add('is-on');
+      hint.textContent = t('kiosk.percent', { p: Math.min(100, state.discountValue), d: money(c.disc), t: money(c.total) });
+    } else if (state.discountMode === 'final') {
+      hint.classList.add('is-on');
+      if (state.discountValue > c.applied) {
+        hint.textContent = t('kiosk.finalOver', { a: money(c.applied) });
+      } else {
+        hint.textContent = state.discountValue > 0
+          ? t('kiosk.final', { v: money(state.discountValue), d: money(c.disc) })
+          : t('kiosk.finalEmpty');
+      }
+    } else if (state.discountMode === 'amount') {
+      hint.classList.add('is-on');
+      hint.textContent = t('kiosk.amount', { d: money(c.disc), t: money(c.total) });
+    } else {
+      hint.classList.remove('is-on');
+      hint.textContent = '';
+    }
+
+    $$('#discGrid .disc').forEach(b => {
+      const p = PRESETS.find(x => x.id === b.dataset.preset);
+      if (!p) return;
+      const amt = p.kind === 'fixed' ? Math.min(p.value, c.applied) : Math.round(c.applied * p.value / 10) * 10;
+      $('[data-amt]', b).textContent = (p.kind === 'rate' && amt > 0) ? '-' + money(amt) : '';
+    });
+
+    $('#rvName').textContent = ($('#name').value || '').trim() || '—';
+    $('#rvDirector').textContent = displayDirector(state.director);
+    $('#rvBranch').textContent = branchLabel(state.branch);
+    $('#rvItems').textContent = c.lines.length ? c.lines.map(l => displayName(l.name) + (l.cashApplied ? ' (' + t('itemCashTag') + ')' : '')).join(', ') : '—';
+    $('#rvSubtotal').textContent = money(c.regular);
+    $('#rvDiscount').textContent = (c.cashDiscount + c.disc) > 0 ? discountTextDisplay() : t('disc.none');
+    $('#rvTotal').textContent = money(c.total);
+    $('#rvPay').textContent = paymentLabel(state.payment) + (state.cashMode ? ' · ' + t('disc.cash') : '');
+    const em = ($('#email').value || '').trim();
+    $('#rvEmail').textContent = em || t('rv.noEmail');
+
+    updateRequirements();
+  }
+
+  /* ─────────────── 필수 항목 ─────────────── */
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  const phoneOk = v => digits(v).length >= 10;
+
+  function checks() {
+    return {
+      name: ($('#name').value || '').trim().length > 0,
+      phone: phoneOk($('#phone').value || ''),
+      items: itemLines().length > 0,
+      health: state.health.size > 0,
+      care: state.agree.care === true,
+      privacy: state.agree.privacy === true,
+      sig: state.hasInk === true
+    };
+  }
+  function updateRequirements() {
+    const c = checks();
+    $$('#reqList .req-item').forEach(el => el.classList.toggle('is-done', !!c[el.dataset.req]));
+  }
+
+  /* ─────────────── 영수증 번호 ─────────────── */
+  function nextReceiptNo() {
+    const key = STORE.seqPrefix + ymd(new Date());
+    let seq = parseInt(localStorage.getItem(key) || '0', 10);
+    const issued = loadJSON(STORE.issued, []) || [];
+    let no;
+    do { seq += 1; no = 'LC-' + ymd(new Date()) + '-' + pad(seq, 4); }
+    while (issued.indexOf(no) !== -1 && seq < 9999);
+    try { localStorage.setItem(key, String(seq)); } catch (e) {}
+    issued.push(no);
+    saveJSON(STORE.issued, issued.slice(-300));
+    return no;
+  }
+
+  /* ─────────────── 전송 ─────────────── */
+  function buildPayload(receiptNo) {
+    const c = calc();
+    const now = new Date();
+    return {
+      type: 'consent',
+      center: 'longlasting',
+      version: 3,
+      locale: lang,
+      receiptNo: receiptNo,
+      receivedAt: now.toISOString(),
+      receivedAtLocal: now.getFullYear() + '-' + pad(now.getMonth() + 1, 2) + '-' + pad(now.getDate(), 2) + ' ' + pad(now.getHours(), 2) + ':' + pad(now.getMinutes(), 2) + ':' + pad(now.getSeconds(), 2),
+      branch: state.branch,
+      branchLabel: branchLabel(state.branch),
+      director: state.director,
+      directorLabel: displayDirector(state.director),
+      name: ($('#name').value || '').trim(),
+      phone: ($('#phone').value || '').trim(),
+      email: ($('#email').value || '').trim(),
+      birthdate: $('#birth').value || '',
+      source: state.source || '',
+      sourceLabel: state.source ? t('source.' + ({ '네이버 예약': 'naver', '인스타그램': 'insta', '샤오홍슈': 'xhs', '지인 소개': 'referral', '기타': 'other' }[state.source] || 'other')) : '',
+      items: c.lines.map(l => ({ name: displayName(l.name), ko: l.name, listPrice: l.listPrice, price: l.price, cashApplied: l.cashApplied })),
+      subtotal: c.regular,
+      cashDiscount: c.cashDiscount,
+      cashApplied: state.cashMode,
+      discountMode: state.discountMode,
+      discountValue: state.discountValue,
+      discountLabel: c.label || '',
+      discountLabelKo: c.labelKo || '',
+      discount: c.disc,
+      discountText: discountTextSheet(),
+      total: c.total,
+      payment: state.payment,
+      paymentLabel: paymentLabel(state.payment),
+      health: Array.from(state.health),
+      agreeCare: state.agree.care === true,
+      agreePrivacy: state.agree.privacy === true,
+      memo: ($('#memo').value || '').trim(),
+      signature: signatureDataUrl(),
+      menuSource: state.menuSource,
+      device: navigator.userAgent
+    };
+  }
+
+  function queuePending(payload) {
+    const list = loadJSON(STORE.pending, []) || [];
+    if (list.some(p => p.receiptNo === payload.receiptNo)) return;
+    list.push(payload);
+    saveJSON(STORE.pending, list.slice(-20));
+  }
+  function dropPending(receiptNo) {
+    saveJSON(STORE.pending, (loadJSON(STORE.pending, []) || []).filter(p => p.receiptNo !== receiptNo));
+  }
+
+  async function sendPayload(payload) {
+    const url = getConfig().webappUrl;
+    if (!url) return { state: 'test' };
+    const body = JSON.stringify(payload);
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body,
+        signal: ctrl.signal,
+        redirect: 'follow'
+      });
+      clearTimeout(timer);
+      let data = null;
+      const text = await res.text();
+      try { data = JSON.parse(text); } catch (e) {}
+      if (data && data.ok) return { state: 'sent', data: data };
+      if (data && data.ok === false) return { state: 'error', message: data.message || t('st.failDefault') };
+      return { state: 'unverified', message: t('msg.unverified') };
+    } catch (err) {
+      try {
+        await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body });
+        return { state: 'unverified', message: t('msg.network') };
+      } catch (err2) {
+        queuePending(payload);
+        return { state: 'error', message: t('st.failDefault') };
+      }
+    }
+  }
+
+  /* ─────────────── 제출 ─────────────── */
+  function markBad(sel) { $(sel).classList.add('is-bad'); }
+
+  function validate() {
+    const c = checks();
+    let firstEl = null;
+    if (!c.name) { markBad('#fName'); toast(t('toast.needName')); firstEl = firstEl || $('#fName'); }
+    if (!c.phone) { markBad('#fPhone'); toast(t('toast.needPhone')); firstEl = firstEl || $('#fPhone'); }
+    const em = ($('#email').value || '').trim();
+    if (em && !emailOk(em)) { markBad('#fEmail'); toast(t('toast.badEmail')); firstEl = firstEl || $('#fEmail'); }
+    if (!c.items) { toast(t('toast.needItems')); firstEl = firstEl || $('#sec2'); }
+    if (!c.health) { toast(t('toast.needHealth')); firstEl = firstEl || $('#healthGrid'); }
+    if (!c.care || !c.privacy) { toast(t('toast.needAgree')); firstEl = firstEl || $('.agree-list'); }
+    if (!c.sig) { sigPad.classList.add('is-bad'); toast(t('toast.needSign')); firstEl = firstEl || sigPad; }
+    if (firstEl) { firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
+    return true;
+  }
+
+  async function submit() {
+    if (state.sending) return;
+    if (state.submitted) { toast(t('toast.already')); return; }
+    if (!validate()) return;
+
+    state.sending = true;
+    const btn = $('#btnSubmit'), btnTop = $('#btnSubmitTop');
+    const oldText = btn.textContent;
+    btn.disabled = true; btnTop.disabled = true; btn.textContent = t('saving');
+    $('#sendState').classList.add('is-on');
+    $('#sendState').textContent = getConfig().webappUrl ? t('savingSheet') : t('makingReceipt');
+
+    const receiptNo = nextReceiptNo();
+    let payload = buildPayload(receiptNo);
+    state.lastPayload = payload;
+
+    let result = await sendPayload(payload);
+
+    if (result.state === 'sent' && result.data && result.data.duplicate) {
+      dropPending(payload.receiptNo);
+      const retryNo = nextReceiptNo();
+      payload = buildPayload(retryNo);
+      state.lastPayload = payload;
+      result = await sendPayload(payload);
+    }
+
+    if (result.state === 'sent' || result.state === 'unverified') dropPending(payload.receiptNo);
+
+    state.sending = false;
+    state.submitted = true;
+    btn.disabled = false; btnTop.disabled = false; btn.textContent = oldText;
+    $('#sendState').classList.remove('is-on'); $('#sendState').textContent = '';
+
+    openReceipt(payload, result);
+  }
+
+  $('#btnSubmit').addEventListener('click', submit);
+  $('#btnSubmitTop').addEventListener('click', submit);
+
+  /* ─────────────── 영수증 ─────────────── */
+  function formatDateTime(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    const y = d.getFullYear(), m = pad(d.getMonth() + 1, 2), dd = pad(d.getDate(), 2);
+    const hh = pad(d.getHours(), 2), mi = pad(d.getMinutes(), 2);
+    if (lang === 'en') return m + '/' + dd + '/' + y + ' ' + hh + ':' + mi;
+    if (lang === 'zh') return y + '-' + m + '-' + dd + ' ' + hh + ':' + mi;
+    return y + '.' + m + '.' + dd + ' ' + hh + ':' + mi;
+  }
+
+  function openReceipt(payload, result) {
+    state.lastResult = result;
+    renderReceipt(payload);
+    $('#receiptModal').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('#receiptModal .modal-sheet').scrollTop = 0;
+  }
+
+  function receiptDiscountLabel(p) {
+    if (['none', 'first', 'return', 'sale30'].indexOf(p.discountMode) !== -1) return t('preset.' + p.discountMode);
+    if (p.discountMode === 'amount') return t('label.amount');
+    if (p.discountMode === 'percent') return t('label.percent', { p: Math.min(100, Number(p.discountValue) || 0) });
+    if (p.discountMode === 'final') return t('label.final');
+    return p.discountLabel || t('disc.event');
+  }
+
+  function renderReceipt(p) {
+    $('#rTitle').textContent = t('rcDocTitle');
+    $('#rNo').textContent = p.receiptNo;
+    $('#rDate').textContent = formatDateTime(p.receivedAt);
+    $('#rBranch').textContent = branchLabel(p.branch);
+    $('#rDirector').textContent = displayDirector(p.director);
+    $('#rName').textContent = p.name;
+    $('#rPhone').textContent = p.phone;
+    $('#rAddr').textContent = branchAddress(p.branch);
+
+    $('#rItems').innerHTML = p.items.map(it =>
+      '<div class="r-item"><span class="n">' + escapeHtml(displayName(it.ko || it.name)) + (it.cashApplied ? '<small>' + escapeHtml(t('itemCashTag')) + '</small>' : '') +
+      '</span><span class="p">' + escapeHtml(money(it.price)) + '</span></div>'
+    ).join('') || '<div class="r-item"><span class="n">—</span><span class="p">' + escapeHtml(money(0)) + '</span></div>';
+
+    let sum = '<div><span>' + escapeHtml(t('sumSubtotal')) + '</span><b>' + escapeHtml(money(p.subtotal)) + '</b></div>';
+    if (p.cashDiscount > 0) sum += '<div><span>' + escapeHtml(t('sumCash')) + '</span><b>-' + escapeHtml(money(p.cashDiscount)) + '</b></div>';
+    if (p.discount > 0) sum += '<div><span>' + escapeHtml(receiptDiscountLabel(p)) + '</span><b>-' + escapeHtml(money(p.discount)) + '</b></div>';
+    $('#rSum').innerHTML = sum;
+    $('#rTotal').innerHTML = moneyHTML(p.total);
+    $('#rPay').textContent = paymentLabel(p.payment) + (p.cashApplied ? ' · ' + t('disc.cash') : '');
+    $('#rStamp').textContent = t('rcStamp');
+    $('#rFoot').innerHTML = escapeHtml(t('rcFoot1')) + '<br />' + escapeHtml(t('rcFoot2'));
+
+    const sig = $('#rSig'), empty = $('#rSigEmpty');
+    if (p.signature) { sig.src = p.signature; sig.hidden = false; empty.style.display = 'none'; }
+    else { sig.hidden = true; sig.removeAttribute('src'); empty.style.display = 'inline-block'; }
+
+    renderReceiptStatus(state.lastResult || { state: 'test' });
+    $('#pngPreviewBox').classList.remove('is-on');
+    $('#pngPreview').removeAttribute('src');
+  }
+
+  function renderReceiptStatus(result) {
+    const el = $('#receiptStatus');
+    const retry = $('#btnRetry');
+    el.className = 'status-line no-print is-on';
+    retry.style.display = 'none';
+    if (result.state === 'sent') {
+      const email = result.data && result.data.emailStatus;
+      const dup = result.data && result.data.duplicate;
+      let msg = dup ? t('st.dup') : t('st.saved');
+      if (email === '발송완료') msg += t('st.emailSent');
+      else if (email === '미입력') msg += t('st.emailNone');
+      else if (email === '실패') msg += t('st.emailFail');
+      el.classList.add('is-ok');
+      el.textContent = t('st.sent', { msg: msg });
+    } else if (result.state === 'test') {
+      el.textContent = t('st.test');
+    } else if (result.state === 'unverified') {
+      el.textContent = t('st.unverified', { msg: result.message || '' });
+    } else {
+      el.classList.add('is-bad');
+      el.textContent = t('st.error', { msg: result.message || t('st.failDefault') });
+      retry.style.display = '';
+    }
+  }
+
+  $('#btnRetry').addEventListener('click', async () => {
+    if (!state.lastPayload) return;
+    const btn = $('#btnRetry');
+    btn.disabled = true; btn.textContent = t('st.savingAgain');
+    const r = await sendPayload(state.lastPayload);
+    btn.disabled = false; btn.textContent = t('btnRetry');
+    if (r.state === 'sent' || r.state === 'unverified') dropPending(state.lastPayload.receiptNo);
+    state.lastResult = r;
+    renderReceiptStatus(r);
+  });
+
+  $('#btnNew').addEventListener('click', () => {
+    closeModal('receiptModal');
+    resetForm();
+    toast(t('toast.newCustomer'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* 전체 초기화: 두 번 눌러 확인 */
+  let resetArmed = false;
+  let resetTimer = null;
+  $('#btnReset').addEventListener('click', () => {
+    const btn = $('#btnReset');
+    if (resetArmed) {
+      clearTimeout(resetTimer);
+      resetArmed = false;
+      btn.classList.remove('is-armed');
+      btn.textContent = t('resetBtn');
+      resetForm();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast(t('toast.reset'));
+      return;
+    }
+    resetArmed = true;
+    btn.classList.add('is-armed');
+    btn.textContent = t('resetArmed');
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      resetArmed = false;
+      btn.classList.remove('is-armed');
+      btn.textContent = t('resetBtn');
+    }, 3500);
+  });
+
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  /* ─────────────── PNG 생성 ─────────────── */
+  function drawTracked(g, text, x, y, spacing) {
+    let cur = x;
+    for (const ch of text) { g.fillText(ch, cur, y); cur += g.measureText(ch).width + spacing; }
+    return cur;
+  }
+  function wrapText(g, text, maxWidth) {
+    const lines = [];
+    let line = '';
+    for (const ch of text) {
+      if (g.measureText(line + ch).width > maxWidth) { lines.push(line); line = ch; }
+      else line += ch;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  const PNG_FONT_SANS = '"Apple SD Gothic Neo","Noto Sans CJK KR","Noto Sans CJK SC","Noto Sans CJK JP","Noto Sans KR","PingFang SC","Hiragino Sans",sans-serif';
+  const PNG_FONT_SERIF = '"AppleMyungjo","Noto Serif CJK KR","Noto Serif CJK SC","Songti SC","Hiragino Mincho ProN","Times New Roman",serif';
+
+  async function buildReceiptCanvas(p) {
+    const W = 780, scale = 2, padX = 52;
+    const c = document.createElement('canvas');
+    const g = c.getContext('2d');
+    const serif = PNG_FONT_SERIF;
+    const sans = PNG_FONT_SANS;
+
+    const sigImg = p.signature ? await loadImage(p.signature) : null;
+    const items = p.items.length ? p.items : [{ name: '—', price: 0 }];
+
+    g.font = '13px ' + sans;
+    let measureY = 0;
+    items.forEach(it => { measureY += 21 * wrapText(g, displayName(it.ko || it.name) + (it.cashApplied ? '  (' + t('itemCashTag') + ')' : ''), W - padX * 2 - 170).length + 10; });
+    const footLines = wrapText(g, t('rcFoot1'), W - padX * 2);
+    const footLines2 = wrapText(g, t('rcFoot2'), W - padX * 2);
+    const sumRowCount = 1 + (p.cashDiscount > 0 ? 1 : 0) + (p.discount > 0 ? 1 : 0);
+    const metaCount = 6;
+    /* 그리는 순서와 동일하게 높이를 계산 (잘림 방지) */
+    const H = 74 + 44 + 24 + 30 + 30 + metaCount * 25 + 8 + 34
+            + measureY
+            + 4 + 23 * sumRowCount
+            + 14 + 40 + 28 + 26 + (sigImg ? 82 : 46) + 22 + 20
+            + (footLines.length + footLines2.length) * 15
+            + 30;
+
+    c.width = W * scale; c.height = H * scale;
+    g.scale(scale, scale);
+    g.fillStyle = '#F7F5F0'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = '#DAD4CC'; g.lineWidth = 1; g.strokeRect(18, 18, W - 36, H - 36);
+    g.textBaseline = 'alphabetic';
+
+    let y = 74;
+    g.fillStyle = '#242321'; g.font = '600 14px ' + serif;
+    drawTracked(g, 'K-BEAUTY × MEDICAL', padX, y, 2.5);
+    g.font = '11px ' + sans; g.fillStyle = '#9A948B';
+    let kw = 0; for (const ch of 'RECEIPT') kw += g.measureText(ch).width + 3;
+    drawTracked(g, 'RECEIPT', W - padX - kw, y, 3);
+
+    y += 44;
+    g.fillStyle = '#242321'; g.font = '600 28px ' + serif;
+    g.fillText(t('rcDocTitle'), padX, y);
+
+    y += 24;
+    g.font = '12px ' + sans; g.fillStyle = '#6E6A63';
+    g.fillText(branchAddress(p.branch), padX, y);
+
+    y += 30;
+    g.strokeStyle = 'rgba(36,35,33,0.28)'; g.setLineDash([4, 4]);
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke(); g.setLineDash([]);
+
+    const meta = [
+      [t('rcNo'), p.receiptNo],
+      [t('rcDate'), formatDateTime(p.receivedAt)],
+      [t('rvBranch'), branchLabel(p.branch)],
+      [t('lblDirector'), displayDirector(p.director)],
+      [t('rvName'), p.name],
+      [t('lblPhone'), p.phone]
+    ];
+    y += 30; g.font = '13px ' + sans;
+    meta.forEach(([k, v]) => {
+      g.fillStyle = '#6E6A63'; g.fillText(k, padX, y);
+      g.fillStyle = '#242321'; g.fillText(v, W - padX - g.measureText(v).width, y);
+      y += 25;
+    });
+
+    y += 8;
+    g.strokeStyle = 'rgba(36,35,33,0.28)'; g.setLineDash([4, 4]);
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke(); g.setLineDash([]);
+    y += 34;
+
+    g.font = '15px ' + sans;
+    items.forEach(it => {
+      g.fillStyle = '#3A3833';
+      const name = displayName(it.ko || it.name) + (it.cashApplied ? '  (' + t('itemCashTag') + ')' : '');
+      const nameLines = wrapText(g, name, W - padX * 2 - 170);
+      nameLines.forEach((ln, i) => g.fillText(ln, padX, y + i * 21));
+      g.fillStyle = '#242321';
+      const priceStr = money(it.price);
+      g.fillText(priceStr, W - padX - g.measureText(priceStr).width, y);
+      y += 21 * nameLines.length + 10;
+    });
+
+    y += 4; g.font = '13.5px ' + sans; g.fillStyle = '#6E6A63';
+    g.fillText(t('sumSubtotal'), padX, y);
+    let v = money(p.subtotal);
+    g.fillText(v, W - padX - g.measureText(v).width, y);
+    y += 23;
+    if (p.cashDiscount > 0) {
+      g.fillText(t('sumCash'), padX, y);
+      v = '-' + money(p.cashDiscount);
+      g.fillText(v, W - padX - g.measureText(v).width, y);
+      y += 23;
+    }
+    if (p.discount > 0) {
+      g.fillText(receiptDiscountLabel(p), padX, y);
+      v = '-' + money(p.discount);
+      g.fillText(v, W - padX - g.measureText(v).width, y);
+      y += 23;
+    }
+
+    y += 14;
+    g.strokeStyle = '#242321'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke();
+    y += 40;
+    g.fillStyle = '#242321'; g.font = '13.5px ' + sans;
+    g.fillText(t('rcTotal'), padX, y + 6);
+    const totalStr = won(p.total);
+    const unitStr = lang === 'en' ? ('₩' + totalStr) : totalStr;
+    g.font = '600 36px ' + serif;
+    if (lang === 'en') {
+      g.fillText(unitStr, W - padX - g.measureText(unitStr).width, y + 8);
+    } else {
+      g.fillText(totalStr, W - padX - g.measureText(totalStr).width - 22, y + 8);
+      g.font = '14px ' + sans;
+      g.fillText(lang === 'ko' ? '원' : lang === 'zh' ? '韩元' : 'ウォン', W - padX - 14, y + 8);
+    }
+    y += 28;
+    g.font = '13px ' + sans; g.fillStyle = '#6E6A63';
+    g.fillText(t('payTitle'), padX, y);
+    const payText = paymentLabel(p.payment) + (p.cashApplied ? ' · ' + t('disc.cash') : '');
+    g.fillText(payText, W - padX - g.measureText(payText).width, y);
+
+    y += 26;
+    if (sigImg) {
+      const maxW = 190, maxH = 62;
+      const ratio = Math.min(maxW / sigImg.width, maxH / sigImg.height);
+      const dw = sigImg.width * ratio, dh = sigImg.height * ratio;
+      g.drawImage(sigImg, W - padX - dw, y, dw, dh);
+    }
+    g.fillStyle = '#6E6A63'; g.font = '11.5px ' + sans;
+    g.fillText(t('rcSig'), padX, y + 40);
+    y += sigImg ? 82 : 46;
+
+    g.fillStyle = '#242321'; g.font = '13px ' + serif;
+    const stamp = t('rcStamp');
+    g.fillText(stamp, W - padX - g.measureText(stamp).width, y);
+
+    y += 22;
+    g.strokeStyle = 'rgba(36,35,33,0.12)';
+    g.beginPath(); g.moveTo(padX, y); g.lineTo(W - padX, y); g.stroke();
+    y += 20;
+    g.fillStyle = '#9A948B'; g.font = '10.5px ' + sans;
+    wrapText(g, t('rcFoot1'), W - padX * 2).forEach(ln => { g.fillText(ln, padX, y); y += 15; });
+    wrapText(g, t('rcFoot2'), W - padX * 2).forEach(ln => { g.fillText(ln, padX, y); y += 15; });
+
+    return c;
+  }
+
+  function loadImage(src) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  $('#btnSavePng').addEventListener('click', async () => {
+    if (!state.lastPayload) return;
+    const p = state.lastPayload;
+    const btn = $('#btnSavePng');
+    const old = btn.textContent;
+    btn.disabled = true; btn.textContent = t('saving');
+    try {
+      const c = await buildReceiptCanvas(p);
+      const url = c.toDataURL('image/png');
+      $('#pngPreview').src = url;
+      $('#pngPreviewBox').classList.add('is-on');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'KBM_receipt_' + p.receiptNo + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast(t('toast.pngSaved'));
+      setTimeout(() => $('#pngPreviewBox').scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
+    } catch (e) {
+      toast(t('toast.pngFail'));
+    } finally {
+      btn.disabled = false; btn.textContent = old;
+    }
+  });
+
+  /* ─────────────── 시트에서 읽기 ─────────────── */
+  function withParams(url, params) {
+    const q = Object.keys(params).map(k => k + '=' + encodeURIComponent(params[k])).join('&');
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + q;
+  }
+
+  function jsonpGet(url, action) {
+    return new Promise((resolve, reject) => {
+      const cb = '__llcCb_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      const script = document.createElement('script');
+      let done = false;
+      const cleanup = () => {
+        clearTimeout(timer);
+        try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
+      const timer = setTimeout(() => { if (!done) { done = true; cleanup(); reject(new Error('timeout')); } }, 15000);
+      window[cb] = data => { if (done) return; done = true; cleanup(); resolve(data); };
+      script.onerror = () => { if (done) return; done = true; cleanup(); reject(new Error('script error')); };
+      script.src = withParams(url, { action: action, callback: cb, t: Date.now() });
+      document.body.appendChild(script);
+    });
+  }
+
+  async function getJSON(url, action) {
+    try {
+      const res = await fetch(withParams(url, { action: action, t: Date.now() }), { method: 'GET', redirect: 'follow' });
+      const data = JSON.parse(await res.text());
+      if (data && typeof data === 'object') return data;
+      throw new Error('bad');
+    } catch (e) {
+      return await jsonpGet(url, action);
+    }
+  }
+
+  async function syncMenu(manual) {
+    const url = getConfig().webappUrl;
+    const btn = $('#btnSync');
+    if (!url) {
+      if (manual) { toast(t('toast.syncNeed')); openModal('settingsModal'); }
+      return;
+    }
+    btn.classList.add('is-busy');
+    const label = btn.querySelector('.btn-label') || btn;
+    const oldText = label.textContent;
+    label.textContent = '…';
+    try {
+      const data = await getJSON(url, 'menu');
+      if (!data || !data.ok || !Array.isArray(data.menus) || !data.menus.length) throw new Error('bad');
+      if (applyMenu(data.menus, 'sheet')) {
+        saveJSON(STORE.menuCache, { menus: data.menus, savedAt: Date.now() });
+        if (manual) toast(t('toast.synced', { n: data.menus.length }));
+      } else throw new Error('empty');
+    } catch (e) {
+      if (manual) toast(t('toast.syncFail'));
+    } finally {
+      btn.classList.remove('is-busy');
+      label.textContent = oldText;
+    }
+  }
+
+  $('#btnSync').addEventListener('click', () => syncMenu(true));
+
+  /* ─────────────── 리셋 ─────────────── */
+  function resetForm() {
+    $('#name').value = ''; $('#phone').value = ''; $('#email').value = ''; $('#birth').value = ''; $('#memo').value = '';
+    state.source = '';
+    $$('#sourceChips .chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    state.selected.clear();
+    state.priceOverrides = {};
+    renderMenu();
+    state.customItems = []; renderCustomItems();
+    state.discountMode = 'none'; state.discountValue = 0;
+    $('#discValue').value = '';
+    $('#kioskInput').classList.remove('is-open');
+    $$('#manualChips .chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    renderPresets();
+    setPayment('카드', true);
+    state.agree = { care: false, privacy: false };
+    $$('.agree').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    state.health.clear();
+    renderHealth();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sigPad.classList.remove('has-ink', 'is-bad');
+    setInk(false);
+    state.submitted = false;
+    state.lastPayload = null;
+    ['#fName', '#fPhone', '#fEmail'].forEach(clearBad);
+    try { localStorage.removeItem(STORE.draft); } catch (e) {}
+    updateTotals();
+  }
+
+  /* ─────────────── 모달 ─────────────── */
+  function openModal(id) { $('#' + id).hidden = false; document.body.style.overflow = 'hidden'; }
+  function closeModal(id) { $('#' + id).hidden = true; document.body.style.overflow = ''; }
+  $$('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+  $$('.modal').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) closeModal(m.id); }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.modal').forEach(m => { if (!m.hidden) closeModal(m.id); }); });
+
+  /* ─────────────── 연동 설정 ─────────────── */
+  $('#btnSettings').addEventListener('click', () => {
+    $('#webappUrl').value = getConfig().webappUrl;
+    $('#connStatus').className = 'status-line';
+    $('#connStatus').textContent = '';
+    openModal('settingsModal');
+  });
+
+  $('#btnSaveUrl').addEventListener('click', () => {
+    const url = $('#webappUrl').value.trim();
+    if (url && !/^https:\/\/script\.google\.com\/macros\/s\/.+/i.test(url)) {
+      showConn('is-bad', t('toast.urlBad'));
+      return;
+    }
+    saveJSON(STORE.config, { webappUrl: url });
+    updateSyncBadge();
+    showConn(url ? 'is-ok' : '', url ? t('toast.urlSavedMsg') : t('toast.testMode'));
+    toast(url ? t('toast.urlSaved') : t('toast.urlCleared'));
+    if (url) { syncMenu(false); retryPending(); }
+  });
+
+  $('#btnClearUrl').addEventListener('click', () => {
+    $('#webappUrl').value = '';
+    saveJSON(STORE.config, { webappUrl: '' });
+    updateSyncBadge();
+    showConn('', t('toast.clearedUrl'));
+  });
+
+  function showConn(kind, msg) {
+    const el = $('#connStatus');
+    el.className = 'status-line is-on ' + (kind || '');
+    el.textContent = msg;
+  }
+
+  $('#btnTestConn').addEventListener('click', async () => {
+    const url = ($('#webappUrl').value || getConfig().webappUrl || '').trim();
+    if (!url) { showConn('is-bad', t('toast.pendingNone')); return; }
+    showConn('', t('toast.connChecking'));
+    try {
+      const data = await getJSON(url, 'ping');
+      if (data && data.ok) {
+        const n = Array.isArray(data.menus) ? data.menus.length : 0;
+        showConn('is-ok', t('toast.connOk', { s: data.service || 'longlasting-consent', menus: n ? t('toast.connMenu', { n: n }) : '' }));
+      } else {
+        showConn('is-bad', t('toast.connBad'));
+      }
+    } catch (e) {
+      showConn('is-bad', t('toast.connFail'));
+    }
+  });
+
+  async function retryPending() {
+    const list = loadJSON(STORE.pending, []) || [];
+    if (!list.length || !getConfig().webappUrl) return;
+    let done = 0;
+    for (const p of list) {
+      const r = await sendPayload(p);
+      if (r.state === 'sent' || r.state === 'unverified') { dropPending(p.receiptNo); done++; }
+    }
+    if (done) toast(t('toast.pendingSent', { n: done }));
+  }
+
+  /* ─────────────── 초안 ─────────────── */
+  function saveDraft() {
+    if (state.submitted) return;
+    saveJSON(STORE.draft, {
+      name: $('#name').value, phone: $('#phone').value, email: $('#email').value,
+      birth: $('#birth').value, memo: $('#memo').value
+    });
+  }
+  ['#name', '#phone', '#email', '#birth', '#memo'].forEach(sel => $(sel).addEventListener('input', saveDraft));
+  function restoreDraft() {
+    const d = loadJSON(STORE.draft, null);
+    if (!d) return;
+    if (d.name) $('#name').value = d.name;
+    if (d.phone) $('#phone').value = d.phone;
+    if (d.email) $('#email').value = d.email;
+    if (d.birth) $('#birth').value = d.birth;
+    if (d.memo) $('#memo').value = d.memo;
+  }
+
+  /* ─────────────── 언어 ─────────────── */
+  function applyStaticText() {
+    document.documentElement.lang = LANG_ATTR[lang];
+    document.title = t('docTitle');
+    $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    $$('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    $$('#langBar button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    $$('#branchSeg button').forEach(b => { b.textContent = t('branch.' + b.dataset.branch); });
+    $$('#directorSeg button').forEach(b => { b.textContent = t('dir.' + b.dataset.director); });
+    $('#branchAddr').textContent = branchAddress(state.branch);
+    $('#pageFoot').innerHTML =
+      '<b>' + escapeHtml(t('footTitle')) + '</b><br />' +
+      escapeHtml(branchLabel('강남점')) + ' · ' + escapeHtml(branchAddress('강남점')) + '<br />' +
+      escapeHtml(branchLabel('배곧점')) + ' · ' + escapeHtml(branchAddress('배곧점')) + '<br />' +
+      escapeHtml(t('footNote'));
+  }
+
+  function setLang(next) {
+    if (!DICT[next]) next = 'ko';
+    const changed = next !== lang;
+    lang = next;
+    try { localStorage.setItem(STORE.lang, lang); } catch (e) {}
+    applyStaticText();
+    renderMenu();
+    renderPresets();
+    renderHealth();
+    renderConsent();
+    renderCustomItems();
+    $('#sigState').textContent = state.hasInk ? t('sigDone') : t('sigNone');
+    updateSyncBadge();
+    updateMenuStatus();
+    updateTotals();
+    if (state.lastPayload && !$('#receiptModal').hidden) renderReceipt(state.lastPayload);
+    if (changed) {
+      const y = window.scrollY;
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    }
+  }
+
+  $('#langBar').addEventListener('click', e => {
+    const btn = e.target.closest('[data-lang]');
+    if (!btn) return;
+    setLang(btn.dataset.lang);
+  });
+
+  /* ─────────────── 시작 ─────────────── */
+  function boot() {
+    lang = (function () { try { const v = localStorage.getItem(STORE.lang); return DICT[v] ? v : 'ko'; } catch (e) { return 'ko'; } })();
+
+    try {
+      const b = localStorage.getItem(STORE.branch);
+      if (CENTER.branches.indexOf(b) !== -1) state.branch = b;
+      const d = localStorage.getItem(STORE.director);
+      if (CENTER.directors.indexOf(d) !== -1) state.director = d;
+    } catch (e) {}
+
+    $$('#branchSeg button').forEach(b => {
+      b.setAttribute('aria-pressed', b.dataset.branch === state.branch ? 'true' : 'false');
+    });
+    $$('#directorSeg button').forEach(b => {
+      b.setAttribute('aria-pressed', b.dataset.director === state.director ? 'true' : 'false');
+    });
+
+    const cache = loadJSON(STORE.menuCache, null);
+    if (cache && Array.isArray(cache.menus) && cache.menus.length) {
+      state.menu = normalizeMenus(cache.menus);
+      state.menuSource = 'cache';
+      state.menuSyncedAt = cache.savedAt || null;
+    } else {
+      state.menu = normalizeMenus(DEFAULT_MENU);
+      state.menuSource = 'default';
+    }
+
+    applyStaticText();
+    renderMenu();
+    renderPresets();
+    renderHealth();
+    renderConsent();
+    renderCustomItems();
+    initHeader();
+    updateMenuStatus();
+
+    $('#branchSeg').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-branch]');
+      if (!btn) return;
+      state.branch = btn.dataset.branch;
+      $$('#branchSeg button').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+      $('#branchAddr').textContent = branchAddress(state.branch);
+      try { localStorage.setItem(STORE.branch, state.branch); } catch (e2) {}
+      updateTotals();
+    });
+
+    $('#directorSeg').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-director]');
+      if (!btn) return;
+      state.director = btn.dataset.director;
+      $$('#directorSeg button').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+      try { localStorage.setItem(STORE.director, state.director); } catch (e2) {}
+      updateTotals();
+    });
+
+    $('#sourceChips').addEventListener('click', e => {
+      const btn = e.target.closest('[data-source]');
+      if (!btn) return;
+      const on = btn.getAttribute('aria-pressed') === 'true';
+      $$('#sourceChips .chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', on ? 'false' : 'true');
+      state.source = on ? '' : btn.dataset.source;
+    });
+
+    $('#payChips').addEventListener('click', e => {
+      const btn = e.target.closest('[data-pay]');
+      if (!btn) return;
+      setPayment(btn.dataset.pay, true);
+    });
+
+    $('#cashToggle').addEventListener('click', () => setCashMode(!state.cashMode));
+
+    bindManualDiscount();
+    sigResize();
+    setTimeout(sigResize, 60);
+    updateTotals();
+    if (getConfig().webappUrl) { syncMenu(false).then(() => retryPending()); }
+  }
+
+  /* 테스트/검증용 훅 */
+  window.__llc = {
+    state: state,
+    calc: calc,
+    buildPayload: buildPayload,
+    checks: checks,
+    signatureDataUrl: signatureDataUrl,
+    applyMenu: applyMenu,
+    syncMenu: syncMenu,
+    setCashMode: setCashMode,
+    setPayment: setPayment,
+    setLang: setLang,
+    getLang: () => lang,
+    t: t,
+    menuEls: menuEls,
+    buildReceiptCanvas: buildReceiptCanvas,
+    renderReceipt: renderReceipt,
+    receiptState: () => ({ lastPayload: state.lastPayload, lastResult: state.lastResult, open: !$('#receiptModal').hidden })
+  };
+
+  boot();
+  restoreDraft();
+  updateTotals();
+})();
+</script>
+</body>
+</html>
