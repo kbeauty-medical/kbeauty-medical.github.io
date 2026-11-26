@@ -88,7 +88,10 @@
     transition:transform .12s ease, background .18s ease;
   }
   .tbtn:active{ transform:translateY(1px) scale(.98); }
-  .tbtn .ico{ font-size:1rem; line-height:1; }
+  .tbtn .ico{ display:block; font-size:1rem; line-height:1; }
+  .tbtn .ico-off{ display:none; }
+  .tbtn[aria-pressed="false"] .ico-on{ display:none; }
+  .tbtn[aria-pressed="false"] .ico-off{ display:block; }
   .tbtn[aria-pressed="false"]{ color:var(--ink-3); background:var(--cream-2); }
 
   /* ── 히어로 ──────────────────────────────────────── */
@@ -99,6 +102,7 @@
     background:var(--butter-soft); border:1.5px solid #FFE39B; border-radius:999px;
     font-size:.78rem; font-weight:800; color:#8A6415; letter-spacing:.02em;
   }
+  .kdot{ width:.5rem; height:.5rem; border-radius:999px; background:var(--coral); box-shadow:0 0 0 2px rgba(255,107,92,.22); }
   .title{
     font-size:clamp(1.9rem, 5.4vw, 3.15rem);
     font-weight:900; letter-spacing:-0.045em; line-height:1.06;
@@ -122,7 +126,7 @@
   .track{ position:relative; flex:1; height:.86rem; border-radius:999px; background:var(--cream-2); overflow:hidden; box-shadow:inset 0 1px 2px rgba(36,35,33,.08); }
   .fill{
     position:absolute; inset:0; border-radius:999px;
-    background:linear-gradient(90deg,#FF8A7B 0%,#FFCE5A 48%,#57C99B 100%);
+    background:linear-gradient(90deg,#FF8A7B 0%,#FF6B5C 26%,#FFD974 40%,#EFB32E 60%,#7BDCB6 74%,#2E9E76 100%);
     clip-path:inset(0 100% 0 0);
     transition:clip-path .62s cubic-bezier(.32,1.24,.5,1);
   }
@@ -365,7 +369,9 @@
     <div class="brand"><span class="dot"></span>ADDYOON <b>미션 클리어 할인</b></div>
     <div class="tools">
       <button class="tbtn" id="soundBtn" aria-pressed="true" aria-label="효과음 끄기">
-        <span class="ico" id="soundIco">🔊</span><span id="soundTxt">소리</span>
+        <svg class="ico ico-on" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M11 5 6.6 9H3.2v6h3.4L11 19z" fill="currentColor"/><path d="M15 8.6a4.8 4.8 0 0 1 0 6.8M18 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        <svg class="ico ico-off" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M11 5 6.6 9H3.2v6h3.4L11 19z" fill="currentColor"/><path d="M16 9.2l5 5.6M21 9.2l-5 5.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        <span id="soundTxt">소리</span>
       </button>
       <button class="tbtn" id="resetBtn" aria-label="처음으로 리셋">
         <span class="ico">↺</span><span>처음으로</span>
@@ -376,7 +382,7 @@
 
 <main class="wrap">
   <section class="hero">
-    <p class="kicker">🎮 오늘의 미션 · 3개</p>
+    <p class="kicker"><span class="kdot" aria-hidden="true"></span>오늘의 미션 · 3개</p>
     <h1 class="title">미션 클리어 <span class="hl">할인</span></h1>
     <p class="sub">세 가지 미션을 모두 클리어하면 <b>현금 할인</b>!</p>
 
@@ -432,7 +438,7 @@
         </div>
       </div>
       <div class="card__foot">
-        <button class="mini" id="copyBtn">📋 계좌번호 복사</button>
+        <button class="mini" id="copyBtn"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15.5 5.6A2.6 2.6 0 0 0 13 3H6.6A2.6 2.6 0 0 0 4 5.6V12a2.6 2.6 0 0 0 2.6 2.6"/></svg>계좌번호 복사</button>
         <button class="clear" data-clear="2"><span>클리어!</span></button>
       </div>
     </article>
@@ -838,7 +844,6 @@
   function paintSound(){
     sBtn.setAttribute("aria-pressed", state.sound ? "true" : "false");
     sBtn.setAttribute("aria-label", state.sound ? "효과음 끄기" : "효과음 켜기");
-    document.getElementById("soundIco").textContent = state.sound ? "🔊" : "🔇";
     document.getElementById("soundTxt").textContent = state.sound ? "소리" : "꺼짐";
   }
   sBtn.addEventListener("click", function(){
